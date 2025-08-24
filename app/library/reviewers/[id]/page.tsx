@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { use, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -157,7 +157,8 @@ Cells are the fundamental units of life, and understanding their structure is cr
   },
 }
 
-export default function StudyMaterialPage({ params }: { params: { id: string } }) {
+export default function StudyMaterialPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params)
   const [activeTab, setActiveTab] = useState("content")
 
   const getTypeIcon = (type: string) => {

@@ -22,12 +22,12 @@ export function QuizGenerationForm({ files, onGenerate, isGenerating }: QuizGene
   const [selectedFile, setSelectedFile] = useState<string>("")
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium")
   const [numberOfQuestions, setNumberOfQuestions] = useState([10])
-  const [questionTypes, setQuestionTypes] = useState<("multiple_choice" | "true_false" | "short_answer")[]>([
+  const [questionTypes, setQuestionTypes] = useState<("multiple_choice" | "true_false" | "identification")[]>([
     "multiple_choice",
   ])
   const [focusAreas, setFocusAreas] = useState("")
 
-  const handleQuestionTypeChange = (type: "multiple_choice" | "true_false" | "short_answer", checked: boolean) => {
+  const handleQuestionTypeChange = (type: "multiple_choice" | "true_false" | "identification", checked: boolean) => {
     if (checked) {
       setQuestionTypes((prev) => [...prev, type])
     } else {
@@ -119,14 +119,14 @@ export function QuizGenerationForm({ files, onGenerate, isGenerating }: QuizGene
           <Slider
             value={numberOfQuestions}
             onValueChange={setNumberOfQuestions}
-            max={50}
+            max={30}
             min={5}
             step={5}
             className="w-full"
           />
           <div className="flex justify-between text-xs text-gray-500">
             <span>5 questions</span>
-            <span>50 questions</span>
+            <span>30 questions</span>
           </div>
         </div>
 
@@ -159,12 +159,12 @@ export function QuizGenerationForm({ files, onGenerate, isGenerating }: QuizGene
             </div>
             <div className="flex items-center space-x-2">
               <Checkbox
-                id="short-answer"
-                checked={questionTypes.includes("short_answer")}
-                onCheckedChange={(checked) => handleQuestionTypeChange("short_answer", checked as boolean)}
+                id="identification"
+                checked={questionTypes.includes("identification")}
+                onCheckedChange={(checked) => handleQuestionTypeChange("identification", checked as boolean)}
               />
-              <Label htmlFor="short-answer" className="text-sm font-normal">
-                Short Answer
+              <Label htmlFor="identification" className="text-sm font-normal">
+                Identification
               </Label>
             </div>
           </div>

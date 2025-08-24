@@ -47,7 +47,30 @@ export function calculateQuizResults(session: QuizSession, quiz: any): QuizResul
 
   quiz.questions.forEach((question: any) => {
     const userAnswer = session.answers[question.id] || ""
-    const isCorrect = userAnswer === question.correctAnswer
+    let isCorrect = false
+
+    // Handle different question types with appropriate comparison logic
+    if (question.questionType === "identification") {
+      // For identification questions, use case-insensitive comparison and trim whitespace
+      const normalizedUserAnswer = userAnswer.toLowerCase().trim()
+      const normalizedCorrectAnswer = question.correctAnswer.toLowerCase().trim()
+      isCorrect = normalizedUserAnswer === normalizedCorrectAnswer
+      
+      // Also check for partial matches or common variations
+      if (!isCorrect && normalizedCorrectAnswer.includes(' ')) {
+        // Check if user answer matches any significant word in the correct answer
+        const correctWords = normalizedCorrectAnswer.split(' ').filter((word: string) => word.length > 2)
+        const userWords = normalizedUserAnswer.split(' ').filter((word: string) => word.length > 2)
+        
+        // If user provided a key word from the answer, consider it partially correct
+        if (correctWords.some((word: string) => userWords.includes(word)) && userWords.length > 0) {
+          isCorrect = true
+        }
+      }
+    } else {
+      // For other question types, use exact comparison
+      isCorrect = userAnswer === question.correctAnswer
+    }
 
     if (isCorrect) {
       correctAnswers++

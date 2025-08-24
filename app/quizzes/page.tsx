@@ -1,81 +1,152 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Search, Plus, Filter, Play, Edit, Trash2, MoreVertical, Clock, Target, FileText } from "lucide-react"
+import { Search, Plus, Filter, Play, Edit, Trash2, MoreVertical, Clock, Target, FileText, Eye, RotateCcw } from "lucide-react"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { getDifficultyColor } from "@/lib/quiz-utils"
-
-// Mock quizzes data - replace with actual data from your backend
-const mockQuizzes = [
-  {
-    id: "1",
-    title: "Biology Chapter 5 - Cell Structure Quiz",
-    description: "Test your knowledge of cell structure and organelles",
-    fileName: "Biology Chapter 5 - Cell Structure.pdf",
-    difficulty: "medium",
-    totalQuestions: 15,
-    averageScore: 85,
-    timesAttempted: 3,
-    createdAt: "2024-01-15",
-    lastAttempted: "2024-01-16",
-  },
-  {
-    id: "2",
-    title: "Physics - Thermodynamics Quiz",
-    description: "Comprehensive quiz on thermodynamics principles",
-    fileName: "Physics Notes - Thermodynamics.docx",
-    difficulty: "hard",
-    totalQuestions: 20,
-    averageScore: 78,
-    timesAttempted: 2,
-    createdAt: "2024-01-14",
-    lastAttempted: "2024-01-15",
-  },
-  {
-    id: "3",
-    title: "Chemistry Lab Concepts",
-    description: "Quiz based on chemistry lab procedures and concepts",
-    fileName: "Chemistry Lab Report.txt",
-    difficulty: "easy",
-    totalQuestions: 10,
-    averageScore: 92,
-    timesAttempted: 5,
-    createdAt: "2024-01-13",
-    lastAttempted: "2024-01-17",
-  },
-]
+import { getDifficultyColor, getUserQuizzesList, type QuizListItem } from "@/lib/quiz-utils"
+import { getCurrentUser } from "@/lib/auth"
 
 export default function QuizzesPage() {
+  const [quizzes, setQuizzes] = useState<QuizListItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [filterDifficulty, setFilterDifficulty] = useState<string>("all")
+  const [takenQuizzes, setTakenQuizzes] = useState<Set<string>>(new Set())
+  const [isHydrated, setIsHydrated] = useState(false)
 
-  const filteredQuizzes = mockQuizzes.filter((quiz) => {
+  // Helper function to check if a quiz has been taken
+  const hasQuizResults = (quizId: string) => {
+    if (typeof window === 'undefined') return false
+    
+    // Check for quiz-specific results first
+    const quizSpecificResults = localStorage.getItem(`quiz-results-${quizId}`)
+    const storedQuiz = localStorage.getItem(`quiz-${quizId}`)
+    
+    if (quizSpecificResults && storedQuiz) {
+      return true
+    }
+    
+    // Fallback to check general results (for backward compatibility)
+    const storedResults = localStorage.getItem("quiz-results")
+    if (storedResults && storedQuiz) {
+      try {
+        const results = JSON.parse(storedResults)
+        return results.quizId === quizId
+      } catch (e) {
+        return false
+      }
+    }
+    return false
+  }
+
+  // Handle hydration
+  useEffect(() => {
+    setIsHydrated(true)
+  }, [])
+
+  useEffect(() => {
+    if (!isHydrated) return // Wait for hydration
+
+    const loadQuizzes = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        
+        // Add a small delay to ensure proper client-side initialization
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
+        console.log("Loading user quizzes...")
+        
+        const { user } = await getCurrentUser()
+        if (!user) {
+          setError("Please sign in to view your quizzes")
+          return
+        }
+        const userQuizzes = await getUserQuizzesList(user.id)
+        setQuizzes(userQuizzes)
+        
+        console.log("Quizzes loaded successfully:", userQuizzes.length)
+        
+        // Check which quizzes have been taken
+        const taken = new Set<string>()
+        userQuizzes.forEach((quiz: QuizListItem) => {
+          if (hasQuizResults(quiz.id)) {
+            taken.add(quiz.id)
+          }
+        })
+        setTakenQuizzes(taken)
+        
+      } catch (err) {
+        console.error("Error loading quizzes:", err)
+        setError("Failed to load quizzes. Please try again.")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadQuizzes()
+  }, [isHydrated])
+
+  const filteredQuizzes = quizzes.filter((quiz) => {
     const matchesSearch = quiz.title.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesFilter = filterDifficulty === "all" || quiz.difficulty === filterDifficulty
     return matchesSearch && matchesFilter
   })
 
+  if (!isHydrated || loading) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <p className="text-gray-600">Loading quizzes...</p>
+          </div>
+        </DashboardLayout>
+      </ProtectedRoute>
+    )
+  }
+
+  if (error) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <div className="flex items-center justify-center min-h-96">
+            <Card className="max-w-md">
+              <CardContent className="pt-6 text-center">
+                <p className="text-red-600 mb-4">{error}</p>
+                <Button onClick={() => window.location.reload()} variant="outline">
+                  Try Again
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </DashboardLayout>
+      </ProtectedRoute>
+    )
+  }
+
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <div className="space-y-6">
+        <div className="space-y-8">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">My Quizzes</h1>
-              <p className="mt-2 text-gray-600">Practice with your AI-generated quizzes</p>
+              <h1 className="text-2xl font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">My Quizzes</h1>
+              <p className="text-gray-600">Manage and take your AI-generated quizzes</p>
             </div>
             <Link href="/quizzes/generate">
-              <Button>
+              <Button className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl px-6 shadow-lg shadow-indigo-200">
                 <Plus className="mr-2 h-4 w-4" />
-                Generate New Quiz
+                Create Quiz
               </Button>
             </Link>
           </div>
@@ -88,12 +159,12 @@ export default function QuizzesPage() {
                 placeholder="Search quizzes..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 border-gray-200 rounded-xl"
               />
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline">
+                <Button variant="outline" className="border-gray-200 text-gray-700 rounded-xl">
                   <Filter className="mr-2 h-4 w-4" />
                   Difficulty: {filterDifficulty === "all" ? "All" : filterDifficulty}
                 </Button>
@@ -108,124 +179,120 @@ export default function QuizzesPage() {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <FileText className="h-8 w-8 text-blue-600" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Total Quizzes</p>
-                    <p className="text-2xl font-bold text-gray-900">{mockQuizzes.length}</p>
-                  </div>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-blue-100 shadow-lg shadow-blue-100/50">
+              <div className="flex items-center">
+                <div className="p-3 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl">
+                  <FileText className="h-6 w-6 text-blue-600" />
                 </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <Target className="h-8 w-8 text-green-600" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Average Score</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {Math.round(mockQuizzes.reduce((acc, quiz) => acc + quiz.averageScore, 0) / mockQuizzes.length)}%
-                    </p>
-                  </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Quizzes</p>
+                  <p className="text-2xl font-semibold text-gray-900">{quizzes.length}</p>
                 </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <Clock className="h-8 w-8 text-purple-600" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Total Attempts</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {mockQuizzes.reduce((acc, quiz) => acc + quiz.timesAttempted, 0)}
-                    </p>
-                  </div>
+              </div>
+            </div>
+            <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-emerald-100 shadow-lg shadow-emerald-100/50">
+              <div className="flex items-center">
+                <div className="p-3 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-xl">
+                  <Target className="h-6 w-6 text-emerald-600" />
                 </div>
-              </CardContent>
-            </Card>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Completed</p>
+                  <p className="text-2xl font-semibold text-gray-900">{takenQuizzes.size}</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Quizzes Grid */}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredQuizzes.map((quiz) => (
-              <Card key={quiz.id} className="hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg">{quiz.title}</CardTitle>
-                      <CardDescription className="mt-1">{quiz.description}</CardDescription>
-                    </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <MoreVertical className="h-4 w-4" />
+              <div key={quiz.id} className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-purple-100 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-100/50 transition-all duration-300">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{quiz.title}</h3>
+                    <p className="text-gray-600 text-sm">Created: {new Date(quiz.createdAt).toLocaleDateString()}</p>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-indigo-50">
+                        <MoreVertical className="h-4 w-4 text-indigo-600" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="bg-white/95 backdrop-blur-sm border-indigo-100">
+                      <DropdownMenuItem className="hover:bg-indigo-50">
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit Quiz
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-red-600 hover:bg-red-50">
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete Quiz
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getDifficultyColor(quiz.difficulty)}`}>
+                      {quiz.difficulty}
+                    </span>
+                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-700">
+                      {quiz.totalQuestions} questions
+                    </span>
+                    {takenQuizzes.has(quiz.id) && (
+                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700">
+                        Completed
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col space-y-2">
+                    <Link href={`/quizzes/${quiz.id}/take`}>
+                      <Button className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl shadow-lg shadow-indigo-200">
+                        {takenQuizzes.has(quiz.id) ? (
+                          <>
+                            <RotateCcw className="mr-2 h-4 w-4" />
+                            Retake Quiz
+                          </>
+                        ) : (
+                          <>
+                            <Play className="mr-2 h-4 w-4" />
+                            Take Quiz
+                          </>
+                        )}
+                      </Button>
+                    </Link>
+                    
+                    {takenQuizzes.has(quiz.id) && (
+                      <Link href={`/quizzes/${quiz.id}/results?showBest=true`}>
+                        <Button variant="outline" className="w-full border-indigo-200 text-indigo-700 hover:bg-indigo-50 rounded-xl">
+                          <Eye className="mr-2 h-4 w-4" />
+                          Review Answers
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit Quiz
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600">
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete Quiz
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                      </Link>
+                    )}
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Source: {quiz.fileName}</span>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Badge className={getDifficultyColor(quiz.difficulty)}>{quiz.difficulty}</Badge>
-                    <Badge variant="secondary">{quiz.totalQuestions} questions</Badge>
-                  </div>
-
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <div className="flex justify-between">
-                      <span>Average Score:</span>
-                      <span className="font-medium">{quiz.averageScore}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Attempts:</span>
-                      <span className="font-medium">{quiz.timesAttempted}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Last Attempted:</span>
-                      <span className="font-medium">{quiz.lastAttempted}</span>
-                    </div>
-                  </div>
-
-                  <Link href={`/quizzes/${quiz.id}/take`}>
-                    <Button className="w-full">
-                      <Play className="mr-2 h-4 w-4" />
-                      Take Quiz
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
 
           {filteredQuizzes.length === 0 && (
-            <div className="text-center py-12">
-              <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+            <div className="text-center py-16">
+              <div className="p-4 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl inline-block mb-4">
+                <FileText className="mx-auto h-8 w-8 text-indigo-600" />
+              </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No quizzes found</h3>
-              <p className="text-gray-500 mb-6">
+              <p className="text-gray-600 mb-8 max-w-md mx-auto">
                 {searchTerm || filterDifficulty !== "all"
                   ? "Try adjusting your search or filter criteria"
-                  : "Get started by generating your first AI quiz"}
+                  : "Get started by creating your first AI-powered quiz"}
               </p>
               <Link href="/quizzes/generate">
-                <Button>
+                <Button className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl px-6 shadow-lg shadow-indigo-200">
                   <Plus className="mr-2 h-4 w-4" />
-                  Generate Your First Quiz
+                  Create Your First Quiz
                 </Button>
               </Link>
             </div>

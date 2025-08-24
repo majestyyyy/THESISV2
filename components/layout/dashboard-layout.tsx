@@ -50,29 +50,34 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      {/* Mobile Sidebar */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="sm" className="lg:hidden fixed top-4 left-4 z-50">
+          <Button variant="ghost" size="sm" className="lg:hidden fixed top-4 left-4 z-50 text-indigo-600 hover:bg-indigo-100">
             <Menu className="h-5 w-5" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-64 p-0">
+        <SheetContent side="left" className="w-64 p-0 bg-white/95 backdrop-blur-sm">
           <div className="flex h-full flex-col">
-            <div className="flex h-16 items-center px-6 border-b">
-              <Brain className="h-8 w-8 text-blue-600" />
-              <span className="ml-2 text-xl font-bold">AI-GIR</span>
+            <div className="flex h-16 items-center px-6 border-b border-indigo-100">
+              <div className="w-7 h-7 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-lg flex items-center justify-center">
+                <Brain className="h-4 w-4 text-white" />
+              </div>
+              <span className="ml-3 text-xl font-medium bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">StudyAI</span>
             </div>
-            <nav className="flex-1 space-y-1 px-3 py-4">
+            <nav className="flex-1 space-y-1 px-4 py-6">
               {navigation.map((item) => {
-                const isActive = pathname === item.href
+                const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
                 return (
                   <Link
                     key={item.name}
                     href={item.href}
                     className={cn(
-                      "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                      isActive ? "bg-blue-100 text-blue-700" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900",
+                      "group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200",
+                      isActive
+                        ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-200"
+                        : "text-gray-600 hover:text-indigo-700 hover:bg-indigo-50"
                     )}
                     onClick={() => setSidebarOpen(false)}
                   >
@@ -86,73 +91,86 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </SheetContent>
       </Sheet>
 
-      {/* Desktop sidebar */}
+      {/* Desktop Sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
-        <div className="flex flex-col flex-grow bg-white border-r border-gray-200">
-          <div className="flex h-16 items-center px-6 border-b">
-            <Brain className="h-8 w-8 text-blue-600" />
-            <span className="ml-2 text-xl font-bold">AI-GIR</span>
+        <div className="flex flex-col flex-grow pt-6 pb-4 overflow-y-auto bg-white/90 backdrop-blur-sm border-r border-indigo-100">
+          <div className="flex items-center flex-shrink-0 px-6">
+            <Link href="/dashboard" className="flex items-center">
+              <div className="w-7 h-7 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-lg flex items-center justify-center">
+                <Brain className="h-4 w-4 text-white" />
+              </div>
+              <span className="ml-3 text-xl font-medium bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">StudyAI</span>
+            </Link>
           </div>
-          <nav className="flex-1 space-y-1 px-3 py-4">
-            {navigation.map((item) => {
-              const isActive = pathname === item.href
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={cn(
-                    "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                    isActive ? "bg-blue-100 text-blue-700" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900",
-                  )}
-                >
-                  <item.icon className="mr-3 h-5 w-5" />
-                  {item.name}
-                </Link>
-              )
-            })}
-          </nav>
+          <div className="mt-8 flex-1 flex flex-col">
+            <nav className="flex-1 px-4 space-y-1">
+              {navigation.map((item) => {
+                const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={cn(
+                      "group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200",
+                      isActive
+                        ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-200"
+                        : "text-gray-600 hover:text-indigo-700 hover:bg-indigo-50"
+                    )}
+                  >
+                    <item.icon
+                      className={cn(
+                        "mr-3 h-5 w-5 flex-shrink-0",
+                        isActive ? "text-white" : "text-indigo-400 group-hover:text-indigo-600"
+                      )}
+                    />
+                    {item.name}
+                  </Link>
+                )
+              })}
+            </nav>
+          </div>
         </div>
       </div>
 
       {/* Main content */}
       <div className="lg:pl-64">
-        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-indigo-100 bg-white/90 backdrop-blur-sm px-4 sm:gap-x-6 sm:px-6 lg:px-8">
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
             <div className="flex flex-1"></div>
             <div className="flex items-center gap-x-4 lg:gap-x-6">
               {/* User menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Button variant="ghost" className="relative h-9 w-9 rounded-xl hover:bg-indigo-50">
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-blue-100 text-blue-700">{getUserInitials()}</AvatarFallback>
+                      <AvatarFallback className="bg-gradient-to-br from-indigo-100 to-purple-100 text-indigo-700 font-medium">{getUserInitials()}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuContent className="w-56 bg-white/95 backdrop-blur-sm border-indigo-100" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">
+                      <p className="text-sm font-medium leading-none text-gray-800">
                         {user?.firstName} {user?.lastName}
                       </p>
-                      <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                      <p className="text-xs leading-none text-indigo-600">{user?.email}</p>
                     </div>
                   </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
+                  <DropdownMenuSeparator className="bg-indigo-100" />
                   <DropdownMenuItem asChild>
-                    <Link href="/profile" className="cursor-pointer">
+                    <Link href="/profile" className="cursor-pointer text-gray-700 hover:text-indigo-700 hover:bg-indigo-50">
                       <User className="mr-2 h-4 w-4" />
                       Profile
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/settings" className="cursor-pointer">
+                    <Link href="/settings" className="cursor-pointer text-gray-700 hover:text-indigo-700 hover:bg-indigo-50">
                       <Settings className="mr-2 h-4 w-4" />
                       Settings
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                  <DropdownMenuSeparator className="bg-indigo-100" />
+                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-gray-700 hover:text-indigo-700 hover:bg-indigo-50">
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign out
                   </DropdownMenuItem>
@@ -163,7 +181,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
 
         {/* Page content */}
-        <main className="py-8">
+        <main className="py-10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">{children}</div>
         </main>
       </div>

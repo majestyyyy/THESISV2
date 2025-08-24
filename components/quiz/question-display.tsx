@@ -83,6 +83,12 @@ export function QuestionDisplay({
                   <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer">
                     <span className="font-mono text-sm mr-2">{String.fromCharCode(65 + index)}.</span>
                     {option}
+                    {showExplanation && option === question.correctAnswer && (
+                      <Badge className="ml-2 bg-green-100 text-green-800">Correct Answer</Badge>
+                    )}
+                    {showExplanation && option === selectedAnswer && option !== question.correctAnswer && (
+                      <Badge className="ml-2 bg-red-100 text-red-800">Your Answer</Badge>
+                    )}
                   </Label>
                 </div>
               ))}
@@ -110,33 +116,17 @@ export function QuestionDisplay({
                   <RadioGroupItem value={option} id={option} />
                   <Label htmlFor={option} className="flex-1 cursor-pointer">
                     {option}
+                    {showExplanation && option === question.correctAnswer && (
+                      <Badge className="ml-2 bg-green-100 text-green-800">Correct Answer</Badge>
+                    )}
+                    {showExplanation && option === selectedAnswer && option !== question.correctAnswer && (
+                      <Badge className="ml-2 bg-red-100 text-red-800">Your Answer</Badge>
+                    )}
                   </Label>
                 </div>
               ))}
             </div>
           </RadioGroup>
-        )}
-
-        {/* Short Answer Questions */}
-        {question.questionType === "short_answer" && (
-          <div className="space-y-2">
-            <Label htmlFor="short-answer">Your Answer:</Label>
-            <Textarea
-              id="short-answer"
-              value={selectedAnswer}
-              onChange={(e) => onAnswerChange(e.target.value)}
-              placeholder="Type your answer here..."
-              rows={4}
-              disabled={showExplanation}
-              className={
-                showExplanation
-                  ? selectedAnswer.toLowerCase().trim() === question.correctAnswer.toLowerCase().trim()
-                    ? "bg-green-50 border-green-200"
-                    : "bg-red-50 border-red-200"
-                  : ""
-              }
-            />
-          </div>
         )}
 
         {question.questionType === "identification" && (
@@ -151,13 +141,46 @@ export function QuestionDisplay({
                 disabled={showExplanation}
                 className={
                   showExplanation
-                    ? selectedAnswer.toLowerCase().trim() === question.correctAnswer.toLowerCase().trim()
-                      ? "bg-green-50 border-green-200"
-                      : "bg-red-50 border-red-200"
+                    ? (() => {
+                        // Use the same logic as quiz scoring for visual feedback
+                        const normalizedUserAnswer = selectedAnswer.toLowerCase().trim()
+                        const normalizedCorrectAnswer = question.correctAnswer.toLowerCase().trim()
+                        
+                        let isCorrect = normalizedUserAnswer === normalizedCorrectAnswer
+                        
+                        // Check for partial matches
+                        if (!isCorrect && normalizedCorrectAnswer.includes(' ')) {
+                          const correctWords = normalizedCorrectAnswer.split(' ').filter((word: string) => word.length > 2)
+                          const userWords = normalizedUserAnswer.split(' ').filter((word: string) => word.length > 2)
+                          
+                          if (correctWords.some((word: string) => userWords.includes(word)) && userWords.length > 0) {
+                            isCorrect = true
+                          }
+                        }
+                        
+                        return isCorrect ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
+                      })()
                     : ""
                 }
               />
             </div>
+            
+            {/* Show user answer vs correct answer comparison in review mode */}
+            {showExplanation && (
+              <div className="space-y-3">
+                {selectedAnswer && (
+                  <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 mb-1">Your Answer:</h4>
+                    <p className="text-gray-800">{selectedAnswer || "No answer provided"}</p>
+                  </div>
+                )}
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <h4 className="font-semibold text-green-900 mb-1">Correct Answer:</h4>
+                  <p className="text-green-800">{question.correctAnswer}</p>
+                </div>
+              </div>
+            )}
+            
             {question.hints && !showExplanation && (
               <div className="space-y-2">
                 <Button
@@ -209,9 +232,18 @@ export function QuestionDisplay({
                     }
                   />
                   {showExplanation && (
-                    <p className="text-sm text-gray-600">
-                      Correct answer: <span className="font-medium">{blank}</span>
-                    </p>
+                    <div className="space-y-2">
+                      {fillInBlanks[index] && (
+                        <div className="p-2 bg-gray-50 border border-gray-200 rounded">
+                          <span className="text-sm font-medium text-gray-900">Your answer: </span>
+                          <span className="text-sm text-gray-800">{fillInBlanks[index] || "No answer"}</span>
+                        </div>
+                      )}
+                      <div className="p-2 bg-green-50 border border-green-200 rounded">
+                        <span className="text-sm font-medium text-green-900">Correct answer: </span>
+                        <span className="text-sm text-green-800">{blank}</span>
+                      </div>
+                    </div>
                   )}
                 </div>
               ))}
@@ -301,6 +333,12 @@ export function QuestionDisplay({
                       <Label htmlFor={`mixed-option-${index}`} className="flex-1 cursor-pointer">
                         <span className="font-mono text-sm mr-2">{String.fromCharCode(65 + index)}.</span>
                         {option}
+                        {showExplanation && option === question.correctAnswer && (
+                          <Badge className="ml-2 bg-green-100 text-green-800">Correct Answer</Badge>
+                        )}
+                        {showExplanation && option === selectedAnswer && option !== question.correctAnswer && (
+                          <Badge className="ml-2 bg-red-100 text-red-800">Your Answer</Badge>
+                        )}
                       </Label>
                     </div>
                   ))}
@@ -308,23 +346,41 @@ export function QuestionDisplay({
               </RadioGroup>
             ) : (
               // Mixed short answer
-              <div className="space-y-2">
-                <Label htmlFor="mixed-answer">Your Answer:</Label>
-                <Textarea
-                  id="mixed-answer"
-                  value={selectedAnswer}
-                  onChange={(e) => onAnswerChange(e.target.value)}
-                  placeholder="Type your answer here..."
-                  rows={4}
-                  disabled={showExplanation}
-                  className={
-                    showExplanation
-                      ? selectedAnswer.toLowerCase().trim() === question.correctAnswer.toLowerCase().trim()
-                        ? "bg-green-50 border-green-200"
-                        : "bg-red-50 border-red-200"
-                      : ""
-                  }
-                />
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="mixed-answer">Your Answer:</Label>
+                  <Textarea
+                    id="mixed-answer"
+                    value={selectedAnswer}
+                    onChange={(e) => onAnswerChange(e.target.value)}
+                    placeholder="Type your answer here..."
+                    rows={4}
+                    disabled={showExplanation}
+                    className={
+                      showExplanation
+                        ? selectedAnswer.toLowerCase().trim() === question.correctAnswer.toLowerCase().trim()
+                          ? "bg-green-50 border-green-200"
+                          : "bg-red-50 border-red-200"
+                        : ""
+                    }
+                  />
+                </div>
+                
+                {/* Show user answer vs correct answer comparison in review mode */}
+                {showExplanation && (
+                  <div className="space-y-3">
+                    {selectedAnswer && (
+                      <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                        <h4 className="font-semibold text-gray-900 mb-1">Your Answer:</h4>
+                        <p className="text-gray-800">{selectedAnswer || "No answer provided"}</p>
+                      </div>
+                    )}
+                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <h4 className="font-semibold text-green-900 mb-1">Correct Answer:</h4>
+                      <p className="text-green-800">{question.correctAnswer}</p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -336,17 +392,6 @@ export function QuestionDisplay({
             <p className="text-blue-800 text-sm">{question.explanation}</p>
           </div>
         )}
-
-        {showExplanation &&
-          (question.questionType === "short_answer" ||
-            question.questionType === "identification" ||
-            question.questionType === "mixed") &&
-          !question.options && (
-            <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <h4 className="font-semibold text-green-900 mb-2">Sample Answer:</h4>
-              <p className="text-green-800 text-sm">{question.correctAnswer}</p>
-            </div>
-          )}
       </CardContent>
     </Card>
   )

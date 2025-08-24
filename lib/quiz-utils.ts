@@ -5,7 +5,6 @@ export interface QuizQuestion {
   questionType:
     | "multiple_choice"
     | "true_false"
-    | "short_answer"
     | "identification"
     | "fill_in_blanks"
     | "flashcard"
@@ -31,6 +30,15 @@ export interface Quiz {
   createdAt: string
 }
 
+// Minimal quiz data for listing pages (cards)
+export interface QuizListItem {
+  id: string
+  title: string
+  difficulty: "easy" | "medium" | "hard"
+  totalQuestions: number
+  createdAt: string
+}
+
 export interface QuizGenerationOptions {
   fileId: string
   fileName: string
@@ -38,7 +46,6 @@ export interface QuizGenerationOptions {
   questionTypes: (
     | "multiple_choice"
     | "true_false"
-    | "short_answer"
     | "identification"
     | "fill_in_blanks"
     | "flashcard"
@@ -49,6 +56,9 @@ export interface QuizGenerationOptions {
 }
 
 import { generateQuizWithGemini } from "./gemini-utils"
+import { supabase } from "./supabase"
+import { getCurrentUser } from "./auth"
+import type { QuizResult } from "./quiz-session"
 
 // Placeholder AI quiz generation function
 export async function generateQuizFromFile(
@@ -145,9 +155,9 @@ function generateMockQuiz(options: QuizGenerationOptions): Quiz {
     } else if (questionType === "identification") {
       questions.push({
         id: `q${i + 1}`,
-        questionText: `Identify the key term: This concept refers to the fundamental principle discussed in ${options.fileName}.`,
+        questionText: `What is the key term that refers to the fundamental principle discussed in ${options.fileName}?`,
         questionType: "identification",
-        correctAnswer: "Sample Key Term",
+        correctAnswer: "Core Concept",
         explanation:
           "This term represents the core concept that underlies the entire discussion in the source material.",
         hints: ["It's a fundamental concept", "Related to the main topic"],
@@ -175,7 +185,7 @@ function generateMockQuiz(options: QuizGenerationOptions): Quiz {
       })
     } else if (questionType === "mixed") {
       // Mixed questions combine multiple formats
-      const mixedTypes = ["multiple_choice", "true_false", "short_answer", "identification"]
+      const mixedTypes = ["multiple_choice", "true_false", "identification"]
       const randomType = mixedTypes[Math.floor(Math.random() * mixedTypes.length)] as any
 
       if (randomType === "multiple_choice") {
@@ -207,11 +217,10 @@ function generateMockQuiz(options: QuizGenerationOptions): Quiz {
     } else {
       questions.push({
         id: `q${i + 1}`,
-        questionText: `Sample short answer question ${i + 1}: Explain the main concept from ${options.fileName} in your own words.`,
-        questionType: "short_answer",
-        correctAnswer:
-          "The main concept involves understanding the fundamental principles and their practical applications as outlined in the source material.",
-        explanation: "A good answer should demonstrate understanding of the core concepts and their relationships.",
+        questionText: `Identify the term: What is the main concept discussed in ${options.fileName}?`,
+        questionType: "identification",
+        correctAnswer: "Main concept from the source material",
+        explanation: "This identification question tests your ability to recognize key terms and concepts.",
         difficulty: options.difficulty,
       })
     }
@@ -249,8 +258,6 @@ export function getQuestionTypeLabel(type: string): string {
       return "Multiple Choice"
     case "true_false":
       return "True/False"
-    case "short_answer":
-      return "Short Answer"
     case "identification":
       return "Identification"
     case "fill_in_blanks":
@@ -261,5 +268,169 @@ export function getQuestionTypeLabel(type: string): string {
       return "Mixed Question"
     default:
       return "Unknown"
+  }
+}
+
+// Database functions for quiz management
+export async function saveQuiz(quiz: Quiz): Promise<Quiz> {
+  try {
+    const { user, error: authError } = await getCurrentUser()
+    if (authError || !user) {
+      throw new Error("User not authenticated")
+    }
+
+    // Prepare questions for JSONB storage
+    const questionsJson = quiz.questions.map((question, index) => ({
+      id: question.id,
+      questionText: question.questionText,
+      questionType: question.questionType,
+      options: question.options || null,
+      correctAnswer: question.correctAnswer,
+      explanation: question.explanation || null,
+      difficulty: question.difficulty
+    }))
+
+    // Save the quiz with questions in JSONB column
+    const { data: savedQuiz, error: quizError } = await supabase
+      .from('quizzes')
+      .insert({
+        user_id: user.id,
+        file_id: quiz.fileId,
+        title: quiz.title,
+        description: quiz.description,
+        difficulty: quiz.difficulty,
+        total_questions: quiz.totalQuestions,
+        questions: questionsJson
+      })
+      .select()
+      .single()
+
+    if (quizError) {
+      throw new Error(`Failed to save quiz: ${quizError.message}`)
+    }
+
+    return {
+      ...quiz,
+      id: savedQuiz.id,
+      createdAt: savedQuiz.created_at
+    }
+  } catch (error) {
+    console.error("Error saving quiz:", error)
+    throw error
+  }
+}
+
+export async function getUserQuizzes(userId: string): Promise<Quiz[]> {
+  try {
+    const { data: quizzes, error } = await supabase
+      .from('quizzes')
+      .select(`
+        *,
+        files(original_name)
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      throw new Error(`Failed to fetch quizzes: ${error.message}`)
+    }
+
+    return quizzes.map(quiz => ({
+      id: quiz.id,
+      title: quiz.title,
+      description: quiz.description || '',
+      fileId: quiz.file_id,
+      fileName: quiz.files?.original_name || 'Unknown File',
+      difficulty: quiz.difficulty as "easy" | "medium" | "hard",
+      totalQuestions: quiz.total_questions,
+      questions: quiz.questions || [], // Load questions from JSONB column
+      createdAt: quiz.created_at
+    }))
+  } catch (error) {
+    console.error("Error fetching user quizzes:", error)
+    throw error
+  }
+}
+
+// Optimized function to fetch minimal quiz data for listing pages
+export async function getUserQuizzesList(userId: string): Promise<QuizListItem[]> {
+  try {
+    const { data: quizzes, error } = await supabase
+      .from('quizzes')
+      .select('id, title, difficulty, total_questions, created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      throw new Error(`Failed to fetch quizzes list: ${error.message}`)
+    }
+
+    return quizzes.map(quiz => ({
+      id: quiz.id,
+      title: quiz.title,
+      difficulty: quiz.difficulty as "easy" | "medium" | "hard",
+      totalQuestions: quiz.total_questions,
+      createdAt: quiz.created_at
+    }))
+  } catch (error) {
+    console.error("Error fetching user quizzes list:", error)
+    throw error
+  }
+}
+
+export async function getQuizById(quizId: string): Promise<Quiz | null> {
+  try {
+    if (!quizId) {
+      console.error("Quiz ID is required")
+      return null
+    }
+
+    console.log("Fetching quiz with ID:", quizId)
+    
+    // Add a small delay to ensure Supabase client is ready
+    await new Promise(resolve => setTimeout(resolve, 50))
+    
+    // Get quiz details with questions from JSONB column
+    const { data: quiz, error: quizError } = await supabase
+      .from('quizzes')
+      .select(`
+        *,
+        files(original_name)
+      `)
+      .eq('id', quizId)
+      .single()
+
+    if (quizError || !quiz) {
+      console.error('Error fetching quiz:', quizError)
+      return null
+    }
+
+    console.log("Quiz data fetched successfully:", quiz)
+
+    // Parse questions from JSONB
+    const quizQuestions: QuizQuestion[] = (quiz.questions || []).map((q: any) => ({
+      id: q.id,
+      questionText: q.questionText,
+      questionType: q.questionType as QuizQuestion['questionType'],
+      options: q.options || undefined,
+      correctAnswer: q.correctAnswer,
+      explanation: q.explanation || undefined,
+      difficulty: q.difficulty as "easy" | "medium" | "hard"
+    }))
+
+    return {
+      id: quiz.id,
+      title: quiz.title,
+      description: quiz.description || '',
+      fileId: quiz.file_id,
+      fileName: quiz.files?.original_name || 'Unknown File',
+      difficulty: quiz.difficulty as "easy" | "medium" | "hard",
+      totalQuestions: quiz.total_questions,
+      questions: quizQuestions,
+      createdAt: quiz.created_at
+    }
+  } catch (error) {
+    console.error("Error fetching quiz:", error)
+    return null
   }
 }

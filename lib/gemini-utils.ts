@@ -11,7 +11,7 @@ const genAI = new GoogleGenerativeAI(apiKey)
 export interface GenerateQuizOptions {
   content: string
   difficulty: "easy" | "medium" | "hard"
-  questionTypes: ("multiple_choice" | "true_false" | "short_answer")[]
+  questionTypes: ("multiple_choice" | "true_false" | "identification" | "fill_in_blanks" | "flashcard" | "mixed")[]
   numberOfQuestions: number
   focusAreas?: string[]
 }
@@ -46,10 +46,10 @@ Requirements:
 
 For each question, provide:
 1. Question text
-2. Question type (multiple_choice, true_false, or short_answer)
+2. Question type (multiple_choice, true_false, or identification)
 3. For multiple choice: 4 options with one correct answer
 4. For true/false: "True" or "False" as the correct answer
-5. For short answer: a model answer
+5. For identification: a specific term, concept, or name to identify. The question should ask "What is..." or "Identify..." or "Name the..." and the correct answer should be a single term or short phrase (1-3 words maximum)
 6. A brief explanation of why the answer is correct
 
 Format your response as a JSON array with this structure:
@@ -59,6 +59,12 @@ Format your response as a JSON array with this structure:
     "questionType": "multiple_choice",
     "options": ["Option A", "Option B", "Option C", "Option D"],
     "correctAnswer": "Option A",
+    "explanation": "Explanation here"
+  },
+  {
+    "questionText": "What is the powerhouse of the cell?",
+    "questionType": "identification",
+    "correctAnswer": "Mitochondria",
     "explanation": "Explanation here"
   }
 ]

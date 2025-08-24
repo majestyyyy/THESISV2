@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -112,6 +112,25 @@ export default function LibraryPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filterStatus, setFilterStatus] = useState<string>("all")
   const [activeTab, setActiveTab] = useState("files")
+  const [isHydrated, setIsHydrated] = useState(false)
+
+  // Handle hydration
+  useEffect(() => {
+    setIsHydrated(true)
+  }, [])
+
+  if (!isHydrated) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <p className="text-gray-600">Loading library...</p>
+          </div>
+        </DashboardLayout>
+      </ProtectedRoute>
+    )
+  }
 
   const filteredFiles = mockFiles.filter((file) => {
     const matchesSearch =

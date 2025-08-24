@@ -1,119 +1,74 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { Badge } from "@/components/ui/badge"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ChevronLeft, Flag, CheckCircle, FileText, ArrowRight } from "lucide-react"
 import { QuestionDisplay } from "@/components/quiz/question-display"
 import { QuizTimer } from "@/components/quiz/quiz-timer"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { createQuizSession, calculateQuizResults } from "@/lib/quiz-session"
+import { getQuizById } from "@/lib/quiz-utils"
 import type { QuizSession } from "@/lib/quiz-session"
 import type { Quiz } from "@/lib/quiz-utils"
 
-// Mock quiz data with new question types - replace with actual data fetching
-const mockQuiz: Quiz = {
-  id: "1",
-  title: "Biology Chapter 5 - Cell Structure Quiz",
-  description: "Test your knowledge of cell structure and organelles",
-  fileId: "1",
-  fileName: "Biology Chapter 5 - Cell Structure.pdf",
-  difficulty: "medium",
-  totalQuestions: 7,
-  createdAt: "2024-01-15",
-  questions: [
-    {
-      id: "q1",
-      questionText: "What is the powerhouse of the cell?",
-      questionType: "multiple_choice",
-      options: ["Nucleus", "Mitochondria", "Ribosome", "Endoplasmic Reticulum"],
-      correctAnswer: "Mitochondria",
-      explanation:
-        "Mitochondria are known as the powerhouse of the cell because they produce ATP through cellular respiration.",
-      difficulty: "easy",
-    },
-    {
-      id: "q2",
-      questionText: "The cell membrane is selectively permeable.",
-      questionType: "true_false",
-      options: ["True", "False"],
-      correctAnswer: "True",
-      explanation:
-        "The cell membrane allows some substances to pass through while blocking others, making it selectively permeable.",
-      difficulty: "medium",
-    },
-    {
-      id: "q3",
-      questionText: "Identify this organelle: The control center of the cell that contains genetic material.",
-      questionType: "identification",
-      correctAnswer: "Nucleus",
-      explanation: "The nucleus is the control center of the cell, containing DNA and regulating gene expression.",
-      hints: ["It's the 'brain' of the cell", "Contains chromosomes"],
-      difficulty: "medium",
-    },
-    {
-      id: "q4",
-      questionText: "Fill in the blanks: The _____ synthesizes proteins while the _____ modifies and packages them.",
-      questionType: "fill_in_blanks",
-      blanks: ["ribosome", "golgi apparatus"],
-      correctAnswer: "ribosome, golgi apparatus",
-      explanation:
-        "Ribosomes are the sites of protein synthesis, while the Golgi apparatus modifies and packages proteins.",
-      difficulty: "medium",
-    },
-    {
-      id: "q5",
-      questionText: "Chloroplast",
-      questionType: "flashcard",
-      correctAnswer: "Definition",
-      flashcardBack:
-        "An organelle found in plant cells that conducts photosynthesis, converting light energy into chemical energy (glucose).",
-      explanation:
-        "Chloroplasts are essential for photosynthesis and give plants their green color due to chlorophyll.",
-      difficulty: "easy",
-    },
-    {
-      id: "q6",
-      questionText: "Which process allows plants to make their own food using sunlight?",
-      questionType: "mixed",
-      options: ["Cellular respiration", "Photosynthesis", "Fermentation", "Glycolysis"],
-      correctAnswer: "Photosynthesis",
-      explanation:
-        "Photosynthesis is the process by which plants convert light energy, carbon dioxide, and water into glucose and oxygen.",
-      difficulty: "medium",
-    },
-    {
-      id: "q7",
-      questionText: "Explain the function of the nucleus in a cell.",
-      questionType: "short_answer",
-      correctAnswer:
-        "The nucleus controls cell activities and contains the cell's DNA, which stores genetic information and regulates gene expression.",
-      explanation:
-        "A good answer should mention that the nucleus is the control center of the cell and contains genetic material.",
-      difficulty: "medium",
-    },
-  ],
-}
-
-export default function TakeQuizPage({ params }: { params: { id: string } }) {
+export default function TakeQuizPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
+  const resolvedParams = use(params)
+  const [quiz, setQuiz] = useState<Quiz | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [session, setSession] = useState<QuizSession | null>(null)
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showExplanation, setShowExplanation] = useState(false)
   const [hasAnswered, setHasAnswered] = useState(false)
+  const [isHydrated, setIsHydrated] = useState(false)
+
+  // Handle hydration
+  useEffect(() => {
+    setIsHydrated(true)
+  }, [])
 
   useEffect(() => {
-    // Initialize quiz session
-    const newSession = createQuizSession(params.id, "user-id", mockQuiz.totalQuestions, 30) // 30 minutes
-    setSession(newSession)
-  }, [params.id])
+    if (!isHydrated) return // Wait for hydration
+
+    const loadQuiz = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        
+        // Add a small delay to ensure proper client-side initialization
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
+        console.log("Loading quiz with ID:", resolvedParams.id)
+        
+        const quizData = await getQuizById(resolvedParams.id)
+        console.log("Quiz data received:", quizData)
+        
+        if (!quizData) {
+          setError("Quiz not found")
+          return
+        }
+        setQuiz(quizData)
+        // Initialize quiz session
+        const newSession = createQuizSession(resolvedParams.id, "user-id", quizData.totalQuestions, 30) // 30 minutes
+        setSession(newSession)
+        
+        console.log("Quiz session created:", newSession)
+        
+      } catch (err) {
+        console.error("Error loading quiz:", err)
+        setError("Failed to load quiz. Please try again.")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadQuiz()
+  }, [resolvedParams.id, isHydrated])
 
   useEffect(() => {
     setShowExplanation(false)
@@ -121,9 +76,9 @@ export default function TakeQuizPage({ params }: { params: { id: string } }) {
   }, [currentQuestion])
 
   const handleAnswerChange = (answer: string) => {
-    if (!session || showExplanation) return
+    if (!session || showExplanation || !quiz) return
 
-    const questionId = mockQuiz.questions[currentQuestion].id
+    const questionId = quiz.questions[currentQuestion].id
     setSession((prev) => ({
       ...prev!,
       answers: {
@@ -140,7 +95,8 @@ export default function TakeQuizPage({ params }: { params: { id: string } }) {
   }
 
   const handleNextQuestion = () => {
-    if (currentQuestion < mockQuiz.questions.length - 1) {
+    if (!quiz) return
+    if (currentQuestion < quiz.questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1)
     }
   }
@@ -156,16 +112,42 @@ export default function TakeQuizPage({ params }: { params: { id: string } }) {
   }
 
   const handleSubmitQuiz = async () => {
-    if (!session) return
+    if (!session || !quiz) return
 
     setIsSubmitting(true)
 
     // Calculate results
-    const results = calculateQuizResults(session, mockQuiz)
+    const results = calculateQuizResults(session, quiz)
 
-    // Store results and redirect
+    // Store quiz data
+    localStorage.setItem(`quiz-${resolvedParams.id}`, JSON.stringify(quiz))
+    
+    // Get existing attempts for this quiz
+    const existingAttemptsKey = `quiz-attempts-${resolvedParams.id}`
+    const existingAttempts = localStorage.getItem(existingAttemptsKey)
+    let attempts = existingAttempts ? JSON.parse(existingAttempts) : []
+    
+    // Add current attempt with timestamp
+    const newAttempt = {
+      ...results,
+      attemptId: Date.now().toString(),
+      timestamp: new Date().toISOString()
+    }
+    attempts.push(newAttempt)
+    
+    // Store all attempts
+    localStorage.setItem(existingAttemptsKey, JSON.stringify(attempts))
+    
+    // Find and store the best attempt (highest score)
+    const bestAttempt = attempts.reduce((best: any, current: any) => 
+      current.score > best.score ? current : best
+    )
+    localStorage.setItem(`quiz-results-${resolvedParams.id}`, JSON.stringify(bestAttempt))
+    
+    // Store current attempt as latest results for immediate display
     localStorage.setItem("quiz-results", JSON.stringify(results))
-    router.push(`/quizzes/${params.id}/results`)
+    
+    router.push(`/quizzes/${resolvedParams.id}/results`)
   }
 
   const getAnsweredQuestions = () => {
@@ -174,19 +156,19 @@ export default function TakeQuizPage({ params }: { params: { id: string } }) {
   }
 
   const isCurrentQuestionAnswered = () => {
-    if (!session) return false
-    const questionId = mockQuiz.questions[currentQuestion].id
+    if (!session || !quiz) return false
+    const questionId = quiz.questions[currentQuestion].id
     return !!session.answers[questionId]
   }
 
   const isCurrentAnswerCorrect = () => {
-    if (!session) return false
-    const questionId = mockQuiz.questions[currentQuestion].id
+    if (!session || !quiz) return false
+    const questionId = quiz.questions[currentQuestion].id
     const userAnswer = session.answers[questionId]
-    const correctAnswer = mockQuiz.questions[currentQuestion].correctAnswer
+    const correctAnswer = quiz.questions[currentQuestion].correctAnswer
 
     // Handle different question types
-    const question = mockQuiz.questions[currentQuestion]
+    const question = quiz.questions[currentQuestion]
     if (question.questionType === "fill_in_blanks") {
       const userBlanks = userAnswer?.split(", ") || []
       const correctBlanks = question.blanks || []
@@ -196,15 +178,84 @@ export default function TakeQuizPage({ params }: { params: { id: string } }) {
       )
     }
 
+    if (question.questionType === "identification") {
+      if (!userAnswer) return false
+      
+      // For identification questions, use case-insensitive comparison and trim whitespace
+      const normalizedUserAnswer = userAnswer.toLowerCase().trim()
+      const normalizedCorrectAnswer = correctAnswer.toLowerCase().trim()
+      
+      if (normalizedUserAnswer === normalizedCorrectAnswer) {
+        return true
+      }
+      
+      // Also check for partial matches or common variations
+      if (normalizedCorrectAnswer.includes(' ')) {
+        // Check if user answer matches any significant word in the correct answer
+        const correctWords = normalizedCorrectAnswer.split(' ').filter((word: string) => word.length > 2)
+        const userWords = normalizedUserAnswer.split(' ').filter((word: string) => word.length > 2)
+        
+        // If user provided a key word from the answer, consider it partially correct
+        if (correctWords.some((word: string) => userWords.includes(word)) && userWords.length > 0) {
+          return true
+        }
+      }
+      
+      return false
+    }
+
     return userAnswer?.toLowerCase().trim() === correctAnswer.toLowerCase().trim()
+  }
+
+  // Show loading until hydrated
+  if (!isHydrated || loading) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <p className="text-gray-600">Loading quiz...</p>
+          </div>
+        </DashboardLayout>
+      </ProtectedRoute>
+    )
+  }
+
+  if (error || !quiz) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <div className="flex items-center justify-center min-h-96">
+            <div className="max-w-md bg-white p-8 rounded-2xl border border-gray-100 text-center">
+              <p className="text-red-600 mb-6">{error || "Quiz not found"}</p>
+              <div className="space-y-3">
+                <button 
+                  onClick={() => window.location.reload()}
+                  className="w-full px-6 py-3 text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-colors"
+                >
+                  Retry Loading
+                </button>
+                <button 
+                  onClick={() => router.push("/quizzes")}
+                  className="w-full px-6 py-3 text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+                >
+                  Back to Quizzes
+                </button>
+              </div>
+            </div>
+          </div>
+        </DashboardLayout>
+      </ProtectedRoute>
+    )
   }
 
   if (!session) {
     return (
       <ProtectedRoute>
         <DashboardLayout>
-          <div className="flex items-center justify-center min-h-96">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+          <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <p className="text-gray-600">Initializing quiz session...</p>
           </div>
         </DashboardLayout>
       </ProtectedRoute>
@@ -216,138 +267,188 @@ export default function TakeQuizPage({ params }: { params: { id: string } }) {
       <DashboardLayout>
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Quiz Header */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center">
-                    <FileText className="mr-2 h-5 w-5" />
-                    {mockQuiz.title}
-                  </CardTitle>
-                  <p className="text-gray-600 mt-1">{mockQuiz.description}</p>
-                </div>
-                <Badge className="bg-blue-100 text-blue-800">{mockQuiz.difficulty}</Badge>
+          <div className="bg-white p-6 rounded-2xl border border-gray-100">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-xl font-semibold text-gray-900 flex items-center">
+                  <FileText className="mr-2 h-5 w-5" />
+                  {quiz.title}
+                </h1>
+                <p className="text-gray-600 mt-1">{quiz.description}</p>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-6 text-sm text-gray-600">
-                  <span>
-                    Questions: {getAnsweredQuestions()}/{mockQuiz.totalQuestions}
-                  </span>
-                  <span>Progress: {Math.round((getAnsweredQuestions() / mockQuiz.totalQuestions) * 100)}%</span>
-                </div>
-                <QuizTimer initialTime={session.timeRemaining} onTimeUp={handleTimeUp} isPaused={isSubmitting} />
+              <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full font-medium">
+                {quiz.difficulty}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-6 text-sm text-gray-600">
+                <span>
+                  Questions: {getAnsweredQuestions()}/{quiz.totalQuestions}
+                </span>
+                <span>Progress: {Math.round((getAnsweredQuestions() / quiz.totalQuestions) * 100)}%</span>
               </div>
-              <Progress value={(getAnsweredQuestions() / mockQuiz.totalQuestions) * 100} className="mt-4" />
-            </CardContent>
-          </Card>
+              <QuizTimer initialTime={session.timeRemaining} onTimeUp={handleTimeUp} isPaused={isSubmitting} />
+            </div>
+            <Progress value={(getAnsweredQuestions() / quiz.totalQuestions) * 100} className="mt-4" />
+          </div>
 
           {/* Question Display */}
           <QuestionDisplay
-            question={mockQuiz.questions[currentQuestion]}
+            question={quiz.questions[currentQuestion]}
             questionNumber={currentQuestion + 1}
-            totalQuestions={mockQuiz.totalQuestions}
-            selectedAnswer={session.answers[mockQuiz.questions[currentQuestion].id] || ""}
+            totalQuestions={quiz.totalQuestions}
+            selectedAnswer={session.answers[quiz.questions[currentQuestion].id] || ""}
             onAnswerChange={handleAnswerChange}
             showExplanation={showExplanation}
             isCorrect={isCurrentAnswerCorrect()}
           />
 
           {hasAnswered && !showExplanation && (
-            <Card className="border-blue-200 bg-blue-50">
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <p className="text-blue-800 mb-4">Ready to see the explanation?</p>
-                  <Button onClick={handleSubmitAnswer} className="bg-blue-600 hover:bg-blue-700">
-                    <CheckCircle className="mr-2 h-4 w-4" />
-                    Submit Answer & Show Explanation
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="bg-blue-50 border border-blue-200 p-6 rounded-2xl">
+              <div className="text-center">
+                <p className="text-blue-800 mb-4">Ready to see the explanation?</p>
+                <button 
+                  onClick={handleSubmitAnswer} 
+                  className="flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors mx-auto"
+                >
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Submit Answer & Show Explanation
+                </button>
+              </div>
+            </div>
           )}
 
           {/* Navigation */}
-          <div className="flex items-center justify-between">
-            <Button
-              variant="outline"
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <button
               onClick={handlePreviousQuestion}
               disabled={currentQuestion === 0}
-              className="bg-transparent"
+              className={`flex items-center px-6 py-3 rounded-xl transition-colors ${
+                currentQuestion === 0 
+                  ? 'text-gray-400 bg-gray-100 cursor-not-allowed' 
+                  : 'text-gray-700 bg-white border border-gray-200 hover:bg-gray-50'
+              }`}
             >
               <ChevronLeft className="mr-2 h-4 w-4" />
               Previous
-            </Button>
+            </button>
 
-            <div className="flex items-center space-x-2">
-              {/* Question indicators */}
-              <div className="flex space-x-1">
-                {mockQuiz.questions.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentQuestion(index)}
-                    className={`w-8 h-8 rounded-full text-xs font-medium transition-colors ${
-                      index === currentQuestion
-                        ? "bg-blue-600 text-white"
-                        : session.answers[mockQuiz.questions[index].id]
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                  >
-                    {index + 1}
-                  </button>
-                ))}
+            <div className="flex items-center justify-center">
+              {/* Question indicators with scroll */}
+              <div className="relative">
+                <div className="flex space-x-1 max-w-xs sm:max-w-md md:max-w-lg overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 px-2 py-1 rounded-lg">
+                  {quiz.questions.map((_, index: number) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentQuestion(index)}
+                      className={`flex-shrink-0 w-8 h-8 rounded-full text-xs font-medium transition-colors ${
+                        index === currentQuestion
+                          ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md"
+                          : session.answers[quiz.questions[index].id]
+                            ? "bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      {index + 1}
+                    </button>
+                  ))}
+                </div>
+                {/* Scroll indicators */}
+                {quiz.questions.length > 10 && (
+                  <div className="absolute left-0 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                    <div className="w-4 h-full bg-gradient-to-r from-white to-transparent"></div>
+                  </div>
+                )}
+                {quiz.questions.length > 10 && (
+                  <div className="absolute right-0 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                    <div className="w-4 h-full bg-gradient-to-l from-white to-transparent"></div>
+                  </div>
+                )}
               </div>
             </div>
 
-            {currentQuestion === mockQuiz.questions.length - 1 ? (
+            {currentQuestion === quiz.questions.length - 1 ? (
               showExplanation ? (
-                <Button onClick={() => setShowSubmitConfirm(true)} disabled={isSubmitting}>
+                <button 
+                  onClick={() => setShowSubmitConfirm(true)} 
+                  disabled={isSubmitting}
+                  className={`flex items-center px-6 py-3 rounded-xl transition-colors ${
+                    isSubmitting 
+                      ? 'text-gray-400 bg-gray-100 cursor-not-allowed' 
+                      : 'text-white bg-gray-900 hover:bg-gray-800'
+                  }`}
+                >
                   <Flag className="mr-2 h-4 w-4" />
                   {isSubmitting ? "Submitting..." : "Finish Quiz"}
-                </Button>
+                </button>
               ) : (
-                <Button disabled={!hasAnswered} variant="outline">
+                <button 
+                  disabled={!hasAnswered} 
+                  className="px-6 py-3 text-gray-400 bg-gray-100 rounded-xl cursor-not-allowed"
+                >
                   Submit answer first
-                </Button>
+                </button>
               )
             ) : showExplanation ? (
-              <Button onClick={handleNextQuestion}>
+              <button 
+                onClick={handleNextQuestion}
+                className="flex items-center px-6 py-3 text-white bg-gray-900 rounded-xl hover:bg-gray-800 transition-colors"
+              >
                 Continue
                 <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              </button>
             ) : (
-              <Button disabled={!hasAnswered} variant="outline">
+              <button 
+                disabled={!hasAnswered} 
+                className="px-6 py-3 text-gray-400 bg-gray-100 rounded-xl cursor-not-allowed"
+              >
                 Submit answer first
-              </Button>
+              </button>
             )}
           </div>
 
           {/* Submit Confirmation */}
           {showSubmitConfirm && (
-            <Alert>
-              <CheckCircle className="h-4 w-4" />
-              <AlertDescription>
-                <div className="space-y-3">
-                  <p>Are you sure you want to submit your quiz?</p>
-                  <div className="text-sm text-gray-600">
-                    <p>
-                      Answered: {getAnsweredQuestions()}/{mockQuiz.totalQuestions} questions
-                    </p>
-                    <p>You've completed all questions with explanations.</p>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button onClick={handleSubmitQuiz} disabled={isSubmitting}>
-                      {isSubmitting ? "Submitting..." : "Yes, Submit Quiz"}
-                    </Button>
-                    <Button variant="outline" onClick={() => setShowSubmitConfirm(false)} disabled={isSubmitting}>
-                      Cancel
-                    </Button>
+            <div className="bg-green-50 border border-green-200 p-6 rounded-2xl">
+              <div className="flex items-start space-x-3">
+                <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                <div className="flex-1">
+                  <div className="space-y-4">
+                    <p className="text-green-800 font-medium">Are you sure you want to submit your quiz?</p>
+                    <div className="text-sm text-green-700">
+                      <p>
+                        Answered: {getAnsweredQuestions()}/{quiz.totalQuestions} questions
+                      </p>
+                      <p>You've completed all questions with explanations.</p>
+                    </div>
+                    <div className="flex space-x-3">
+                      <button 
+                        onClick={handleSubmitQuiz} 
+                        disabled={isSubmitting}
+                        className={`px-6 py-3 rounded-xl transition-colors ${
+                          isSubmitting 
+                            ? 'text-gray-400 bg-gray-100 cursor-not-allowed' 
+                            : 'text-white bg-green-600 hover:bg-green-700'
+                        }`}
+                      >
+                        {isSubmitting ? "Submitting..." : "Yes, Submit Quiz"}
+                      </button>
+                      <button 
+                        onClick={() => setShowSubmitConfirm(false)} 
+                        disabled={isSubmitting}
+                        className={`px-6 py-3 rounded-xl transition-colors ${
+                          isSubmitting 
+                            ? 'text-gray-400 bg-gray-100 cursor-not-allowed' 
+                            : 'text-gray-700 bg-white border border-gray-200 hover:bg-gray-50'
+                        }`}
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </AlertDescription>
-            </Alert>
+              </div>
+            </div>
           )}
         </div>
       </DashboardLayout>
