@@ -1,36 +1,26 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { FileText, Brain, BookOpen, Sparkles, ArrowLeft, Download, Save, Eye } from "lucide-react"
+import { FileText, Brain, BookOpen, Sparkles, ArrowLeft, Download, Save, Eye, Upload } from "lucide-react"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { generateReviewerFromFile } from "@/lib/reviewer-utils"
+import { getUserFiles, type FileRecord } from "@/lib/file-utils"
 import type { StudyMaterial } from "@/lib/reviewer-utils"
 import Link from "next/link"
 
-// Mock files data - replace with actual data from your backend
-const mockFiles = [
-  {
-    id: "1",
-    name: "Biology Chapter 5 - Cell Structure.pdf",
-    extractedText: "Cell structure content...",
-  },
-  {
-    id: "2",
-    name: "Physics Notes - Thermodynamics.docx",
-    extractedText: "Thermodynamics content...",
-  },
-]
-
 export default function GenerateReviewerPage() {
+  const [uploadedFiles, setUploadedFiles] = useState<FileRecord[]>([])
+  const [filesLoading, setFilesLoading] = useState(true)
   const [selectedFileId, setSelectedFileId] = useState("")
   const [reviewerType, setReviewerType] = useState<"summary" | "flashcards" | "notes">("summary")
   const [focusAreas, setFocusAreas] = useState<string[]>([])
@@ -39,7 +29,23 @@ export default function GenerateReviewerPage() {
   const [progress, setProgress] = useState(0)
   const [generatedReviewer, setGeneratedReviewer] = useState<StudyMaterial | null>(null)
 
-  const selectedFile = mockFiles.find((f) => f.id === selectedFileId)
+  const selectedFile = uploadedFiles.find((f) => f.id === selectedFileId)
+
+  useEffect(() => {
+    loadUserFiles()
+  }, [])
+
+  const loadUserFiles = async () => {
+    try {
+      setFilesLoading(true)
+      const files = await getUserFiles()
+      setUploadedFiles(files)
+    } catch (error) {
+      console.error('Error loading files:', error)
+    } finally {
+      setFilesLoading(false)
+    }
+  }
 
   const handleGenerate = async () => {
     if (!selectedFile) return
@@ -51,11 +57,11 @@ export default function GenerateReviewerPage() {
       const reviewer = await generateReviewerFromFile(
         {
           fileId: selectedFile.id,
-          fileName: selectedFile.name,
+          fileName: selectedFile.original_name,
           type: reviewerType,
           focusAreas: focusAreas.length > 0 ? focusAreas : undefined,
         },
-        selectedFile.extractedText,
+        selectedFile.content_text || "",
         setProgress,
       )
 
@@ -245,20 +251,67 @@ export default function GenerateReviewerPage() {
                     <CardDescription>Choose a file to generate study materials from</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <RadioGroup value={selectedFileId} onValueChange={setSelectedFileId}>
-                      <div className="space-y-3">
-                        {mockFiles.map((file) => (
-                          <div key={file.id} className="flex items-center space-x-3 p-3 border rounded-lg">
-                            <RadioGroupItem value={file.id} id={file.id} />
-                            <div className="flex-1">
-                              <Label htmlFor={file.id} className="font-medium cursor-pointer">
-                                {file.name}
-                              </Label>
+                    {filesLoading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <div className="text-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                          <p className="text-gray-600">Loading your documents...</p>
+                        </div>
+                      </div>
+                    ) : uploadedFiles.length === 0 ? (
+                      <div className="text-center py-8">
+                        <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No Documents Available</h3>
+                        <p className="text-gray-600 mb-6">
+                          You need to upload some documents before you can generate study materials.
+                        </p>
+                        <Link href="/upload">
+                          <Button className="inline-flex items-center space-x-2">
+                            <FileText className="w-4 h-4" />
+                            <span>Upload Documents</span>
+                          </Button>
+                        </Link>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Label htmlFor="file-select">Select Source File</Label>
+                        <Select value={selectedFileId} onValueChange={setSelectedFileId}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Choose a file to generate study materials from" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {uploadedFiles.map((file) => (
+                              <SelectItem key={file.id} value={file.id}>
+                                <div className="flex items-center justify-between w-full">
+                                  <div className="flex items-center">
+                                    <FileText className="mr-2 h-4 w-4" />
+                                    <span>{file.original_name}</span>
+                                  </div>
+                                  <span className="text-xs text-gray-500 ml-2">
+                                    {new Date(file.upload_date).toLocaleDateString()}
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {selectedFileId && (
+                          <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <div className="flex items-center space-x-2">
+                              <FileText className="h-4 w-4 text-blue-600" />
+                              <div>
+                                <p className="text-sm font-medium text-blue-900">
+                                  {uploadedFiles.find(f => f.id === selectedFileId)?.original_name}
+                                </p>
+                                <p className="text-xs text-blue-700">
+                                  Ready for study material generation
+                                </p>
+                              </div>
                             </div>
                           </div>
-                        ))}
+                        )}
                       </div>
-                    </RadioGroup>
+                    )}
                   </CardContent>
                 </Card>
 
@@ -365,7 +418,7 @@ export default function GenerateReviewerPage() {
                     <div>
                       <Label className="text-sm font-medium text-gray-600">Selected File</Label>
                       <p className="text-sm text-gray-900 mt-1">
-                        {selectedFile ? selectedFile.name : "No file selected"}
+                        {selectedFile ? selectedFile.original_name : "No file selected"}
                       </p>
                     </div>
 

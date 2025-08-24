@@ -226,6 +226,9 @@ export default function UploadPage() {
                     <span>Create Study Materials</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
+                  <p className="text-xs text-center text-gray-500 mt-2">
+                    {uploadedFiles.length} document{uploadedFiles.length !== 1 ? 's' : ''} available
+                  </p>
                 </div>
 
                 {/* Create Quizzes */}
@@ -250,6 +253,9 @@ export default function UploadPage() {
                     <span>Generate Quizzes</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
+                  <p className="text-xs text-center text-gray-500 mt-2">
+                    {uploadedFiles.length} document{uploadedFiles.length !== 1 ? 's' : ''} available
+                  </p>
                 </div>
               </div>
 
