@@ -65,102 +65,127 @@ export interface Database {
         Row: {
           id: string
           user_id: string
+          file_id: string
           title: string
           description: string | null
-          file_id: string
-          questions: any // JSON array
+          difficulty_level: string
           total_questions: number
           created_at: string
         }
         Insert: {
           user_id: string
+          file_id: string
           title: string
           description?: string | null
-          file_id: string
-          questions: any
+          difficulty_level?: string
           total_questions: number
         }
         Update: {
           title?: string
           description?: string | null
-          questions?: any
+          difficulty_level?: string
           total_questions?: number
         }
       }
-      quiz_sessions: {
+      quiz_questions: {
         Row: {
           id: string
           quiz_id: string
-          user_id: string
-          answers: any // JSON object
-          score: number | null
-          total_questions: number
-          started_at: string
-          completed_at: string | null
+          question_text: string
+          question_type: string
+          options: any
+          correct_answer: string
+          explanation: string | null
+          question_order: number
         }
         Insert: {
           quiz_id: string
-          user_id: string
-          answers?: any
-          total_questions: number
+          question_text: string
+          question_type?: string
+          options?: any
+          correct_answer: string
+          explanation?: string | null
+          question_order: number
         }
         Update: {
+          question_text?: string
+          question_type?: string
+          options?: any
+          correct_answer?: string
+          explanation?: string | null
+          question_order?: number
+        }
+      }
+      quiz_attempts: {
+        Row: {
+          id: string
+          user_id: string
+          quiz_id: string
+          score: number
+          total_questions: number
+          time_taken: number | null
+          answers: any
+          completed_at: string
+        }
+        Insert: {
+          user_id: string
+          quiz_id: string
+          score: number
+          total_questions: number
+          time_taken?: number | null
           answers?: any
-          score?: number | null
-          completed_at?: string | null
+        }
+        Update: {
+          score?: number
+          total_questions?: number
+          time_taken?: number | null
+          answers?: any
         }
       }
       reviewers: {
         Row: {
           id: string
           user_id: string
-          title: string
-          description: string | null
           file_id: string
-          content: any // JSON object
+          title: string
+          content: string
+          reviewer_type: string
           created_at: string
         }
         Insert: {
           user_id: string
-          title: string
-          description?: string | null
           file_id: string
-          content: any
+          title: string
+          content: string
+          reviewer_type?: string
         }
         Update: {
           title?: string
-          description?: string | null
-          content?: any
+          content?: string
+          reviewer_type?: string
         }
       }
-      user_analytics: {
+      analytics: {
         Row: {
           id: string
           user_id: string
-          quiz_id: string | null
           action_type: string
-          metadata: any | null
-          timestamp: string
+          resource_id: string | null
+          metadata: any
+          created_at: string
         }
         Insert: {
           user_id: string
-          quiz_id?: string | null
           action_type: string
-          metadata?: any | null
+          resource_id?: string | null
+          metadata?: any
         }
         Update: {
-          metadata?: any | null
+          action_type?: string
+          resource_id?: string | null
+          metadata?: any
         }
       }
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      [_ in never]: never
-    }
-    Enums: {
-      [_ in never]: never
     }
   }
 }

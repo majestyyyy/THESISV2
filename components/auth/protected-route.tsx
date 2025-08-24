@@ -11,7 +11,7 @@ interface ProtectedRouteProps {
   requireEmailConfirmed?: boolean
 }
 
-export function ProtectedRoute({ children, requireEmailConfirmed = false }: ProtectedRouteProps) {
+export function ProtectedRoute({ children, requireEmailConfirmed = true }: ProtectedRouteProps) {
   const { user, loading } = useAuth()
   const router = useRouter()
 

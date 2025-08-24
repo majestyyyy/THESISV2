@@ -37,10 +37,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
-  const { user, setUser } = useAuth()
+  const { user, signOut } = useAuth()
 
-  const handleSignOut = () => {
-    setUser(null)
+  const handleSignOut = async () => {
+    await signOut()
     router.push("/")
   }
 

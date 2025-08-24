@@ -33,7 +33,13 @@ export default function SignInPage() {
       setError(result.error)
     } else if (result.user) {
       setUser(result.user)
-      router.push("/dashboard")
+      
+      // Check if email is confirmed
+      if (!result.user.emailConfirmed) {
+        router.push("/confirm-email")
+      } else {
+        router.push("/dashboard")
+      }
     }
 
     setLoading(false)
@@ -101,7 +107,8 @@ export default function SignInPage() {
 
           <div className="mt-4 p-3 bg-blue-50 rounded-lg">
             <p className="text-xs text-blue-800">
-              <strong>Demo:</strong> Use email "demo@example.com" and password "password" to try the app
+              <strong>Note:</strong> You must confirm your email address before accessing the dashboard. 
+              Check your email after signing up or signing in.
             </p>
           </div>
         </CardContent>

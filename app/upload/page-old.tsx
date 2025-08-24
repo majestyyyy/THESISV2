@@ -1,18 +1,51 @@
 "use client"
 
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { FileText, Brain, Zap, BookOpen, ArrowRight } from "lucide-react"
+import { FileDropzone } from "@/components/upload/file-dropzone"
+import { ProtectedRoute } from "@/components/auth/protected-route"
+import { DashboardLayout } from "@/components/layout/dashboard-layout"
+import type { FileUpload } from "@/lib/file-utils"
+import Link from "next/link"
+
+const features = [
+  {
+    icon: FileText,
+    title: "Multiple Formats",
+    description: "Upload PDF, DOCX, DOC, and TXT files",
+  },
+  {
+    icon: Brain,
+    title: "AI Processing",
+    description: "Advanced text extraction and analysis",
+  },
+  {
+    icon: Zap,
+    title: "Fast Processing",
+    description: "Quick file processing and content extraction",
+  },
+  {
+    icon: BookOpen,
+    title: "Smart Organization",
+    description: "Automatic categorization and tagging",
+  },
+]
+
 import Head from 'next/head'
-import { useState, useEffect } from 'react'
-import { DashboardLayout } from '@/components/layout/dashboard-layout'
-import { ProtectedRoute } from '@/components/auth/protected-route'
+import { useState } from 'react'
+import DashboardLayout from '@/components/layout/dashboard-layout'
+import ProtectedRoute from '@/components/auth/protected-route'
 import PDFUpload from '@/components/upload/pdf-upload'
-import { FileText, Clock, CheckCircle, Trash2, BookOpen, Brain, ArrowRight } from 'lucide-react'
+import { FileText, Clock, CheckCircle, Trash2, Download } from 'lucide-react'
 import { formatFileSize, getUserFiles, deleteFile, type UploadResult } from '@/lib/file-utils'
-import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 
 export default function UploadPage() {
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const router = useRouter()
 
   useEffect(() => {
     loadUserFiles()
@@ -122,7 +155,8 @@ export default function UploadPage() {
               </div>
             </div>
           </div>
-{/* Uploaded Files */}
+
+          {/* Uploaded Files */}
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
               Your Documents
@@ -137,26 +171,7 @@ export default function UploadPage() {
               <div className="text-center py-8">
                 <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-500">No documents uploaded yet</p>
-                <p className="text-sm text-gray-400 mb-6">Upload your first PDF to get started</p>
-                
-                {/* Preview of what they can do */}
-                <div className="max-w-md mx-auto">
-                  <div className="grid grid-cols-2 gap-3 text-xs">
-                    <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
-                      <BookOpen className="w-6 h-6 text-blue-600 mx-auto mb-1" />
-                      <p className="font-medium text-blue-900">Study Materials</p>
-                      <p className="text-blue-700">Generate reviewers</p>
-                    </div>
-                    <div className="bg-green-50 rounded-lg p-3 border border-green-200">
-                      <Brain className="w-6 h-6 text-green-600 mx-auto mb-1" />
-                      <p className="font-medium text-green-900">AI Quizzes</p>
-                      <p className="text-green-700">Create practice tests</p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-3">
-                    ↑ Available after uploading documents
-                  </p>
-                </div>
+                <p className="text-sm text-gray-400">Upload your first PDF to get started</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -176,7 +191,7 @@ export default function UploadPage() {
                     <div className="flex items-center space-x-2">
                       <div className="text-sm text-green-600 font-medium flex items-center">
                         <CheckCircle className="w-4 h-4 mr-1" />
-                        Ready
+                        Uploaded
                       </div>
                       <button
                         onClick={() => handleDeleteFile(file.id)}
@@ -191,77 +206,6 @@ export default function UploadPage() {
               </div>
             )}
           </div>
-          {/* Study Materials & Quiz Creation */}
-          {uploadedFiles.length > 0 && (
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-6">
-              <div className="text-center mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                  Ready to Create Study Materials?
-                </h2>
-                <p className="text-gray-600">
-                  Transform your uploaded documents into interactive study materials and quizzes
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Create Study Materials */}
-                <div className="bg-white rounded-lg p-6 border border-gray-200 hover:border-blue-300 transition-colors">
-                  <div className="flex items-center space-x-3 mb-4">
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <BookOpen className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">Study Materials</h3>
-                      <p className="text-sm text-gray-600">Create reviewers and summaries</p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Generate comprehensive study guides, key concepts, and review materials from your uploaded documents.
-                  </p>
-                  <button
-                    onClick={() => router.push('/reviewers/generate')}
-                    className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
-                  >
-                    <BookOpen className="w-4 h-4" />
-                    <span>Create Study Materials</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {/* Create Quizzes */}
-                <div className="bg-white rounded-lg p-6 border border-gray-200 hover:border-green-300 transition-colors">
-                  <div className="flex items-center space-x-3 mb-4">
-                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                      <Brain className="w-6 h-6 text-green-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">AI Quizzes</h3>
-                      <p className="text-sm text-gray-600">Generate interactive tests</p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Create personalized quizzes and practice tests based on your document content to test your knowledge.
-                  </p>
-                  <button
-                    onClick={() => router.push('/quizzes/generate')}
-                    className="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2"
-                  >
-                    <Brain className="w-4 h-4" />
-                    <span>Generate Quizzes</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="mt-6 text-center">
-                <p className="text-sm text-gray-500">
-                  💡 Tip: Upload more documents to create more comprehensive study materials
-                </p>
-              </div>
-            </div>
-          )}
-
-          
 
           {/* Storage Info */}
           {uploadedFiles.length > 0 && (

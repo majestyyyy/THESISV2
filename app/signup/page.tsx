@@ -56,8 +56,10 @@ export default function SignUpPage() {
     if (result.error) {
       setError(result.error)
     } else if (result.user) {
+      // Set user in context for the confirmation flow
       setUser(result.user)
-      router.push("/confirm-email")
+      // Redirect to email confirmation page with signup flag
+      router.push("/confirm-email?from-signup=true")
     }
 
     setLoading(false)
@@ -158,6 +160,13 @@ export default function SignUpPage() {
                 Sign in
               </Link>
             </div>
+          </div>
+
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+            <p className="text-xs text-blue-800">
+              <strong>Email Confirmation Required:</strong> After creating your account, you'll need to 
+              confirm your email address before accessing the dashboard.
+            </p>
           </div>
         </CardContent>
       </Card>

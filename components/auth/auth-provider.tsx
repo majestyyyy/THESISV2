@@ -1,18 +1,21 @@
 "use client"
 
 import type React from "react"
-
 import { createContext, useContext, useEffect, useState } from "react"
 import type { User, AuthState } from "@/lib/auth"
+import { getCurrentUser, signOut } from "@/lib/auth"
+import { supabase } from "@/lib/supabase"
 
 const AuthContext = createContext<
   AuthState & {
     setUser: (user: User | null) => void
+    signOut: () => Promise<void>
   }
 >({
   user: null,
   loading: true,
   setUser: () => {},
+  signOut: async () => {},
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -20,24 +23,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check for stored user session
-    const storedUser = localStorage.getItem("ai-gir-user")
-    if (storedUser) {
-      setUser(JSON.parse(storedUser))
-    }
-    setLoading(false)
+    // Get initial session
+    getCurrentUser().then(({ user }) => {
+      setUser(user || null)
+      setLoading(false)
+    })
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        const { user } = await getCurrentUser()
+        setUser(user || null)
+      } else {
+        setUser(null)
+      }
+      setLoading(false)
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
-  const updateUser = (newUser: User | null) => {
-    setUser(newUser)
-    if (newUser) {
-      localStorage.setItem("ai-gir-user", JSON.stringify(newUser))
-    } else {
-      localStorage.removeItem("ai-gir-user")
-    }
+  const handleSignOut = async () => {
+    await signOut()
+    setUser(null)
   }
 
-  return <AuthContext.Provider value={{ user, loading, setUser: updateUser }}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={{ user, loading, setUser, signOut: handleSignOut }}>
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
 export const useAuth = () => useContext(AuthContext)
