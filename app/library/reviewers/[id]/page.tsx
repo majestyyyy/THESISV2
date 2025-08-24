@@ -1,165 +1,47 @@
-"use client"
+'use client'
 
-import { use, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  ArrowLeft,
-  Download,
-  Share2,
-  BookOpen,
-  FileText,
-  Brain,
-  Clock,
-  User,
-  Calendar,
-  Eye,
-  Printer,
-} from "lucide-react"
-import { ProtectedRoute } from "@/components/auth/protected-route"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import Link from "next/link"
+import { use, useState, useEffect } from 'react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { ProtectedRoute } from '@/components/auth/protected-route'
+import { DashboardLayout } from '@/components/layout/dashboard-layout'
+import { ArrowLeft, FileText, Brain, BookOpen, Calendar } from 'lucide-react'
+import { getStudyMaterialById, type StudyMaterial } from '@/lib/reviewer-utils'
+import { formatMarkdownContent } from '@/lib/content-formatter'
 
-// Mock data - replace with actual data from your backend
-const mockStudyMaterial = {
-  id: "1",
-  title: "Cell Structure Study Guide",
-  type: "summary",
-  fileId: "1",
-  fileName: "Biology Chapter 5 - Cell Structure.pdf",
-  createdAt: "2024-01-16",
-  lastAccessed: "2024-01-17",
-  readTime: "15 min",
-  content: {
-    summary: `# Cell Structure Study Guide
-
-## Overview
-Cells are the fundamental units of life, and understanding their structure is crucial for biology. This study guide covers the key components and functions of both prokaryotic and eukaryotic cells.
-
-## Key Concepts
-
-### 1. Cell Theory
-- All living things are composed of one or more cells
-- The cell is the basic unit of life
-- All cells arise from pre-existing cells
-
-### 2. Types of Cells
-
-#### Prokaryotic Cells
-- No membrane-bound nucleus
-- DNA freely floating in cytoplasm
-- Examples: Bacteria, Archaea
-- Simpler structure
-
-#### Eukaryotic Cells
-- Membrane-bound nucleus
-- DNA contained within nucleus
-- Examples: Plant cells, Animal cells
-- Complex internal structure
-
-### 3. Cell Organelles
-
-#### Nucleus
-- **Function**: Controls cell activities and contains DNA
-- **Structure**: Double membrane with nuclear pores
-- **Location**: Center of eukaryotic cells
-
-#### Mitochondria
-- **Function**: Powerhouse of the cell - produces ATP
-- **Structure**: Double membrane with cristae
-- **Location**: Throughout cytoplasm
-
-#### Endoplasmic Reticulum (ER)
-- **Rough ER**: Has ribosomes, protein synthesis
-- **Smooth ER**: No ribosomes, lipid synthesis
-- **Function**: Transport system of the cell
-
-#### Ribosomes
-- **Function**: Protein synthesis
-- **Location**: Free in cytoplasm or attached to rough ER
-- **Structure**: Made of RNA and proteins
-
-#### Golgi Apparatus
-- **Function**: Modifies, packages, and ships proteins
-- **Structure**: Stack of flattened membranes
-- **Process**: Receives from ER, modifies, ships out
-
-### 4. Cell Membrane
-- **Structure**: Phospholipid bilayer with embedded proteins
-- **Function**: Controls what enters and exits the cell
-- **Properties**: Selectively permeable
-
-## Important Terms to Remember
-
-- **Cytoplasm**: Gel-like substance filling the cell
-- **Organelle**: Specialized structures within cells
-- **Membrane**: Barrier that separates cell contents
-- **ATP**: Energy currency of the cell
-- **Phospholipid**: Main component of cell membranes
-
-## Study Tips
-
-1. **Create diagrams**: Draw and label cell structures
-2. **Use analogies**: Compare organelles to parts of a factory
-3. **Practice identification**: Use microscope images to identify structures
-4. **Make connections**: Understand how structure relates to function
-
-## Review Questions
-
-1. What are the three main principles of cell theory?
-2. How do prokaryotic and eukaryotic cells differ?
-3. What is the function of mitochondria and why are they important?
-4. Describe the structure and function of the cell membrane.
-5. How do rough and smooth ER differ in structure and function?
-
-## Key Takeaways
-
-- Cells are highly organized structures with specific functions
-- Each organelle has a unique role in cell survival
-- Structure and function are closely related in biology
-- Understanding cell structure is fundamental to all biology topics`,
-
-    flashcards: [
-      {
-        front: "What are the three principles of cell theory?",
-        back: "1. All living things are composed of cells\n2. The cell is the basic unit of life\n3. All cells arise from pre-existing cells",
-      },
-      {
-        front: "What is the main difference between prokaryotic and eukaryotic cells?",
-        back: "Prokaryotic cells have no membrane-bound nucleus (DNA floats freely), while eukaryotic cells have a membrane-bound nucleus containing DNA.",
-      },
-      {
-        front: "What is the function of mitochondria?",
-        back: "Mitochondria are the powerhouse of the cell - they produce ATP (energy) through cellular respiration.",
-      },
-      {
-        front: "What is the difference between rough and smooth ER?",
-        back: "Rough ER has ribosomes attached and synthesizes proteins. Smooth ER has no ribosomes and synthesizes lipids.",
-      },
-      {
-        front: "What is the structure of the cell membrane?",
-        back: "The cell membrane is a phospholipid bilayer with embedded proteins that controls what enters and exits the cell.",
-      },
-    ],
-
-    notes: [
-      "Cell theory is fundamental - memorize the three principles",
-      "Prokaryotic = no nucleus, Eukaryotic = has nucleus",
-      "Mitochondria = powerhouse, produces ATP energy",
-      "Nucleus = control center, contains DNA",
-      "ER = transport system (rough has ribosomes, smooth doesn't)",
-      "Golgi = packaging and shipping center",
-      "Cell membrane = selective barrier, phospholipid bilayer",
-    ],
-  },
+interface StudyMaterialPageProps {
+  params: Promise<{ id: string }>
 }
 
-export default function StudyMaterialPage({ params }: { params: Promise<{ id: string }> }) {
+export default function StudyMaterialPage({ params }: StudyMaterialPageProps) {
   const resolvedParams = use(params)
-  const [activeTab, setActiveTab] = useState("content")
+  const [studyMaterial, setStudyMaterial] = useState<StudyMaterial | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const loadStudyMaterial = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const material = await getStudyMaterialById(resolvedParams.id)
+        if (material) {
+          setStudyMaterial(material)
+        } else {
+          setError("Study material not found")
+        }
+      } catch (err) {
+        console.error('Error loading study material:', err)
+        setError("Failed to load study material")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadStudyMaterial()
+  }, [resolvedParams.id])
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -174,16 +56,38 @@ export default function StudyMaterialPage({ params }: { params: Promise<{ id: st
     }
   }
 
-  const getTypeBadge = (type: string) => {
-    const colors = {
-      summary: "bg-blue-100 text-blue-800",
-      flashcards: "bg-purple-100 text-purple-800",
-      notes: "bg-green-100 text-green-800",
-    }
+  if (loading) {
     return (
-      <Badge className={colors[type as keyof typeof colors] || "bg-gray-100 text-gray-800"}>
-        {type.charAt(0).toUpperCase() + type.slice(1)}
-      </Badge>
+      <ProtectedRoute>
+        <DashboardLayout>
+          <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <p className="text-gray-600">Loading study material...</p>
+          </div>
+        </DashboardLayout>
+      </ProtectedRoute>
+    )
+  }
+
+  if (error || !studyMaterial) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
+            <FileText className="h-16 w-16 text-gray-400" />
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Study Material Not Found</h3>
+              <p className="text-gray-600 mb-4">{error || "The requested study material could not be found."}</p>
+              <Link href="/library">
+                <Button>
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to Library
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </DashboardLayout>
+      </ProtectedRoute>
     )
   }
 
@@ -202,163 +106,143 @@ export default function StudyMaterialPage({ params }: { params: Promise<{ id: st
               </Link>
               <div>
                 <div className="flex items-center space-x-3">
-                  {getTypeIcon(mockStudyMaterial.type)}
-                  <h1 className="text-3xl font-bold text-gray-900">{mockStudyMaterial.title}</h1>
-                  {getTypeBadge(mockStudyMaterial.type)}
+                  {getTypeIcon(studyMaterial.type)}
+                  <h1 className="text-3xl font-bold text-gray-900">{studyMaterial.title}</h1>
+                  <Badge variant="outline">
+                    {studyMaterial.type === "summary" ? "Study Guide" :
+                     studyMaterial.type === "flashcards" ? "Flashcards" : "Notes"}
+                  </Badge>
                 </div>
-                <p className="mt-2 text-gray-600">Generated from: {mockStudyMaterial.fileName}</p>
+                <div className="flex items-center space-x-4 mt-2 text-sm text-gray-600">
+                  <div className="flex items-center space-x-1">
+                    <Calendar className="h-4 w-4" />
+                    <span>Created {new Date(studyMaterial.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <FileText className="h-4 w-4" />
+                    <span>From: {studyMaterial.fileName}</span>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="flex space-x-2">
-              <Button variant="outline" size="sm">
-                <Share2 className="mr-2 h-4 w-4" />
-                Share
-              </Button>
-              <Button variant="outline" size="sm">
-                <Printer className="mr-2 h-4 w-4" />
-                Print
-              </Button>
-              <Button variant="outline" size="sm">
-                <Download className="mr-2 h-4 w-4" />
-                Export
-              </Button>
             </div>
           </div>
 
-          {/* Metadata */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="flex items-center space-x-2">
-                  <Calendar className="h-4 w-4 text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-500">Created</p>
-                    <p className="font-medium">{mockStudyMaterial.createdAt}</p>
-                  </div>
+          {/* Study Material Content */}
+          <Card className="shadow-sm border-0 bg-white">
+            <CardHeader className="border-b border-gray-100 bg-gray-50/50">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-xl text-gray-900">Study Material</CardTitle>
+                  <p className="text-sm text-gray-600 mt-1">
+                    AI-generated {studyMaterial.type} with enhanced formatting
+                  </p>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Eye className="h-4 w-4 text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-500">Last Accessed</p>
-                    <p className="font-medium">{mockStudyMaterial.lastAccessed}</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Clock className="h-4 w-4 text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-500">Read Time</p>
-                    <p className="font-medium">{mockStudyMaterial.readTime}</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <User className="h-4 w-4 text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-500">Type</p>
-                    <p className="font-medium capitalize">{mockStudyMaterial.type}</p>
-                  </div>
-                </div>
+                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                  {studyMaterial.type === "summary" ? "Summary" :
+                   studyMaterial.type === "flashcards" ? "Flashcards" : "Notes"}
+                </Badge>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Content Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="content">Study Guide</TabsTrigger>
-              <TabsTrigger value="flashcards">Flashcards ({mockStudyMaterial.content.flashcards.length})</TabsTrigger>
-              <TabsTrigger value="notes">Quick Notes ({mockStudyMaterial.content.notes.length})</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="content" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <FileText className="h-5 w-5" />
-                    <span>Study Guide Content</span>
-                  </CardTitle>
-                  <CardDescription>Comprehensive study material generated from your uploaded file</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="prose max-w-none">
-                    <div
-                      className="whitespace-pre-wrap text-sm leading-relaxed"
-                      dangerouslySetInnerHTML={{
-                        __html: mockStudyMaterial.content.summary
-                          .replace(/^# (.*$)/gm, '<h1 class="text-2xl font-bold mb-4 text-gray-900">$1</h1>')
-                          .replace(/^## (.*$)/gm, '<h2 class="text-xl font-semibold mb-3 mt-6 text-gray-800">$1</h2>')
-                          .replace(/^### (.*$)/gm, '<h3 class="text-lg font-medium mb-2 mt-4 text-gray-700">$1</h3>')
-                          .replace(/^#### (.*$)/gm, '<h4 class="text-base font-medium mb-2 mt-3 text-gray-600">$4</h4>')
-                          .replace(/^\*\*(.*?)\*\*/gm, '<strong class="font-semibold text-gray-900">$1</strong>')
-                          .replace(/^- (.*$)/gm, '<li class="ml-4 mb-1">$1</li>')
-                          .replace(/\n\n/g, '</p><p class="mb-4">')
-                          .replace(/^(?!<[h|l])/gm, '<p class="mb-4">'),
-                      }}
-                    />
+            </CardHeader>
+            <CardContent className="p-8">
+              {studyMaterial.type === "summary" && studyMaterial.content.summary && (
+                <div className="prose prose-lg max-w-none">
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-8 border border-blue-100 shadow-sm">
+                    <div className="space-y-4">
+                      {formatMarkdownContent(studyMaterial.content.summary)}
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                </div>
+              )}
 
-            <TabsContent value="flashcards" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Brain className="h-5 w-5" />
-                    <span>Flashcards</span>
-                  </CardTitle>
-                  <CardDescription>Interactive flashcards for quick review and memorization</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-4">
-                    {mockStudyMaterial.content.flashcards.map((card, index) => (
-                      <Card key={index} className="border-l-4 border-l-purple-500">
-                        <CardContent className="p-4">
-                          <div className="space-y-3">
-                            <div>
-                              <p className="text-sm font-medium text-purple-700 mb-2">Question:</p>
-                              <p className="text-gray-900">{card.front}</p>
+              {studyMaterial.type === "flashcards" && studyMaterial.content.flashcards && (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Flashcard Set ({studyMaterial.content.flashcards.length} cards)
+                    </h3>
+                  </div>
+                  <div className="grid gap-6">
+                    {studyMaterial.content.flashcards.map((card, index) => (
+                      <Card key={index} className="border-l-4 border-l-purple-500 shadow-sm hover:shadow-md transition-all duration-200 bg-white">
+                        <CardContent className="p-6">
+                          <div className="space-y-5">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-3">
+                                <div className="bg-purple-100 text-purple-700 rounded-full w-10 h-10 flex items-center justify-center text-sm font-bold">
+                                  {index + 1}
+                                </div>
+                                <span className="text-sm font-medium text-gray-600">Flashcard</span>
+                              </div>
+                              <div className="flex gap-2">
+                                {card.difficulty && (
+                                  <Badge 
+                                    variant="secondary" 
+                                    className={`text-xs font-medium ${
+                                      card.difficulty === 'basic' ? 'bg-green-100 text-green-700 border-green-200' :
+                                      card.difficulty === 'intermediate' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
+                                      'bg-red-100 text-red-700 border-red-200'
+                                    }`}
+                                  >
+                                    {card.difficulty}
+                                  </Badge>
+                                )}
+                                {card.category && (
+                                  <Badge variant="outline" className="text-xs border-gray-300">
+                                    {card.category}
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
-                            <Separator />
-                            <div>
-                              <p className="text-sm font-medium text-green-700 mb-2">Answer:</p>
-                              <p className="text-gray-700 whitespace-pre-line">{card.back}</p>
+                            <div className="grid gap-4">
+                              <div className="bg-purple-50 p-5 rounded-lg border border-purple-100">
+                                <div className="flex items-center mb-2">
+                                  <span className="text-xs font-semibold text-purple-600 uppercase tracking-wide">Question</span>
+                                </div>
+                                <p className="font-medium text-purple-900 text-base leading-relaxed">{card.front}</p>
+                              </div>
+                              <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
+                                <div className="flex items-center mb-2">
+                                  <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Answer</span>
+                                </div>
+                                <p className="text-gray-800 text-base leading-relaxed">{card.back}</p>
+                              </div>
                             </div>
                           </div>
                         </CardContent>
                       </Card>
                     ))}
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                </div>
+              )}
 
-            <TabsContent value="notes" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <BookOpen className="h-5 w-5" />
-                    <span>Quick Notes</span>
-                  </CardTitle>
-                  <CardDescription>Key points and takeaways for quick reference</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {mockStudyMaterial.content.notes.map((note, index) => (
+              {studyMaterial.type === "notes" && studyMaterial.content.notes && (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Study Notes ({studyMaterial.content.notes.length} notes)
+                    </h3>
+                  </div>
+                  <div className="space-y-4">
+                    {studyMaterial.content.notes.map((note, index) => (
                       <div
                         key={index}
-                        className="flex items-start space-x-3 p-3 bg-green-50 rounded-lg border-l-4 border-l-green-500"
+                        className="flex items-start space-x-4 p-6 rounded-xl border-l-4 border-l-green-500 bg-gradient-to-r from-green-50 to-emerald-50 shadow-sm hover:shadow-md transition-all duration-200"
                       >
-                        <div className="flex-shrink-0 w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                        <div className="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
                           {index + 1}
                         </div>
-                        <p className="text-gray-700 text-sm">{note}</p>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-gray-800 text-base leading-relaxed">
+                            {formatMarkdownContent(note)}
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </DashboardLayout>
     </ProtectedRoute>

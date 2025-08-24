@@ -105,12 +105,6 @@ export default function SignInPage() {
             </div>
           </div>
 
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-            <p className="text-xs text-blue-800">
-              <strong>Note:</strong> You must confirm your email address before accessing the dashboard. 
-              Check your email after signing up or signing in.
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>

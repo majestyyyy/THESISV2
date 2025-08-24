@@ -24,6 +24,8 @@ import {
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { formatFileSize } from "@/lib/file-utils"
+import { getUserStudyMaterials, deleteStudyMaterial } from "@/lib/reviewer-utils"
+import type { StudyMaterial } from "@/lib/reviewer-utils"
 import Link from "next/link"
 
 // Mock data - replace with actual data from your backend
@@ -110,14 +112,46 @@ const mockReviewers = [
 
 export default function LibraryPage() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [filterStatus, setFilterStatus] = useState<string>("all")
-  const [activeTab, setActiveTab] = useState("files")
+  const [activeTab, setActiveTab] = useState("reviewers")
   const [isHydrated, setIsHydrated] = useState(false)
+  const [studyMaterials, setStudyMaterials] = useState<StudyMaterial[]>([])
+  const [materialsLoading, setMaterialsLoading] = useState(true)
 
   // Handle hydration
   useEffect(() => {
     setIsHydrated(true)
+    loadStudyMaterials()
   }, [])
+
+  const loadStudyMaterials = async () => {
+    try {
+      setMaterialsLoading(true)
+      const materials = await getUserStudyMaterials()
+      setStudyMaterials(materials)
+    } catch (error) {
+      console.error('Error loading study materials:', error)
+    } finally {
+      setMaterialsLoading(false)
+    }
+  }
+
+  const handleDeleteMaterial = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this study material?')) {
+      return
+    }
+
+    try {
+      const result = await deleteStudyMaterial(id)
+      if (result.success) {
+        setStudyMaterials(prev => prev.filter(material => material.id !== id))
+      } else {
+        alert(result.error || 'Failed to delete study material')
+      }
+    } catch (error) {
+      console.error('Error deleting study material:', error)
+      alert('Failed to delete study material')
+    }
+  }
 
   if (!isHydrated) {
     return (
@@ -132,15 +166,7 @@ export default function LibraryPage() {
     )
   }
 
-  const filteredFiles = mockFiles.filter((file) => {
-    const matchesSearch =
-      file.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      file.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-    const matchesFilter = filterStatus === "all" || file.status === filterStatus
-    return matchesSearch && matchesFilter
-  })
-
-  const filteredReviewers = mockReviewers.filter((reviewer) => {
+  const filteredReviewers = studyMaterials.filter((reviewer) => {
     return (
       reviewer.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       reviewer.fileName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -189,12 +215,12 @@ export default function LibraryPage() {
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <div className="space-y-6">
+        <div className="space-y-6 min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">My Library</h1>
-              <p className="mt-2 text-gray-600">Manage your uploaded files and generated study materials</p>
+              <p className="mt-2 text-gray-600">Store and manage your AI-generated study materials</p>
             </div>
             <div className="flex space-x-2">
               <Link href="/analytics">
@@ -203,264 +229,115 @@ export default function LibraryPage() {
                   View Analytics
                 </Button>
               </Link>
-              <Link href="/upload">
-                <Button>
+              <Link href="/reviewers/generate">
+                <Button className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl px-6 shadow-lg shadow-indigo-200">
                   <Plus className="mr-2 h-4 w-4" />
-                  Upload File
+                  Create Study Materials
                 </Button>
               </Link>
             </div>
           </div>
 
-          {/* Search and Filter */}
+          {/* Search */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Search files, reviewers, or tags..."
+                placeholder="Search study materials..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
               />
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  <Filter className="mr-2 h-4 w-4" />
-                  Filter: {filterStatus === "all" ? "All Files" : filterStatus}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => setFilterStatus("all")}>All Files</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFilterStatus("processed")}>Processed</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFilterStatus("processing")}>Processing</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFilterStatus("error")}>Error</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <FileText className="h-8 w-8 text-blue-600" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Total Files</p>
-                    <p className="text-2xl font-bold text-gray-900">{mockFiles.length}</p>
+          {/* Study Materials List */}
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Study Materials</CardTitle>
+              <CardDescription>AI-generated study guides and reviewers</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {materialsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading study materials...</p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <FileIcon className="h-8 w-8 text-green-600" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Processed</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {mockFiles.filter((f) => f.status === "processed").length}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <Brain className="h-8 w-8 text-purple-600" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Quizzes Generated</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {mockFiles.reduce((acc, file) => acc + file.quizzesGenerated, 0)}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <BookOpen className="h-8 w-8 text-orange-600" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Study Guides</p>
-                    <p className="text-2xl font-bold text-gray-900">{mockReviewers.length}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Content Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="files">Files ({mockFiles.length})</TabsTrigger>
-              <TabsTrigger value="reviewers">Study Materials ({mockReviewers.length})</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="files" className="space-y-4">
-              {/* Files List */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Your Files</CardTitle>
-                  <CardDescription>All your uploaded study materials</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {filteredFiles.map((file) => (
-                      <div
-                        key={file.id}
-                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
-                      >
-                        <div className="flex items-center space-x-4">
-                          <div className="flex-shrink-0">
-                            <span className="text-2xl">{getFileIcon(file.type)}</span>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
-                            <div className="flex items-center space-x-4 mt-1">
-                              <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
-                              <p className="text-xs text-gray-500">Uploaded {file.uploadDate}</p>
-                              <p className="text-xs text-gray-500">Last accessed {file.lastAccessed}</p>
-                            </div>
-                            <div className="flex items-center space-x-2 mt-2">
-                              {file.tags.map((tag) => (
-                                <Badge key={tag} variant="secondary" className="text-xs">
-                                  {tag}
-                                </Badge>
-                              ))}
-                            </div>
-                            {file.status === "processed" && (
-                              <div className="flex items-center space-x-4 mt-2">
-                                <p className="text-xs text-blue-600">{file.quizzesGenerated} quizzes</p>
-                                <p className="text-xs text-purple-600">{file.reviewersGenerated} study guides</p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-4">
-                          {getStatusBadge(file.status)}
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              <DropdownMenuItem>
-                                <Eye className="mr-2 h-4 w-4" />
-                                View Details
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Brain className="mr-2 h-4 w-4" />
-                                Generate Quiz
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <BookOpen className="mr-2 h-4 w-4" />
-                                Create Study Guide
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Download className="mr-2 h-4 w-4" />
-                                Download
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="text-red-600">
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+              ) : (
+                <div className="space-y-4">
+                  {filteredReviewers.map((reviewer) => (
+                  <div
+                    key={reviewer.id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className="flex-shrink-0">
+                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                          {getReviewerTypeIcon(reviewer.type)}
                         </div>
                       </div>
-                    ))}
-                  </div>
-
-                  {filteredFiles.length === 0 && (
-                    <div className="text-center py-8">
-                      <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                      <p className="text-gray-500">No files found matching your criteria</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900">{reviewer.title}</p>
+                        <p className="text-xs text-gray-500 mt-1">From: {reviewer.fileName}</p>
+                        <div className="flex items-center space-x-4 mt-1">
+                          <p className="text-xs text-gray-500">
+                            Created {new Date(reviewer.createdAt).toLocaleDateString()}
+                          </p>
+                          <Badge variant="outline" className="text-xs">
+                            {reviewer.type}
+                          </Badge>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="reviewers" className="space-y-4">
-              {/* Study Materials List */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Study Materials</CardTitle>
-                  <CardDescription>AI-generated study guides and reviewers</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {filteredReviewers.map((reviewer) => (
-                      <div
-                        key={reviewer.id}
-                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
-                      >
-                        <div className="flex items-center space-x-4">
-                          <div className="flex-shrink-0">
-                            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                              {getReviewerTypeIcon(reviewer.type)}
-                            </div>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900">{reviewer.title}</p>
-                            <p className="text-xs text-gray-500 mt-1">From: {reviewer.fileName}</p>
-                            <div className="flex items-center space-x-4 mt-1">
-                              <p className="text-xs text-gray-500">Created {reviewer.createdAt}</p>
-                              <p className="text-xs text-gray-500">Last accessed {reviewer.lastAccessed}</p>
-                              <Badge variant="outline" className="text-xs">
-                                {reviewer.type}
-                              </Badge>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Link href={`/library/reviewers/${reviewer.id}`}>
-                            <Button size="sm" variant="outline">
-                              <Eye className="mr-1 h-3 w-3" />
-                              View
-                            </Button>
-                          </Link>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              <DropdownMenuItem>
-                                <Download className="mr-2 h-4 w-4" />
-                                Export
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="text-red-600">
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </div>
-                    ))}
+                    <div className="flex items-center space-x-2">
+                      <Link href={`/library/reviewers/${reviewer.id}`}>
+                        <Button size="sm" variant="outline">
+                          <Eye className="mr-1 h-3 w-3" />
+                          View
+                        </Button>
+                      </Link>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem>
+                            <Download className="mr-2 h-4 w-4" />
+                            Export
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            className="text-red-600"
+                            onClick={() => handleDeleteMaterial(reviewer.id)}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
-
+                ))}
+                  
                   {filteredReviewers.length === 0 && (
                     <div className="text-center py-8">
                       <BookOpen className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                       <p className="text-gray-500 mb-4">No study materials found</p>
-                      <Link href="/upload">
-                        <Button>
+                      <Link href="/reviewers/generate">
+                        <Button className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl px-6 shadow-lg shadow-indigo-200">
                           <Plus className="mr-2 h-4 w-4" />
-                          Upload Files to Generate Study Materials
+                          Create Study Materials
                         </Button>
                       </Link>
                     </div>
                   )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </DashboardLayout>
     </ProtectedRoute>

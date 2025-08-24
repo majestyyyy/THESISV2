@@ -64,7 +64,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <div className="w-7 h-7 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-lg flex items-center justify-center">
                 <Brain className="h-4 w-4 text-white" />
               </div>
-              <span className="ml-3 text-xl font-medium bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">StudyAI</span>
+              <span className="ml-3 text-xl font-medium bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">AI-GIR</span>
             </div>
             <nav className="flex-1 space-y-1 px-4 py-6">
               {navigation.map((item) => {
@@ -99,7 +99,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <div className="w-7 h-7 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-lg flex items-center justify-center">
                 <Brain className="h-4 w-4 text-white" />
               </div>
-              <span className="ml-3 text-xl font-medium bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">StudyAI</span>
+              <span className="ml-3 text-xl font-medium bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">AI-GIR</span>
             </Link>
           </div>
           <div className="mt-8 flex-1 flex flex-col">

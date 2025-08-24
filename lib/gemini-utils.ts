@@ -96,6 +96,10 @@ export async function generateReviewerWithGemini(options: GenerateReviewerOption
     throw new Error("Please configure a valid GEMINI_API_KEY environment variable")
   }
 
+  // Debug: Log content length and sample
+  console.log("Generating reviewer with content length:", options.content.length)
+  console.log("Content sample (first 200 chars):", options.content.substring(0, 200))
+
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }) // Updated to use gemini-1.5-flash model
 
   let prompt = ""
@@ -104,65 +108,134 @@ export async function generateReviewerWithGemini(options: GenerateReviewerOption
   switch (options.type) {
     case "summary":
       prompt = `
-You are an expert educational content creator. Create a comprehensive study guide based on the following content.
+You are a world-class educational content creator and study strategist. I am providing you with extracted text content from a document, and you need to create an exceptional, comprehensive study guide from this content.
 
-Content to analyze:
+IMPORTANT: Do NOT ask for the PDF or request additional content. Work with the text content provided below to create the study guide.
+
+Document content to analyze and create study guide from:
 ${options.content}
 
 ${focusAreasStr}
 
-Create a well-structured study guide with:
-1. Overview/Introduction
-2. Key Concepts (organized with headings and subheadings)
-3. Important Terms and Definitions
-4. Study Tips
-5. Review Questions
-6. Key Takeaways
+Your task is to create a masterful study guide with the following structure using ONLY the content provided above:
 
-Format using markdown with proper headings (# ## ###) and bullet points.
-Make it comprehensive but easy to understand.
+# 📚 Study Guide: [Create an engaging title based on the content]
+
+## 🎯 Learning Objectives
+- List 3-5 specific learning outcomes students should achieve from this material
+
+## 📖 Overview & Context
+- Provide engaging background about the topic covered
+- Explain why this material matters and its broader significance
+
+## 🔑 Core Concepts & Key Ideas
+[Organize the main concepts from the content into logical sections]
+- Use bullet points, numbered lists, and sub-sections
+- Include detailed explanations with examples from the content
+- Add memory aids and mnemonics where helpful
+
+## 💡 Important Terms & Definitions
+[Extract and present key terms from the content as a glossary]
+- Term: Clear definition with context from the material
+- Include explanations that help with understanding
+
+## 🧠 Critical Thinking Questions
+- 5-7 thought-provoking questions based on the content
+- Include both factual recall and application questions
+
+## 📝 Study Strategies & Tips
+- Specific techniques for mastering this particular material
+- Active learning suggestions tailored to the content
+- Common pitfalls to avoid based on the subject matter
+
+## 🔄 Review & Practice
+- Self-assessment questions derived from the content
+- Quick review checklist of key points
+- Spaced repetition schedule suggestions
+
+## 🎯 Key Takeaways
+- 3-5 most important points from the material
+- How this content connects to broader concepts
+
+Format using rich markdown with emojis, proper headings (# ## ###), bullet points, **bold**, *italics*, and > blockquotes for emphasis.
+Create an engaging, comprehensive, and pedagogically sound study guide based entirely on the provided content.
 `
       break
 
     case "flashcards":
       prompt = `
-You are an expert educational content creator. Create flashcards based on the following content.
+You are an expert educational psychologist specializing in spaced repetition and active recall. I am providing you with extracted text content from a document, and you need to create highly effective flashcards from this content.
 
-Content to analyze:
+IMPORTANT: Do NOT ask for the PDF or request additional content. Work with the text content provided below to create flashcards.
+
+Document content to create flashcards from:
 ${options.content}
 
 ${focusAreasStr}
 
-Generate 10-15 flashcards covering the most important concepts.
+Your task is to generate 15-25 high-quality flashcards based entirely on the content provided above. Use these evidence-based principles:
+
+1. **Variety of Question Types**: Include definition, application, comparison, and analysis questions
+2. **Progressive Difficulty**: Mix basic recall with higher-order thinking
+3. **Clear and Concise**: Front should be specific, back should be complete but digestible
+4. **Content-Based**: All questions must be directly derived from the provided text
+5. **Memory Aids**: Add mnemonics, analogies, or visual cues in answers when possible
 
 Format your response as a JSON array with this structure:
 [
   {
-    "front": "Question or term",
-    "back": "Answer or definition"
+    "front": "Question, term, or scenario (be specific and clear, based on the content)",
+    "back": "Comprehensive answer with context from the material, examples, or memory aids",
+    "difficulty": "basic|intermediate|advanced",
+    "category": "definition|application|analysis|comparison"
   }
 ]
 
-Make sure each flashcard tests a key concept or definition from the content.
+Examples of good flashcard types based on the content:
+- Definitions: "What is [term from content] and why is it important?"
+- Applications: "How would you apply [concept from content] in [scenario]?"
+- Comparisons: "What are the key differences between X and Y (from the content)?"
+- Analysis: "Why does [phenomenon from content] occur and what are its implications?"
+
+Create flashcards that are pedagogically sound, based entirely on the provided content, and optimized for long-term retention.
 `
       break
 
     case "notes":
       prompt = `
-You are an expert educational content creator. Create concise study notes based on the following content.
+You are a master note-taker and study expert who helps students create perfect study notes. I am providing you with extracted text content from a document, and you need to create comprehensive yet concise notes from this content.
 
-Content to analyze:
+IMPORTANT: Do NOT ask for the PDF or request additional content. Work with the text content provided below to create study notes.
+
+Document content to create study notes from:
 ${options.content}
 
 ${focusAreasStr}
 
-Generate 8-12 key points that capture the most important information.
-Each point should be a concise, memorable statement.
+Your task is to generate 12-20 expertly crafted study notes based entirely on the content provided above. Follow these principles:
 
-Format your response as a JSON array of strings:
-["Key point 1", "Key point 2", ...]
+1. **Hierarchical Structure**: Organize from general to specific concepts in the content
+2. **Active Voice**: Use engaging, actionable language
+3. **Memory Hooks**: Include mnemonics, analogies, or visual cues based on the material
+4. **Content-Based**: All notes must be directly derived from the provided text
+5. **Cross-References**: Show relationships between concepts mentioned in the content
 
-Make each point clear, concise, and focused on essential information.
+Format your response as a JSON array of objects with this structure:
+[
+  {
+    "point": "Clear, concise statement of key information from the content",
+    "category": "concept|definition|process|application|important_fact",
+    "memory_aid": "Mnemonic, analogy, or memory technique based on the content (optional)",
+    "context": "Why this matters or how it connects to other concepts in the material"
+  }
+]
+
+Examples of excellent notes derived from content:
+- Concept: "[Key concept from the material] is important because [reason from content]"
+- Process: "[Process described in content] follows these steps: [steps from material]"
+- Application: "[Application mentioned in content] demonstrates [principle from material]"
+
+Create notes that are clear, memorable, and designed for effective review and retention, all based on the provided content.
 `
       break
   }
@@ -182,7 +255,26 @@ Make each point clear, concise, and focused on essential information.
       }
 
       const content = JSON.parse(jsonMatch[0])
-      return options.type === "flashcards" ? { flashcards: content } : { notes: content }
+      
+      if (options.type === "flashcards") {
+        // Convert enhanced flashcard format to simple format for compatibility
+        const simpleFlashcards = content.map((card: any) => ({
+          front: card.front || card.question || "Question",
+          back: card.back || card.answer || "Answer",
+          difficulty: card.difficulty || "basic",
+          category: card.category || "general"
+        }))
+        return { flashcards: simpleFlashcards }
+      } else {
+        // Enhanced notes format
+        const enhancedNotes = content.map((note: any) => {
+          if (typeof note === 'string') {
+            return note
+          }
+          return note.point || note.content || note.toString()
+        })
+        return { notes: enhancedNotes }
+      }
     }
   } catch (error) {
     console.error("Error generating reviewer with Gemini:", error)

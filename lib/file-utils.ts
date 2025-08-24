@@ -84,13 +84,22 @@ function generateUniqueFilename(originalName: string, userId: string): string {
 }
 
 /**
- * Extract text content from PDF file (placeholder for now)
- * TODO: Implement PDF text extraction in Phase 2
+ * Extract text content from PDF file (client-side only)
  */
 async function extractTextFromPDF(file: File): Promise<string> {
-  // For now, return a placeholder
-  // In the next phase, we'll implement PDF text extraction
-  return `[PDF content will be extracted here - File: ${file.name}, Size: ${file.size} bytes]`
+  // Dynamic import to ensure this only runs on client-side
+  if (typeof window === 'undefined') {
+    // Server-side fallback - return placeholder that will be processed later
+    return `[PDF content to be extracted on client-side - File: ${file.name}, Size: ${file.size} bytes]`
+  }
+
+  try {
+    const { extractTextFromPDF: clientExtractText } = await import('./pdf-utils')
+    return await clientExtractText(file)
+  } catch (error) {
+    console.error('PDF extraction failed:', error)
+    throw new Error('Failed to extract text from PDF. Please ensure the file is a valid PDF document.')
+  }
 }
 
 /**
@@ -299,6 +308,74 @@ export async function getUserFiles() {
   } catch (error) {
     console.error('Error fetching user files:', error)
     return []
+  }
+}
+
+/**
+ * Read file content directly from storage for processing
+ */
+export async function getFileContentFromStorage(fileId: string): Promise<string> {
+  try {
+    // Get file info from database
+    const { data: fileData, error: fetchError } = await supabase
+      .from('files')
+      .select('filename, original_name, content_text')
+      .eq('id', fileId)
+      .single()
+
+    if (fetchError || !fileData) {
+      throw new Error('File not found or access denied')
+    }
+
+    // First try to use the stored content_text if available and substantial
+    if (fileData.content_text && 
+        fileData.content_text.trim().length > 100 && 
+        !fileData.content_text.includes('[PDF content will be extracted here') &&
+        !fileData.content_text.includes('[PDF content to be extracted on client-side')) {
+      console.log('Using stored content_text, length:', fileData.content_text.length)
+      return fileData.content_text
+    }
+
+    // If no stored content or it's a placeholder, try to download and extract from the file
+    console.log('Attempting to download and extract PDF content for:', fileData.original_name)
+    
+    if (typeof window === 'undefined') {
+      throw new Error('PDF text extraction requires client-side processing. Please refresh the page and try again.')
+    }
+    
+    const { data: fileBlob, error: downloadError } = await supabase.storage
+      .from('documents')
+      .download(fileData.filename)
+
+    if (downloadError || !fileBlob) {
+      throw new Error('Failed to download file from storage')
+    }
+
+    // Convert blob to File object for PDF processing
+    const file = new File([fileBlob], fileData.original_name, { type: 'application/pdf' })
+    
+    // Extract text content using client-side PDF processing
+    const { extractTextFromPDF: clientExtractText } = await import('./pdf-utils')
+    const extractedText = await clientExtractText(file)
+    
+    // Update the database with the extracted content for future use
+    try {
+      await supabase
+        .from('files')
+        .update({ content_text: extractedText })
+        .eq('id', fileId)
+      
+      console.log('Updated database with extracted content')
+    } catch (updateError) {
+      console.warn('Failed to update database with extracted content:', updateError)
+      // Don't throw here, we still have the content
+    }
+    
+    return extractedText
+
+  } catch (error) {
+    console.error('Error reading file content:', error)
+    throw error
   }
 }
 

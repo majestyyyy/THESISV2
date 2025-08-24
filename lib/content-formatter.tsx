@@ -1,0 +1,166 @@
+'use client'
+
+import React from 'react'
+
+/**
+ * Enhanced content formatting utilities for study materials
+ * 
+ * This module provides comprehensive markdown formatting for study materials,
+ * transforming raw text content into visually appealing, well-structured React components.
+ * 
+ * Features:
+ * - Hierarchical headings with clean styling
+ * - Enhanced bullet points with custom styling
+ * - Numbered lists with circular badges
+ * - Bold text formatting
+ * - Question highlighting (lines ending with ?)
+ * - Definition boxes (content with colons)
+ * - Section dividers
+ * - Responsive design with proper spacing
+ * 
+ * Used by: study-material-full-view.tsx for enhanced content display
+ */
+
+export const formatMarkdownContent = (content: string, isPreview = false): React.ReactNode[] => {
+  // For preview, limit content length
+  const processedContent = isPreview && content.length > 1500 ? content.substring(0, 1500) : content
+  const lines = processedContent.split('\n')
+
+  const processLine = (line: string, index: number): React.ReactNode => {
+    const trimmedLine = line.trim()
+    
+    // Skip empty lines by returning a spacing div
+    if (!trimmedLine) {
+      return <div key={index} className="h-2" />
+    }
+
+    // Handle headers with clean styling
+    if (trimmedLine.startsWith('# ')) {
+      const headingText = trimmedLine.substring(2)
+      return (
+        <h1 key={index} className="text-2xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-blue-200">
+          {headingText}
+        </h1>
+      )
+    }
+    
+    if (trimmedLine.startsWith('## ')) {
+      const headingText = trimmedLine.substring(3)
+      return (
+        <h2 key={index} className="text-xl font-semibold text-blue-800 mt-6 mb-3">
+          {headingText}
+        </h2>
+      )
+    }
+    
+    if (trimmedLine.startsWith('### ')) {
+      return (
+        <h3 key={index} className="text-lg font-medium text-indigo-700 mt-4 mb-2">
+          {trimmedLine.substring(4)}
+        </h3>
+      )
+    }
+
+    // Handle bullet points with clean styling
+    if (trimmedLine.startsWith('• ') || trimmedLine.startsWith('- ')) {
+      const bulletText = trimmedLine.startsWith('• ') ? trimmedLine.substring(2) : trimmedLine.substring(2)
+      return (
+        <div key={index} className="flex items-start ml-4 mb-2">
+          <span className="text-blue-500 mr-2 mt-1 text-sm">•</span>
+          <span className="text-gray-700 leading-relaxed">{bulletText}</span>
+        </div>
+      )
+    }
+
+    // Handle numbered lists
+    const numberedMatch = trimmedLine.match(/^(\d+)\.\s+(.+)$/)
+    if (numberedMatch) {
+      const [, number, text] = numberedMatch
+      return (
+        <div key={index} className="flex items-start ml-4 mb-2">
+          <span className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium mr-3 mt-0.5">
+            {number}
+          </span>
+          <span className="text-gray-700 leading-relaxed">{text}</span>
+        </div>
+      )
+    }
+
+    // Handle **bold** text
+    if (trimmedLine.includes('**')) {
+      const parts = trimmedLine.split('**')
+      const formattedContent = parts.map((part, i) => 
+        i % 2 === 1 ? <strong key={i} className="font-semibold text-gray-900">{part}</strong> : part
+      )
+      return (
+        <p key={index} className="text-gray-700 mb-3 leading-relaxed">
+          {formattedContent}
+        </p>
+      )
+    }
+
+    // Handle section dividers or special markers
+    if (trimmedLine.startsWith('---') || trimmedLine.startsWith('===')) {
+      return (
+        <div key={index} className="my-6 border-t border-gray-200" />
+      )
+    }
+
+    // Handle questions (lines ending with ?)
+    if (trimmedLine.endsWith('?')) {
+      return (
+        <div key={index} className="bg-yellow-50 border-l-4 border-yellow-400 p-3 mb-3">
+          <p className="text-yellow-800 font-medium">
+            {trimmedLine}
+          </p>
+        </div>
+      )
+    }
+
+    // Handle definitions or important points (lines with colons)
+    if (trimmedLine.includes(':') && !trimmedLine.startsWith('http')) {
+      const [term, definition] = trimmedLine.split(':', 2)
+      if (definition && definition.trim()) {
+        return (
+          <div key={index} className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+            <span className="font-semibold text-blue-900">{term.trim()}:</span>
+            <span className="text-blue-800 ml-1">{definition.trim()}</span>
+          </div>
+        )
+      }
+    }
+
+    // Regular paragraph
+    return (
+      <p key={index} className="text-gray-700 mb-3 leading-relaxed">
+        {trimmedLine}
+      </p>
+    )
+  }
+
+  return lines.map(processLine).filter(Boolean)
+}
+
+export const formatContentForExport = (content: string, title: string): string => {
+  return `# ${title}\n\n${content}\n\n---\n\nGenerated by StudyMate AI on ${new Date().toLocaleDateString()}`
+}
+
+export const cleanupContent = (content: string): string => {
+  return content
+    .replace(/\*\*(.*?)\*\*/g, '$1') // Remove markdown bold
+    .replace(/\*(.*?)\*/g, '$1') // Remove markdown italic
+    .replace(/#{1,6}\s/g, '') // Remove markdown headers
+    .replace(/^\s*[-•]\s/gm, '') // Remove bullet points
+    .replace(/^\s*\d+\.\s/gm, '') // Remove numbered lists
+    .replace(/\n\s*\n/g, '\n') // Remove extra empty lines
+    .trim()
+}
+
+export const truncateContent = (content: string, maxLength: number = 200): string => {
+  if (content.length <= maxLength) return content
+  
+  const truncated = content.substring(0, maxLength)
+  const lastSpace = truncated.lastIndexOf(' ')
+  
+  return lastSpace > 0 ? truncated.substring(0, lastSpace) + '...' : truncated + '...'
+}
