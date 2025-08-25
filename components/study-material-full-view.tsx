@@ -203,27 +203,26 @@ export function StudyMaterialFullView({ studyMaterial, children }: StudyMaterial
       <SheetTrigger asChild>
         {children}
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-4xl h-full overflow-hidden">
-        <SheetHeader className="space-y-4 pb-6">
-          <div className="flex items-center space-x-3">
+      <SheetContent className="w-full max-w-xs sm:max-w-2xl md:max-w-3xl lg:max-w-4xl h-full overflow-hidden">
+        <SheetHeader className="space-y-3 sm:space-y-4 pb-4 sm:pb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
             {getTypeIcon(studyMaterial.type)}
             <div className="flex-1">
-              <SheetTitle className="text-xl font-bold text-gray-900">
+              <SheetTitle className="text-lg sm:text-xl font-bold text-gray-900">
                 {studyMaterial.title}
               </SheetTitle>
-              <SheetDescription className="text-gray-600">
+              <SheetDescription className="text-xs sm:text-sm text-gray-600">
                 AI-generated study material from {studyMaterial.fileName}
               </SheetDescription>
             </div>
-            <Badge className="bg-green-100 text-green-800">Generated</Badge>
+            <Badge className="bg-green-100 text-green-800 text-xs sm:text-sm">Generated</Badge>
           </div>
-          
-          <div className="flex items-center space-x-6 text-sm text-gray-500">
-            <div className="flex items-center space-x-1">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-6 text-xs sm:text-sm text-gray-500">
+            <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
               <span>Created {formatDate(studyMaterial.createdAt)}</span>
             </div>
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center gap-1">
               <Clock className="h-4 w-4" />
               <span>
                 {studyMaterial.type === "summary" ? "15-20 min read" : 
@@ -232,8 +231,7 @@ export function StudyMaterialFullView({ studyMaterial, children }: StudyMaterial
               </span>
             </div>
           </div>
-
-          <div className="flex space-x-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Button variant="outline" size="sm" onClick={handleExport}>
               <Download className="mr-2 h-4 w-4" />
               Export
@@ -243,12 +241,10 @@ export function StudyMaterialFullView({ studyMaterial, children }: StudyMaterial
               Share
             </Button>
           </div>
-          
           <Separator />
         </SheetHeader>
-
-        <div className="h-[calc(100vh-200px)] pr-6 overflow-y-auto">
-          <div className="space-y-6">
+        <div className="h-[calc(100vh-200px)] pr-2 sm:pr-6 overflow-y-auto">
+          <div className="space-y-4 sm:space-y-6">
             {renderContent()}
           </div>
         </div>

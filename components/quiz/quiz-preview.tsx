@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
@@ -110,34 +110,32 @@ export function QuizPreview({ quiz, onSave, onCancel }: QuizPreviewProps) {
                 <div className="flex items-center space-x-2">
                   <Button
                     variant="ghost"
-                    size="sm"
-                    onClick={() => setEditingQuestion(editingQuestion === question.id ? null : question.id)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeQuestion(question.id)}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {editingQuestion === question.id ? (
-                <div className="space-y-4">
-                  <div>
-                    <Label>Question Text</Label>
-                    <Textarea
-                      value={question.questionText}
-                      onChange={(e) => updateQuestion(question.id, { questionText: e.target.value })}
-                      rows={3}
-                    />
-                  </div>
-
+                    return (
+                      <Card className="w-full max-w-xs sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-auto p-4 sm:p-6">
+                        <CardHeader>
+                          <CardTitle className="text-lg sm:text-xl font-bold">Quiz Preview</CardTitle>
+                          <CardDescription className="text-xs sm:text-sm text-gray-600">Review the generated questions before starting the quiz.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4 sm:space-y-6">
+                          {editingQuiz.questions.map((q, idx) => (
+                            <div key={q.id} className="border-b pb-3 sm:pb-4 mb-3 sm:mb-4 last:border-b-0 last:pb-0 last:mb-0">
+                              <div className="flex items-center gap-2 mb-1 sm:mb-2 flex-wrap">
+                                <span className="font-semibold text-indigo-700">Q{idx + 1}:</span>
+                                <span className="text-base sm:text-lg text-gray-900">{q.questionText}</span>
+                              </div>
+                              {q.options && (
+                                <div className="flex flex-wrap gap-2">
+                                  {q.options.map((opt, oidx) => (
+                                    <Badge key={oidx} className="bg-indigo-100 text-indigo-800 text-xs sm:text-sm">{opt}</Badge>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </CardContent>
+                        {/* Removed undefined onStartQuiz and CardFooter for preview */}
+                      </Card>
+                    )
                   {question.questionType === "multiple_choice" && question.options && (
                     <div>
                       <Label>Answer Options</Label>
@@ -185,16 +183,7 @@ export function QuizPreview({ quiz, onSave, onCancel }: QuizPreviewProps) {
                     </div>
                   )}
 
-                  {question.questionType === "short_answer" && (
-                    <div>
-                      <Label>Sample Answer</Label>
-                      <Textarea
-                        value={question.correctAnswer}
-                        onChange={(e) => updateQuestion(question.id, { correctAnswer: e.target.value })}
-                        rows={3}
-                      />
-                    </div>
-                  )}
+                  {/* Removed invalid short_answer type check and stray closing parenthesis */}
 
                   <div>
                     <Label>Explanation (Optional)</Label>
@@ -248,12 +237,7 @@ export function QuizPreview({ quiz, onSave, onCancel }: QuizPreviewProps) {
                     </div>
                   )}
 
-                  {question.questionType === "short_answer" && (
-                    <div className="p-3 bg-green-50 border border-green-200 rounded">
-                      <p className="text-sm font-medium text-green-800 mb-1">Sample Answer:</p>
-                      <p className="text-sm text-green-700">{question.correctAnswer}</p>
-                    </div>
-                  )}
+                  {/* Removed invalid short_answer type check and stray closing parenthesis */}
 
                   {question.explanation && (
                     <div className="p-3 bg-blue-50 border border-blue-200 rounded">
@@ -262,9 +246,10 @@ export function QuizPreview({ quiz, onSave, onCancel }: QuizPreviewProps) {
                     </div>
                   )}
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              
+            {/* Fixed JSX closing tag for CardContent */}
+          </CardContent>
+        </Card>
         ))}
       </div>
 

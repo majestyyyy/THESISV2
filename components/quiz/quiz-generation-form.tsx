@@ -56,15 +56,15 @@ export function QuizGenerationForm({ files, onGenerate, isGenerating }: QuizGene
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center">
+        <CardTitle className="flex items-center text-base sm:text-lg md:text-xl">
           <Settings className="mr-2 h-5 w-5" />
           Quiz Configuration
         </CardTitle>
         <CardDescription>Customize your AI-generated quiz settings</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+  <CardContent className="space-y-4 sm:space-y-6">
         {/* File Selection */}
-        <div className="space-y-2">
+  <div className="space-y-2 sm:space-y-3">
           <Label htmlFor="file-select">Select Source File</Label>
           <Select value={selectedFile} onValueChange={setSelectedFile}>
             <SelectTrigger>
@@ -73,8 +73,8 @@ export function QuizGenerationForm({ files, onGenerate, isGenerating }: QuizGene
             <SelectContent>
               {files.map((file) => (
                 <SelectItem key={file.id} value={file.id}>
-                  <div className="flex items-center">
-                    <FileText className="mr-2 h-4 w-4" />
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
                     {file.name}
                   </div>
                 </SelectItem>
@@ -84,7 +84,7 @@ export function QuizGenerationForm({ files, onGenerate, isGenerating }: QuizGene
         </div>
 
         {/* Difficulty Level */}
-        <div className="space-y-2">
+  <div className="space-y-2 sm:space-y-3">
           <Label>Difficulty Level</Label>
           <Select value={difficulty} onValueChange={(value: "easy" | "medium" | "hard") => setDifficulty(value)}>
             <SelectTrigger>
@@ -92,19 +92,19 @@ export function QuizGenerationForm({ files, onGenerate, isGenerating }: QuizGene
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="easy">
-                <div className="flex items-center">
+                <div className="flex items-center gap-2">
                   <Badge className="mr-2 bg-green-100 text-green-800">Easy</Badge>
                   Basic concepts and definitions
                 </div>
               </SelectItem>
               <SelectItem value="medium">
-                <div className="flex items-center">
-                  <Badge className="mr-2 bg-yellow-100 text-yellow-800">Medium</Badge>
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-yellow-100 text-yellow-800">Medium</Badge>
                   Application and analysis
                 </div>
               </SelectItem>
               <SelectItem value="hard">
-                <div className="flex items-center">
+                <div className="flex items-center gap-2">
                   <Badge className="mr-2 bg-red-100 text-red-800">Hard</Badge>
                   Critical thinking and synthesis
                 </div>
@@ -114,7 +114,7 @@ export function QuizGenerationForm({ files, onGenerate, isGenerating }: QuizGene
         </div>
 
         {/* Number of Questions */}
-        <div className="space-y-4">
+  <div className="space-y-3 sm:space-y-4">
           <Label>Number of Questions: {numberOfQuestions[0]}</Label>
           <Slider
             value={numberOfQuestions}
@@ -124,17 +124,17 @@ export function QuizGenerationForm({ files, onGenerate, isGenerating }: QuizGene
             step={5}
             className="w-full"
           />
-          <div className="flex justify-between text-xs text-gray-500">
+          <div className="flex flex-col sm:flex-row justify-between text-xs sm:text-sm text-gray-500 gap-2">
             <span>5 questions</span>
             <span>30 questions</span>
           </div>
         </div>
 
         {/* Question Types */}
-        <div className="space-y-3">
+  <div className="space-y-2 sm:space-y-3">
           <Label>Question Types</Label>
-          <div className="space-y-3">
-            <div className="flex items-center space-x-2">
+          <div className="space-y-2 sm:space-y-3">
+            <div className="flex items-center gap-2 flex-wrap">
               <Checkbox
                 id="multiple-choice"
                 checked={questionTypes.includes("multiple_choice")}
@@ -147,7 +147,7 @@ export function QuizGenerationForm({ files, onGenerate, isGenerating }: QuizGene
                 Recommended
               </Badge>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Checkbox
                 id="true-false"
                 checked={questionTypes.includes("true_false")}
@@ -157,7 +157,7 @@ export function QuizGenerationForm({ files, onGenerate, isGenerating }: QuizGene
                 True/False
               </Label>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Checkbox
                 id="identification"
                 checked={questionTypes.includes("identification")}

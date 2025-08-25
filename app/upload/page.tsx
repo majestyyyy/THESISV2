@@ -189,37 +189,39 @@ export default function UploadPage() {
                 </div>
               </div>
             ) : (
-              <div className="space-y-4">
-                {uploadedFiles.map((file) => (
-                  <div key={file.id} className="flex items-center justify-between p-6 bg-gray-50 rounded-xl border border-gray-100">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center">
-                        <FileText className="w-6 h-6 text-red-600" />
+              <div className="overflow-x-auto max-h-96">
+                <div className="flex flex-col gap-4 min-w-[320px]">
+                  {uploadedFiles.map((file) => (
+                    <div key={file.id} className="flex items-center justify-between p-6 bg-gray-50 rounded-xl border border-gray-100">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center">
+                          <FileText className="w-6 h-6 text-red-600" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-gray-900 truncate">{file.original_name}</p>
+                          <p className="text-sm text-gray-500">
+                            {formatFileSize(file.file_size)} • 
+                            {new Date(file.upload_date).toLocaleDateString()} at {' '}
+                            {new Date(file.upload_date).toLocaleTimeString()}
+                          </p>
+                        </div>
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-gray-900 truncate">{file.original_name}</p>
-                        <p className="text-sm text-gray-500">
-                          {formatFileSize(file.file_size)} • 
-                          {new Date(file.upload_date).toLocaleDateString()} at {' '}
-                          {new Date(file.upload_date).toLocaleTimeString()}
-                        </p>
+                      <div className="flex items-center space-x-4">
+                        <div className="text-sm text-green-600 font-medium flex items-center">
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Ready
+                        </div>
+                        <button
+                          onClick={() => handleDeleteFile(file.id)}
+                          className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete file"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-4">
-                      <div className="text-sm text-green-600 font-medium flex items-center">
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Ready
-                      </div>
-                      <button
-                        onClick={() => handleDeleteFile(file.id)}
-                        className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Delete file"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </div>

@@ -1,3 +1,27 @@
+/**
+ * Update the title of a study material
+ */
+export async function updateStudyMaterialTitle(id: string, newTitle: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return { success: false, error: "User not authenticated" }
+    }
+    const { error } = await supabase
+      .from('reviewers')
+      .update({ title: newTitle })
+      .eq('id', id)
+      .eq('user_id', user.id)
+    if (error) {
+      console.error('Error updating study material title:', error)
+      return { success: false, error: error.message }
+    }
+    return { success: true }
+  } catch (error) {
+    console.error('Error updating study material title:', error)
+    return { success: false, error: 'Failed to update study material title' }
+  }
+}
 import { generateReviewerWithGemini } from "./gemini-utils"
 import { getFileContentFromStorage } from "./file-utils"
 import { supabase } from "./supabase"

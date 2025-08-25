@@ -1,9 +1,12 @@
+"use client"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BookOpen, Brain, FileText, BarChart3 } from "lucide-react"
+import { useAuth } from "@/components/auth/auth-provider"
 
 export default function HomePage() {
+  const { user, loading } = useAuth();
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header */}
@@ -14,12 +17,23 @@ export default function HomePage() {
             <h1 className="text-2xl font-bold text-gray-900">AI-GIR</h1>
           </div>
           <div className="flex items-center space-x-4">
-            <Link href="/signin">
-              <Button variant="ghost">Sign In</Button>
-            </Link>
-            <Link href="/signup">
-              <Button>Get Started</Button>
-            </Link>
+            {loading ? null : user ? (
+              <>
+                <span className="text-indigo-700 font-semibold">Signed in as {user.firstName} {user.lastName}</span>
+                <Link href="/dashboard">
+                  <Button variant="default">Go to Dashboard</Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/signin">
+                  <Button variant="ghost">Sign In</Button>
+                </Link>
+                <Link href="/signup">
+                  <Button>Get Started</Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -32,11 +46,19 @@ export default function HomePage() {
             Upload your academic files and let AI generate personalized quizzes and comprehensive reviewers to enhance
             your learning experience.
           </p>
-          <Link href="/signup">
-            <Button size="lg" className="text-lg px-8 py-3">
-              Start Learning Today
-            </Button>
-          </Link>
+          {loading ? null : user ? (
+            <Link href="/dashboard">
+              <Button size="lg" className="text-lg px-8 py-3">
+                Go to Dashboard
+              </Button>
+            </Link>
+          ) : (
+            <Link href="/signup">
+              <Button size="lg" className="text-lg px-8 py-3">
+                Start Learning Today
+              </Button>
+            </Link>
+          )}
         </div>
 
         {/* Features Grid */}

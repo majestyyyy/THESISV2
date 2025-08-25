@@ -24,7 +24,7 @@ import {
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { formatFileSize } from "@/lib/file-utils"
-import { getUserStudyMaterials, deleteStudyMaterial } from "@/lib/reviewer-utils"
+import { getUserStudyMaterials, deleteStudyMaterial, updateStudyMaterialTitle } from "@/lib/reviewer-utils"
 import type { StudyMaterial } from "@/lib/reviewer-utils"
 import Link from "next/link"
 
@@ -305,9 +305,21 @@ export default function LibraryPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                          <DropdownMenuItem>
-                            <Download className="mr-2 h-4 w-4" />
-                            Export
+                          <DropdownMenuItem
+                            onClick={async () => {
+                              const newTitle = prompt('Enter new name for this study material:', reviewer.title)
+                              if (newTitle && newTitle.trim() && newTitle !== reviewer.title) {
+                                const result = await updateStudyMaterialTitle(reviewer.id, newTitle.trim())
+                                if (result.success) {
+                                  setStudyMaterials(prev => prev.map(mat => mat.id === reviewer.id ? { ...mat, title: newTitle.trim() } : mat))
+                                } else {
+                                  alert(result.error || 'Failed to rename study material')
+                                }
+                              }
+                            }}
+                          >
+                            <BookOpen className="mr-2 h-4 w-4" />
+                            Rename
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             className="text-red-600"
