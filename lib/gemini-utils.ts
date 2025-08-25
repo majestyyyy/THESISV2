@@ -1,9 +1,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
 
-const apiKey = process.env.GEMINI_API_KEY || "AIzaSyCfoVpVtoHQ18KihATj0QHHu31upGzuIGM"
+const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyCfoVpVtoHQ18KihATj0QHHu31upGzuIGM"
 
 if (!apiKey) {
-  throw new Error("GEMINI_API_KEY environment variable is required")
+  throw new Error("NEXT_PUBLIC_GEMINI_API_KEY environment variable is required")
 }
 
 const genAI = new GoogleGenerativeAI(apiKey)
