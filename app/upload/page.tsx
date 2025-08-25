@@ -8,68 +8,59 @@ import PDFUpload from '@/components/upload/pdf-upload'
 import { FileText, Clock, CheckCircle, Trash2, BookOpen, Brain, ArrowRight } from 'lucide-react'
 import { formatFileSize, getUserFiles, deleteFile, type UploadResult } from '@/lib/file-utils'
 import { useRouter } from 'next/navigation'
+import useSWR from "swr"
+import { Button } from "@/components/ui/button"
 
 export default function UploadPage() {
-  const [uploadedFiles, setUploadedFiles] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
   const router = useRouter()
   const [isHydrated, setIsHydrated] = useState(false)
+
+  // SWR for uploaded files
+  const { data: uploadedFiles, mutate, error } = useSWR(isHydrated ? "userFiles" : null, getUserFiles, {
+    shouldRetryOnError: false,
+    revalidateOnFocus: false,
+    onError: (err) => {
+      console.error("Upload files fetch error:", err)
+    },
+  })
 
   // Handle hydration
   useEffect(() => {
     setIsHydrated(true)
   }, [])
 
-  useEffect(() => {
-    if (!isHydrated) return // Wait for hydration
-    loadUserFiles()
-  }, [isHydrated])
-
-  const loadUserFiles = async () => {
-    try {
-      setLoading(true)
-      
-      // Add a small delay to ensure proper client-side initialization
-      await new Promise(resolve => setTimeout(resolve, 100))
-      
-      console.log("Loading user files...")
-      
-      const files = await getUserFiles()
-      setUploadedFiles(files)
-      
-      console.log("Files loaded successfully:", files.length)
-      
-    } catch (error) {
-      console.error('Error loading files:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const handleUploadSuccess = (result: UploadResult) => {
     if (result.file) {
       // Add the new file to the beginning of the list
-      setUploadedFiles(prev => [result.file!, ...prev])
+      mutate([result.file, ...(uploadedFiles || [])], false)
     }
-  }
-
-  const handleUploadError = (error: string) => {
-    console.error('Upload error:', error)
-    // Error is already displayed in the PDFUpload component
   }
 
   const handleDeleteFile = async (fileId: string) => {
     if (confirm('Are you sure you want to delete this file?')) {
       const success = await deleteFile(fileId)
-      if (success) {
-        setUploadedFiles(prev => prev.filter(file => file.id !== fileId))
+      if (success && uploadedFiles) {
+        mutate(uploadedFiles.filter((file: any) => file.id !== fileId), false)
       } else {
         alert('Failed to delete file')
       }
     }
   }
 
-  if (!isHydrated || loading) {
+  if (error) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
+            <p className="text-red-600">{error.message || "Failed to load uploaded files."}</p>
+            <Button onClick={() => window.location.reload()} className="mt-4">Retry</Button>
+          </div>
+        </DashboardLayout>
+      </ProtectedRoute>
+    )
+  }
+
+  if (!isHydrated || !uploadedFiles) {
     return (
       <ProtectedRoute>
         <DashboardLayout>
@@ -105,7 +96,6 @@ export default function UploadPage() {
             </h2>
             <PDFUpload
               onUploadSuccess={handleUploadSuccess}
-              onUploadError={handleUploadError}
             />
           </div>
 
@@ -158,12 +148,7 @@ export default function UploadPage() {
               Your Documents
             </h2>
             
-            {loading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-                <p className="text-gray-500 mt-3">Loading your files...</p>
-              </div>
-            ) : uploadedFiles.length === 0 ? (
+            {uploadedFiles.length === 0 ? (
               <div className="text-center py-12">
                 <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500 text-lg">No documents uploaded yet</p>

@@ -13,9 +13,33 @@ import { StudyInsights } from "@/components/analytics/study-insights"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { mockPerformanceMetrics, generateStudyInsights, formatStudyTime, getScoreColor } from "@/lib/analytics-utils"
+import useSWR from "swr"
+import { Button } from "@/components/ui/button"
+
+const fetchAnalytics = async () => {
+  // Replace with your actual analytics fetch logic
+  // Example: return await getAnalyticsDataFromSupabase()
+}
 
 export default function AnalyticsPage() {
   const insights = generateStudyInsights(mockPerformanceMetrics)
+
+  const { data: analytics, error } = useSWR("userAnalytics", fetchAnalytics, {
+    shouldRetryOnError: false,
+    revalidateOnFocus: false,
+    onError: (err) => {
+      console.error("Analytics fetch error:", err)
+    },
+  })
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
+        <p className="text-red-600">{error.message || "Failed to load analytics."}</p>
+        <Button onClick={() => window.location.reload()} className="mt-4">Retry</Button>
+      </div>
+    )
+  }
 
   return (
     <ProtectedRoute>

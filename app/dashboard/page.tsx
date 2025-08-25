@@ -1,6 +1,5 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { Upload, FileText, BookOpen, BarChart3, TrendingUp, Clock, Target, Award, ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/components/auth/auth-provider"
@@ -9,6 +8,7 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { getUserFiles } from '@/lib/file-utils'
 import { getUserQuizzes } from '@/lib/quiz-utils'
 import { getUserStudyMaterials } from '@/lib/reviewer-utils'
+import useSWR from "swr"
 
 const quickActions = [
   {
@@ -44,46 +44,46 @@ const quickActions = [
 
 export default function DashboardPage() {
   const { user } = useAuth()
-  const [stats, setStats] = useState({
-    totalFiles: 0,
-    totalQuizzes: 0,
-    averageScore: 0,
-    studyStreak: 0,
-  })
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    async function fetchStats() {
-      setIsLoading(true)
-      try {
-        const files = await getUserFiles()
-        const quizzes = user ? await getUserQuizzes(user.id) : []
-        // Calculate average score and streak
-        let streak = 0
-        let today = new Date().toDateString()
-        quizzes.forEach(q => {
-          // Streak logic: count consecutive days with quizzes
-          const quizDate = new Date(q.createdAt).toDateString()
-          if (quizDate === today) streak++
-        })
-        // No score property, so set averageScore to 0 or fetch from quiz results if available
-        const studyMaterials = await getUserStudyMaterials()
-        setStats({
-          totalFiles: files.length,
-          totalQuizzes: quizzes.length,
-          averageScore: studyMaterials.length,
-          studyStreak: streak,
-        })
-      } catch (err) {
-        setStats({ totalFiles: 0, totalQuizzes: 0, averageScore: 0, studyStreak: 0 })
-      } finally {
-        setIsLoading(false)
-      }
+  const fetchStats = async () => {
+    const files = await getUserFiles()
+    const quizzes = user ? await getUserQuizzes(user.id) : []
+    let streak = 0
+    let today = new Date().toDateString()
+    quizzes.forEach(q => {
+      const quizDate = new Date(q.createdAt).toDateString()
+      if (quizDate === today) streak++
+    })
+    const studyMaterials = await getUserStudyMaterials()
+    return {
+      totalFiles: files.length,
+      totalQuizzes: quizzes.length,
+      averageScore: studyMaterials.length,
+      studyStreak: streak,
     }
-    fetchStats()
-  }, [user])
+  }
+  const { data: stats, error } = useSWR(user ? ["dashboardStats", user.id] : null, fetchStats, {
+    shouldRetryOnError: false,
+    revalidateOnFocus: false,
+    onError: (err) => {
+      // Optionally log or handle error
+      console.error("Dashboard stats fetch error:", err)
+    },
+  })
 
-  if (isLoading) {
+  if (error) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
+            <p className="text-red-600">{error.message || "Failed to load dashboard stats."}</p>
+            <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">Retry</button>
+          </div>
+        </DashboardLayout>
+      </ProtectedRoute>
+    )
+  }
+
+  if (!stats) {
     return (
       <ProtectedRoute>
         <DashboardLayout>

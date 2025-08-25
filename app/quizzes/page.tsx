@@ -12,11 +12,9 @@ import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { getDifficultyColor, getUserQuizzesList, type QuizListItem } from "@/lib/quiz-utils"
 import { getCurrentUser } from "@/lib/auth"
+import useSWR from "swr"
 
 export default function QuizzesPage() {
-  const [quizzes, setQuizzes] = useState<QuizListItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [filterDifficulty, setFilterDifficulty] = useState<string>("all")
   const [takenQuizzes, setTakenQuizzes] = useState<Set<string>>(new Set())
@@ -47,61 +45,40 @@ export default function QuizzesPage() {
     return false
   }
 
-  // Handle hydration
+  // SWR for quizzes
+  const fetchQuizzes = async () => {
+    const { user } = await getCurrentUser()
+    if (!user) throw new Error("Please sign in to view your quizzes")
+    const userQuizzes = await getUserQuizzesList(user.id)
+    // Check which quizzes have been taken
+    const taken = new Set<string>()
+    userQuizzes.forEach((quiz: QuizListItem) => {
+      if (hasQuizResults(quiz.id)) {
+        taken.add(quiz.id)
+      }
+    })
+    setTakenQuizzes(taken)
+    return userQuizzes
+  }
+  const { data: quizzes, error } = useSWR(isHydrated ? "userQuizzesList" : null, fetchQuizzes, {
+    shouldRetryOnError: false,
+    revalidateOnFocus: false,
+    onError: (err) => {
+      console.error("Quizzes fetch error:", err)
+    },
+  })
+
   useEffect(() => {
     setIsHydrated(true)
   }, [])
 
-  useEffect(() => {
-    if (!isHydrated) return // Wait for hydration
-
-    const loadQuizzes = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        
-        // Add a small delay to ensure proper client-side initialization
-        await new Promise(resolve => setTimeout(resolve, 100))
-        
-        console.log("Loading user quizzes...")
-        
-        const { user } = await getCurrentUser()
-        if (!user) {
-          setError("Please sign in to view your quizzes")
-          return
-        }
-        const userQuizzes = await getUserQuizzesList(user.id)
-        setQuizzes(userQuizzes)
-        
-        console.log("Quizzes loaded successfully:", userQuizzes.length)
-        
-        // Check which quizzes have been taken
-        const taken = new Set<string>()
-        userQuizzes.forEach((quiz: QuizListItem) => {
-          if (hasQuizResults(quiz.id)) {
-            taken.add(quiz.id)
-          }
-        })
-        setTakenQuizzes(taken)
-        
-      } catch (err) {
-        console.error("Error loading quizzes:", err)
-        setError("Failed to load quizzes. Please try again.")
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadQuizzes()
-  }, [isHydrated])
-
-  const filteredQuizzes = quizzes.filter((quiz) => {
+  const filteredQuizzes = (quizzes || []).filter((quiz) => {
     const matchesSearch = quiz.title.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesFilter = filterDifficulty === "all" || quiz.difficulty === filterDifficulty
     return matchesSearch && matchesFilter
   })
 
-  if (!isHydrated || loading) {
+  if (!isHydrated || !quizzes) {
     return (
       <ProtectedRoute>
         <DashboardLayout>
@@ -118,15 +95,9 @@ export default function QuizzesPage() {
     return (
       <ProtectedRoute>
         <DashboardLayout>
-          <div className="flex items-center justify-center min-h-96">
-            <Card className="max-w-md">
-              <CardContent className="pt-6 text-center">
-                <p className="text-red-600 mb-4">{error}</p>
-                <Button onClick={() => window.location.reload()} variant="outline">
-                  Try Again
-                </Button>
-              </CardContent>
-            </Card>
+          <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
+            <p className="text-red-600">{error.message || "Failed to load quizzes."}</p>
+            <Button onClick={() => window.location.reload()} className="mt-4">Retry</Button>
           </div>
         </DashboardLayout>
       </ProtectedRoute>

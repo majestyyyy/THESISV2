@@ -15,13 +15,18 @@ import { getUserFiles, type FileRecord } from "@/lib/file-utils"
 import type { Quiz, QuizGenerationOptions } from "@/lib/quiz-utils"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import useSWR, { mutate } from "swr"
+
+const fetchGeneratedQuiz = async () => {
+  // Replace with your actual generation logic
+  // Example: return await generateQuizFromGemini()
+}
 
 export default function GenerateQuizPage() {
   const [uploadedFiles, setUploadedFiles] = useState<FileRecord[]>([])
   const [filesLoading, setFilesLoading] = useState(true)
   const [isGenerating, setIsGenerating] = useState(false)
   const [generationProgress, setGenerationProgress] = useState(0)
-  const [generatedQuiz, setGeneratedQuiz] = useState<Quiz | null>(null)
   const [savedQuiz, setSavedQuiz] = useState<Quiz | null>(null)
   const router = useRouter()
   const [isHydrated, setIsHydrated] = useState(false)
@@ -60,7 +65,6 @@ export default function GenerateQuizPage() {
   const handleGenerate = async (options: QuizGenerationOptions) => {
     setIsGenerating(true)
     setGenerationProgress(0)
-    setGeneratedQuiz(null)
 
     try {
       const selectedFile = uploadedFiles.find((f) => f.id === options.fileId)
@@ -69,7 +73,9 @@ export default function GenerateQuizPage() {
       }
 
       const quiz = await generateQuizFromFile(options, selectedFile.content_text || "", setGenerationProgress)
-      setGeneratedQuiz(quiz)
+      
+      // Manually trigger a revalidation for the generated quiz
+      mutate("generatedQuiz", quiz, false)
     } catch (error) {
       console.error("Failed to generate quiz:", error)
     } finally {
@@ -93,8 +99,24 @@ export default function GenerateQuizPage() {
   }
 
   const handleCancelPreview = () => {
-    setGeneratedQuiz(null)
     setGenerationProgress(0)
+  }
+
+  const { data: generatedQuiz, error } = useSWR("generatedQuiz", fetchGeneratedQuiz, {
+    shouldRetryOnError: false,
+    revalidateOnFocus: false,
+    onError: (err) => {
+      console.error("Quiz generation error:", err)
+    },
+  })
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
+        <p className="text-red-600">{error.message || "Failed to generate quiz."}</p>
+        <Button onClick={() => window.location.reload()} className="mt-4">Retry</Button>
+      </div>
+    )
   }
 
   if (savedQuiz) {
@@ -199,7 +221,7 @@ export default function GenerateQuizPage() {
             </div>
           )}
 
-          {generatedQuiz && (
+          {generatedQuiz ? (
             <div className="max-w-4xl mx-auto">
               <Alert className="mb-6 bg-emerald-50 border-emerald-200 text-emerald-800">
                 <CheckCircle className="h-4 w-4 text-emerald-600" />
@@ -207,9 +229,11 @@ export default function GenerateQuizPage() {
                   Quiz generated successfully! Review and edit the questions below, then save your quiz.
                 </AlertDescription>
               </Alert>
-              <QuizPreview quiz={generatedQuiz} onSave={handleSaveQuiz} onCancel={handleCancelPreview} />
+              {generatedQuiz && (
+                <QuizPreview quiz={generatedQuiz} onSave={handleSaveQuiz} onCancel={handleCancelPreview} />
+              )}
             </div>
-          )}
+          ) : null}
         </div>
       </DashboardLayout>
     </ProtectedRoute>

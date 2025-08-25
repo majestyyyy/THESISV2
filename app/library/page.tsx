@@ -27,6 +27,7 @@ import { formatFileSize } from "@/lib/file-utils"
 import { getUserStudyMaterials, deleteStudyMaterial, updateStudyMaterialTitle } from "@/lib/reviewer-utils"
 import type { StudyMaterial } from "@/lib/reviewer-utils"
 import Link from "next/link"
+import useSWR from "swr"
 
 // Mock data - replace with actual data from your backend
 const mockFiles = [
@@ -114,36 +115,28 @@ export default function LibraryPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("reviewers")
   const [isHydrated, setIsHydrated] = useState(false)
-  const [studyMaterials, setStudyMaterials] = useState<StudyMaterial[]>([])
-  const [materialsLoading, setMaterialsLoading] = useState(true)
 
-  // Handle hydration
+  // SWR for study materials
+  const { data: studyMaterials, mutate, error } = useSWR(isHydrated ? "userStudyMaterials" : null, getUserStudyMaterials, {
+    shouldRetryOnError: false,
+    revalidateOnFocus: false,
+    onError: (err) => {
+      console.error("Study materials fetch error:", err)
+    },
+  })
+
   useEffect(() => {
     setIsHydrated(true)
-    loadStudyMaterials()
   }, [])
-
-  const loadStudyMaterials = async () => {
-    try {
-      setMaterialsLoading(true)
-      const materials = await getUserStudyMaterials()
-      setStudyMaterials(materials)
-    } catch (error) {
-      console.error('Error loading study materials:', error)
-    } finally {
-      setMaterialsLoading(false)
-    }
-  }
 
   const handleDeleteMaterial = async (id: string) => {
     if (!confirm('Are you sure you want to delete this study material?')) {
       return
     }
-
     try {
       const result = await deleteStudyMaterial(id)
-      if (result.success) {
-        setStudyMaterials(prev => prev.filter(material => material.id !== id))
+      if (result.success && studyMaterials) {
+        mutate(studyMaterials.filter((material: any) => material.id !== id), false)
       } else {
         alert(result.error || 'Failed to delete study material')
       }
@@ -153,7 +146,20 @@ export default function LibraryPage() {
     }
   }
 
-  if (!isHydrated) {
+  if (error) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
+            <p className="text-red-600">{error.message || "Failed to load study materials."}</p>
+            <Button onClick={() => window.location.reload()} className="mt-4">Retry</Button>
+          </div>
+        </DashboardLayout>
+      </ProtectedRoute>
+    )
+  }
+
+  if (!isHydrated || !studyMaterials) {
     return (
       <ProtectedRoute>
         <DashboardLayout>
@@ -258,96 +264,87 @@ export default function LibraryPage() {
               <CardDescription>AI-generated study guides and reviewers</CardDescription>
             </CardHeader>
             <CardContent>
-              {materialsLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading study materials...</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {filteredReviewers.map((reviewer) => (
-                  <div
-                    key={reviewer.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
-                  >
-                    <div className="flex items-center space-x-4">
-                      <div className="flex-shrink-0">
-                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                          {getReviewerTypeIcon(reviewer.type)}
-                        </div>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900">{reviewer.title}</p>
-                        <p className="text-xs text-gray-500 mt-1">From: {reviewer.fileName}</p>
-                        <div className="flex items-center space-x-4 mt-1">
-                          <p className="text-xs text-gray-500">
-                            Created {new Date(reviewer.createdAt).toLocaleDateString()}
-                          </p>
-                          <Badge variant="outline" className="text-xs">
-                            {reviewer.type}
-                          </Badge>
-                        </div>
+              <div className="space-y-4">
+                {filteredReviewers.map((reviewer) => (
+                <div
+                  key={reviewer.id}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="flex-shrink-0">
+                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        {getReviewerTypeIcon(reviewer.type)}
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Link href={`/library/reviewers/${reviewer.id}`}>
-                        <Button size="sm" variant="outline">
-                          <Eye className="mr-1 h-3 w-3" />
-                          View
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900">{reviewer.title}</p>
+                      <p className="text-xs text-gray-500 mt-1">From: {reviewer.fileName}</p>
+                      <div className="flex items-center space-x-4 mt-1">
+                        <p className="text-xs text-gray-500">
+                          Created {new Date(reviewer.createdAt).toLocaleDateString()}
+                        </p>
+                        <Badge variant="outline" className="text-xs">
+                          {reviewer.type}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Link href={`/library/reviewers/${reviewer.id}`}>
+                      <Button size="sm" variant="outline">
+                        <Eye className="mr-1 h-3 w-3" />
+                        View
+                      </Button>
+                    </Link>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <MoreVertical className="h-4 w-4" />
                         </Button>
-                      </Link>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuItem
-                            onClick={async () => {
-                              const newTitle = prompt('Enter new name for this study material:', reviewer.title)
-                              if (newTitle && newTitle.trim() && newTitle !== reviewer.title) {
-                                const result = await updateStudyMaterialTitle(reviewer.id, newTitle.trim())
-                                if (result.success) {
-                                  setStudyMaterials(prev => prev.map(mat => mat.id === reviewer.id ? { ...mat, title: newTitle.trim() } : mat))
-                                } else {
-                                  alert(result.error || 'Failed to rename study material')
-                                }
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem
+                          onClick={async () => {
+                            const newTitle = prompt('Enter new name for this study material:', reviewer.title)
+                            if (newTitle && newTitle.trim() && newTitle !== reviewer.title) {
+                              const result = await updateStudyMaterialTitle(reviewer.id, newTitle.trim())
+                              if (result.success) {
+                                mutate((prev: any) => prev.map((mat: any) => mat.id === reviewer.id ? { ...mat, title: newTitle.trim() } : mat), false)
+                              } else {
+                                alert(result.error || 'Failed to rename study material')
                               }
-                            }}
-                          >
-                            <BookOpen className="mr-2 h-4 w-4" />
-                            Rename
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            className="text-red-600"
-                            onClick={() => handleDeleteMaterial(reviewer.id)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
+                            }
+                          }}
+                        >
+                          <BookOpen className="mr-2 h-4 w-4" />
+                          Rename
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          className="text-red-600"
+                          onClick={() => handleDeleteMaterial(reviewer.id)}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                ))}
-                  
-                  {filteredReviewers.length === 0 && (
-                    <div className="text-center py-8">
-                      <BookOpen className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                      <p className="text-gray-500 mb-4">No study materials found</p>
-                      <Link href="/reviewers/generate">
-                        <Button className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl px-6 shadow-lg shadow-indigo-200">
-                          <Plus className="mr-2 h-4 w-4" />
-                          Create Study Materials
-                        </Button>
-                      </Link>
-                    </div>
-                  )}
                 </div>
-              )}
+                ))}
+                
+                {filteredReviewers.length === 0 && (
+                  <div className="text-center py-8">
+                    <BookOpen className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                    <p className="text-gray-500 mb-4">No study materials found</p>
+                    <Link href="/reviewers/generate">
+                      <Button className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl px-6 shadow-lg shadow-indigo-200">
+                        <Plus className="mr-2 h-4 w-4" />
+                        Create Study Materials
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>

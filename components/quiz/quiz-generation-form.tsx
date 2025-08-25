@@ -133,39 +133,30 @@ export function QuizGenerationForm({ files, onGenerate, isGenerating }: QuizGene
         {/* Question Types */}
   <div className="space-y-2 sm:space-y-3">
           <Label>Question Types</Label>
-          <div className="space-y-2 sm:space-y-3">
-            <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
               <Checkbox
-                id="multiple-choice"
+                id="multiple_choice"
                 checked={questionTypes.includes("multiple_choice")}
                 onCheckedChange={(checked) => handleQuestionTypeChange("multiple_choice", checked as boolean)}
               />
-              <Label htmlFor="multiple-choice" className="text-sm font-normal">
-                Multiple Choice
-              </Label>
-              <Badge variant="secondary" className="text-xs">
-                Recommended
-              </Badge>
+              <Label htmlFor="multiple_choice">Multiple Choice</Label>
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2">
               <Checkbox
-                id="true-false"
+                id="true_false"
                 checked={questionTypes.includes("true_false")}
                 onCheckedChange={(checked) => handleQuestionTypeChange("true_false", checked as boolean)}
               />
-              <Label htmlFor="true-false" className="text-sm font-normal">
-                True/False
-              </Label>
+              <Label htmlFor="true_false">True/False</Label>
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2">
               <Checkbox
                 id="identification"
                 checked={questionTypes.includes("identification")}
                 onCheckedChange={(checked) => handleQuestionTypeChange("identification", checked as boolean)}
               />
-              <Label htmlFor="identification" className="text-sm font-normal">
-                Identification
-              </Label>
+              <Label htmlFor="identification">Identification</Label>
             </div>
           </div>
         </div>
