@@ -7,7 +7,14 @@ import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Edit, Save, X, Check, FileText, Clock, Target } from "lucide-react"
+import { Edit, Save, X, Check, FileText, Clock, Target, Volume2 } from "lucide-react"
+// Text-to-speech helper
+function speak(text: string) {
+  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    const utterance = new window.SpeechSynthesisUtterance(text)
+    window.speechSynthesis.speak(utterance)
+  }
+}
 import type { Quiz, QuizQuestion } from "@/lib/quiz-utils"
 import { getDifficultyColor, getQuestionTypeLabel } from "@/lib/quiz-utils"
 
@@ -122,6 +129,14 @@ export function QuizPreview({ quiz, onSave, onCancel }: QuizPreviewProps) {
                     className="text-red-600 hover:text-red-700"
                   >
                     <X className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => speak(question.questionText)}
+                    aria-label="Listen to question"
+                  >
+                    <Volume2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>

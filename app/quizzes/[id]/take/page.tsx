@@ -27,10 +27,49 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
   const [hasAnswered, setHasAnswered] = useState(false)
   const [isHydrated, setIsHydrated] = useState(false)
 
+    // TTS state
+    const [isSpeaking, setIsSpeaking] = useState(false)
+    const [currentUtterance, setCurrentUtterance] = useState<SpeechSynthesisUtterance | null>(null)
+
   // Handle hydration
   useEffect(() => {
     setIsHydrated(true)
+    // Stop TTS when unmounting or navigating away
+    return () => {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      setCurrentUtterance(null);
+    };
   }, [])
+
+  // TTS handler for current question
+  const handleListenQuestion = () => {
+    if (!quiz) return;
+    const questionText = quiz.questions[currentQuestion]?.questionText;
+    if (!questionText) return;
+    // Stop any ongoing speech
+    window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+    // Create and play utterance
+    const utterance = new window.SpeechSynthesisUtterance(questionText);
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      setCurrentUtterance(null);
+    };
+    utterance.onerror = () => {
+      setIsSpeaking(false);
+      setCurrentUtterance(null);
+    };
+    setCurrentUtterance(utterance);
+    window.speechSynthesis.speak(utterance);
+    };
+    // Stop TTS
+    const handleStopSpeaking = () => {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      setCurrentUtterance(null);
+    };
 
   useEffect(() => {
     if (!isHydrated) return // Wait for hydration
@@ -73,6 +112,10 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
   useEffect(() => {
     setShowExplanation(false)
     setHasAnswered(false)
+    // Stop TTS when changing question
+    window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+    setCurrentUtterance(null);
   }, [currentQuestion])
 
   const handleAnswerChange = (answer: string) => {
@@ -301,6 +344,9 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
             onAnswerChange={handleAnswerChange}
             showExplanation={showExplanation}
             isCorrect={isCurrentAnswerCorrect()}
+            isSpeaking={isSpeaking}
+            onPlayTTS={handleListenQuestion}
+            onStopTTS={handleStopSpeaking}
           />
 
           {hasAnswered && !showExplanation && (

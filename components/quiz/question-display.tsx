@@ -19,6 +19,10 @@ interface QuestionDisplayProps {
   onAnswerChange: (answer: string) => void
   showExplanation?: boolean
   isCorrect?: boolean
+  // TTS props
+  isSpeaking?: boolean
+  onPlayTTS?: () => void
+  onStopTTS?: () => void
 }
 
 export function QuestionDisplay({
@@ -29,6 +33,9 @@ export function QuestionDisplay({
   onAnswerChange,
   showExplanation = false,
   isCorrect,
+  isSpeaking,
+  onPlayTTS,
+  onStopTTS,
 }: QuestionDisplayProps) {
   const [isFlashcardFlipped, setIsFlashcardFlipped] = useState(false)
   const [showHints, setShowHints] = useState(false)
@@ -60,6 +67,23 @@ export function QuestionDisplay({
           )}
         </div>
         <CardTitle className="text-lg">{question.questionText}</CardTitle>
+        {/* TTS Listen Button for Question (matches quiz preview) */}
+        {onPlayTTS && (
+          <div className="flex items-center mt-2 mb-2">
+            <button
+              type="button"
+              onClick={isSpeaking ? onStopTTS : onPlayTTS}
+              className="p-2 rounded-full hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              aria-label={isSpeaking ? 'Stop listening' : 'Listen to question'}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${isSpeaking ? 'text-red-600' : 'text-blue-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5v14l-7-7m8.5-4.5a5 5 0 010 9" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 12a7 7 0 00-7-7" />
+              </svg>
+            </button>
+            <span className="ml-2 text-gray-500 text-sm">{isSpeaking ? 'Playing...' : 'Listen to question'}</span>
+          </div>
+        )}
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Multiple Choice Questions */}
