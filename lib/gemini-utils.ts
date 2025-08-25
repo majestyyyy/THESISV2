@@ -50,7 +50,13 @@ For each question, provide:
 3. For multiple choice: 4 options with one correct answer
 4. For true/false: "True" or "False" as the correct answer
 5. For identification: a specific term, concept, or name to identify. The question should ask "What is..." or "Identify..." or "Name the..." and the correct answer should be a single term or short phrase (1-3 words maximum)
-6. A brief explanation of why the answer is correct
+6. A detailed, pedagogical explanation of why the answer is correct, including:
+   - The reasoning behind the answer
+   - Key concepts or facts from the content that support the answer
+   - Common misconceptions and why they are incorrect
+   - Tips or memory aids to help students remember the concept
+
+IMPORTANT: Do NOT use phrases like "the text describes", "provided by the text", "according to the text", or similar references to the source material in your explanations. Write explanations as standalone educational content.
 
 Format your response as a JSON array with this structure:
 [
@@ -59,17 +65,17 @@ Format your response as a JSON array with this structure:
     "questionType": "multiple_choice",
     "options": ["Option A", "Option B", "Option C", "Option D"],
     "correctAnswer": "Option A",
-    "explanation": "Explanation here"
+    "explanation": "Detailed explanation here"
   },
   {
     "questionText": "What is the powerhouse of the cell?",
     "questionType": "identification",
     "correctAnswer": "Mitochondria",
-    "explanation": "Explanation here"
+    "explanation": "Detailed explanation here"
   }
 ]
 
-Make sure the questions test understanding of key concepts from the content.
+Make sure the questions test understanding of key concepts from the content. Explanations should be clear, thorough, and help students learn and retain the material. Do not reference the source text in your explanations.
 `
 
   try {
