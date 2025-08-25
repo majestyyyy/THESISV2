@@ -1,3 +1,5 @@
+"use client"
+
 import { useEffect, useState } from "react"
 import useSWR from "swr"
 import { Button } from "@/components/ui/button"
@@ -43,3 +45,6 @@ export function StudyMaterialPage() {
 		</div>
 	)
 }
+
+// Ensure all callback props (like onGenerate, onSave, onCancel) are only passed between client components.
+// No server component should pass a function prop to a client component.
