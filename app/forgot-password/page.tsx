@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,9 +17,37 @@ export default function ForgotPasswordPage() {
   const [message, setMessage] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [emailSent, setEmailSent] = useState(false)
+  const [cooldown, setCooldown] = useState(0)
+
+  // Check for cooldown on mount
+  useEffect(() => {
+    const lastResetTime = localStorage.getItem('lastPasswordReset')
+    if (lastResetTime) {
+      const timeDiff = Date.now() - parseInt(lastResetTime)
+      const remainingCooldown = Math.max(0, 60000 - timeDiff) // 1 minute cooldown
+      if (remainingCooldown > 0) {
+        setCooldown(Math.ceil(remainingCooldown / 1000))
+      }
+    }
+  }, [])
+
+  // Cooldown timer
+  useEffect(() => {
+    if (cooldown > 0) {
+      const timer = setTimeout(() => setCooldown(cooldown - 1), 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [cooldown])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (cooldown > 0) {
+      setError(`Please wait ${cooldown} seconds before requesting another reset`)
+      return
+    }
+
     setLoading(true)
     setError("")
     setMessage("")
@@ -30,6 +58,10 @@ export default function ForgotPasswordPage() {
       setError(result.error)
     } else {
       setMessage("Password reset instructions have been sent to your email address.")
+      setEmailSent(true)
+      // Set cooldown
+      localStorage.setItem('lastPasswordReset', Date.now().toString())
+      setCooldown(60) // 1 minute cooldown
     }
 
     setLoading(false)
@@ -55,8 +87,16 @@ export default function ForgotPasswordPage() {
             )}
 
             {message && (
-              <Alert>
-                <AlertDescription>{message}</AlertDescription>
+              <Alert className="border-green-200 bg-green-50">
+                <AlertDescription className="text-green-800">
+                  {message}
+                  {emailSent && (
+                    <div className="mt-2 text-sm">
+                      <p>Check your spam folder if you don't see the email within a few minutes.</p>
+                      <p>The reset link will expire in 1 hour.</p>
+                    </div>
+                  )}
+                </AlertDescription>
               </Alert>
             )}
 
@@ -69,12 +109,37 @@ export default function ForgotPasswordPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="Enter your email address"
+                disabled={emailSent}
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Sending..." : "Send Reset Instructions"}
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={loading || cooldown > 0 || emailSent}
+            >
+              {loading ? "Sending..." : 
+               cooldown > 0 ? `Wait ${cooldown}s` :
+               emailSent ? "Email Sent" :
+               "Send Reset Instructions"}
             </Button>
+
+            {emailSent && (
+              <div className="text-center">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="text-sm text-blue-600 hover:underline"
+                  onClick={() => {
+                    setEmailSent(false)
+                    setMessage("")
+                    setEmail("")
+                  }}
+                >
+                  Send to a different email
+                </Button>
+              </div>
+            )}
           </form>
 
           <div className="mt-6 text-center">

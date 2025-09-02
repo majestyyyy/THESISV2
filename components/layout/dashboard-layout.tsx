@@ -16,8 +16,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
-import { Brain, Home, Upload, BookOpen, FileText, BarChart3, Settings, LogOut, Menu, User } from "lucide-react"
+import { Brain, Home, Upload, BookOpen, FileText, BarChart3, Settings, LogOut, Menu, User, MessageSquare } from "lucide-react"
 import { useAuth } from "@/components/auth/auth-provider"
+import { SurveyBanner } from "@/components/survey-banner"
 import { cn } from "@/lib/utils"
 
 interface DashboardLayoutProps {
@@ -30,6 +31,7 @@ const navigation = [
   { name: "My Library", href: "/library", icon: BookOpen },
   { name: "Quizzes", href: "/quizzes", icon: FileText },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
+  { name: "Research Survey", href: "/survey", icon: MessageSquare },
   { name: "Settings", href: "/settings", icon: Settings },
 ]
 
@@ -187,6 +189,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="mx-auto w-full max-w-7xl px-2 sm:px-4 md:px-6 lg:px-8">{children}</div>
         </main>
       </div>
+      
+      {/* Survey Banner */}
+      <SurveyBanner />
     </div>
   )
 }

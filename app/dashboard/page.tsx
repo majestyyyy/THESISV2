@@ -1,6 +1,6 @@
 "use client"
 
-import { Upload, FileText, BookOpen, BarChart3, TrendingUp, Clock, Target, Award, ArrowRight } from "lucide-react"
+import { Upload, FileText, BookOpen, BarChart3, TrendingUp, Clock, Target, Award, ArrowRight, MessageSquare } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/components/auth/auth-provider"
 import { ProtectedRoute } from "@/components/auth/protected-route"
@@ -38,6 +38,13 @@ const quickActions = [
     icon: BarChart3,
     href: "/analytics",
     color: "bg-gradient-to-br from-orange-400 to-amber-400",
+  },
+  {
+    title: "Research Survey",
+    description: "Share your feedback to help improve our system",
+    icon: MessageSquare,
+    href: "/survey",
+    color: "bg-gradient-to-br from-pink-400 to-rose-400",
   },
 ]
 
@@ -153,7 +160,7 @@ export default function DashboardPage() {
           {/* Quick Actions */}
           <div>
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Quick Actions</h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
               {quickActions.map((action) => (
                 <Link key={action.title} href={action.href}>
                   <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-gray-100 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-100/50 transition-all duration-300 cursor-pointer group">

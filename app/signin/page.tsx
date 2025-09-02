@@ -2,8 +2,8 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -18,9 +18,22 @@ export default function SignInPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
+  const [successMessage, setSuccessMessage] = useState("")
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { setUser } = useAuth()
+
+  useEffect(() => {
+    const message = searchParams.get('message')
+    if (message) {
+      setSuccessMessage(message)
+      // Clear the message from URL after a delay to let user see it
+      setTimeout(() => {
+        router.replace('/signin', undefined)
+      }, 5000)
+    }
+  }, [searchParams, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -61,6 +74,21 @@ export default function SignInPage() {
             {error && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {successMessage && (
+              <Alert className="border-green-200 bg-gradient-to-r from-green-50 to-emerald-50">
+                <AlertDescription className="text-green-800 flex items-center">
+                  <span className="mr-2">🎉</span>
+                  {successMessage}
+                  <button 
+                    onClick={() => setSuccessMessage("")}
+                    className="ml-auto text-green-600 hover:text-green-800 text-sm"
+                  >
+                    ✕
+                  </button>
+                </AlertDescription>
               </Alert>
             )}
 

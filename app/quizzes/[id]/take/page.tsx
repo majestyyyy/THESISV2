@@ -21,7 +21,6 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
   const [error, setError] = useState<string | null>(null)
   const [session, setSession] = useState<QuizSession | null>(null)
   const [currentQuestion, setCurrentQuestion] = useState(0)
-  const [showSubmitConfirm, setShowSubmitConfirm] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showExplanation, setShowExplanation] = useState(false)
   const [hasAnswered, setHasAnswered] = useState(false)
@@ -416,7 +415,7 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
             {currentQuestion === quiz.questions.length - 1 ? (
               showExplanation ? (
                 <button 
-                  onClick={() => setShowSubmitConfirm(true)} 
+                  onClick={handleSubmitQuiz} 
                   disabled={isSubmitting}
                   className={`flex items-center px-6 py-3 rounded-xl transition-colors ${
                     isSubmitting 
@@ -452,50 +451,6 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
               </button>
             )}
           </div>
-
-          {/* Submit Confirmation */}
-          {showSubmitConfirm && (
-            <div className="bg-green-50 border border-green-200 p-6 rounded-2xl">
-              <div className="flex items-start space-x-3">
-                <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
-                <div className="flex-1">
-                  <div className="space-y-4">
-                    <p className="text-green-800 font-medium">Are you sure you want to submit your quiz?</p>
-                    <div className="text-sm text-green-700">
-                      <p>
-                        Answered: {getAnsweredQuestions()}/{quiz.totalQuestions} questions
-                      </p>
-                      <p>You've completed all questions with explanations.</p>
-                    </div>
-                    <div className="flex space-x-3">
-                      <button 
-                        onClick={handleSubmitQuiz} 
-                        disabled={isSubmitting}
-                        className={`px-6 py-3 rounded-xl transition-colors ${
-                          isSubmitting 
-                            ? 'text-gray-400 bg-gray-100 cursor-not-allowed' 
-                            : 'text-white bg-green-600 hover:bg-green-700'
-                        }`}
-                      >
-                        {isSubmitting ? "Submitting..." : "Yes, Submit Quiz"}
-                      </button>
-                      <button 
-                        onClick={() => setShowSubmitConfirm(false)} 
-                        disabled={isSubmitting}
-                        className={`px-6 py-3 rounded-xl transition-colors ${
-                          isSubmitting 
-                            ? 'text-gray-400 bg-gray-100 cursor-not-allowed' 
-                            : 'text-gray-700 bg-white border border-gray-200 hover:bg-gray-50'
-                        }`}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </DashboardLayout>
     </ProtectedRoute>
