@@ -1,8 +1,9 @@
 "use client"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BookOpen, Brain, FileText, BarChart3 } from "lucide-react"
+import { BookOpen, FileText, BarChart3 } from "lucide-react"
 import { useAuth } from "@/components/auth/auth-provider"
 
 export default function HomePage() {
@@ -13,8 +14,16 @@ export default function HomePage() {
       <header className="border-b bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Brain className="h-8 w-8 text-blue-600" />
-            <h1 className="text-2xl font-bold text-gray-900">AI-GIR</h1>
+            <div className="w-8 h-8 flex items-center justify-center">
+              <Image
+                src="/LOGO.png"
+                alt="AI-GiR Logo"
+                width={32}
+                height={32}
+                className="w-8 h-8 object-contain"
+              />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900">AI-GiR</h1>
           </div>
           <div className="flex items-center space-x-4">
             {loading ? null : user ? (
@@ -77,7 +86,15 @@ export default function HomePage() {
 
           <Card className="text-center">
             <CardHeader>
-              <Brain className="h-12 w-12 text-green-600 mx-auto mb-4" />
+              <div className="w-12 h-12 mx-auto mb-4 flex items-center justify-center">
+                <Image
+                  src="/LOGO.png"
+                  alt="AI-GiR Logo"
+                  width={48}
+                  height={48}
+                  className="w-12 h-12 object-contain"
+                />
+              </div>
               <CardTitle>AI Quiz Generation</CardTitle>
             </CardHeader>
             <CardContent>
@@ -151,8 +168,16 @@ export default function HomePage() {
       <footer className="bg-gray-900 text-white py-8 mt-16">
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <Brain className="h-6 w-6" />
-            <span className="text-xl font-bold">AI-GIR</span>
+            <div className="w-6 h-6 flex items-center justify-center">
+              <Image
+                src="/LOGO.png"
+                alt="AI-GiR Logo"
+                width={24}
+                height={24}
+                className="w-6 h-6 object-contain"
+              />
+            </div>
+            <span className="text-xl font-bold">AI-GiR</span>
           </div>
           <p className="text-gray-400">Empowering students with AI-driven learning tools</p>
         </div>

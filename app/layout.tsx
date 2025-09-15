@@ -6,9 +6,14 @@ import "./globals.css"
 import { AuthProvider } from "@/components/auth/auth-provider"
 
 export const metadata: Metadata = {
-  title: "AI-GIR - AI-Powered Learning Platform",
+  title: "AI-GiR - AI-Powered Learning Platform",
   description: "Transform your study materials with AI-generated quizzes and reviewers",
   generator: "v0.dev",
+  icons: {
+    icon: "/LOGO.png",
+    shortcut: "/LOGO.png",
+    apple: "/LOGO.png",
+  },
 }
 
 export default function RootLayout({

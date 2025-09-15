@@ -4,12 +4,13 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Brain, ArrowLeft } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import { resetPassword } from "@/lib/auth"
 
 export default function ForgotPasswordPage() {
@@ -72,8 +73,16 @@ export default function ForgotPasswordPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <Brain className="h-8 w-8 text-blue-600" />
-            <h1 className="text-2xl font-bold">AI-GIR</h1>
+            <div className="w-8 h-8 flex items-center justify-center">
+              <Image
+                src="/LOGO.png"
+                alt="AI-GiR Logo"
+                width={32}
+                height={32}
+                className="w-8 h-8 object-contain"
+              />
+            </div>
+            <h1 className="text-2xl font-bold">AI-GiR</h1>
           </div>
           <CardTitle>Reset Your Password</CardTitle>
           <CardDescription>Enter your email address and we'll send you reset instructions</CardDescription>

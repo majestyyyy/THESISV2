@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -16,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
-import { Brain, Home, Upload, BookOpen, FileText, BarChart3, Settings, LogOut, Menu, User, MessageSquare } from "lucide-react"
+import { Home, Upload, BookOpen, FileText, BarChart3, Settings, LogOut, Menu, User, MessageSquare } from "lucide-react"
 import { useAuth } from "@/components/auth/auth-provider"
 import { SurveyBanner } from "@/components/survey-banner"
 import { cn } from "@/lib/utils"
@@ -65,10 +66,16 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <SheetTitle className="sr-only">Sidebar Navigation</SheetTitle>
           <div className="flex h-full flex-col">
             <div className="flex h-16 items-center px-4 sm:px-6 border-b border-indigo-100">
-              <div className="w-7 h-7 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-lg flex items-center justify-center">
-                <Brain className="h-4 w-4 text-white" />
+              <div className="w-7 h-7 flex items-center justify-center">
+                <Image
+                  src="/LOGO.png"
+                  alt="AI-GiR Logo"
+                  width={28}
+                  height={28}
+                  className="w-7 h-7 object-contain"
+                />
               </div>
-              <span className="ml-3 text-lg sm:text-xl font-medium bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">AI-GIR</span>
+              <span className="ml-3 text-lg sm:text-xl font-medium bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">AI-GiR</span>
             </div>
             <nav className="flex-1 space-y-1 px-2 sm:px-4 py-4 sm:py-6">
               {navigation.map((item) => {
@@ -100,10 +107,16 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="flex flex-col flex-grow pt-6 pb-4 overflow-y-auto bg-white/90 backdrop-blur-sm border-r border-indigo-100">
           <div className="flex items-center flex-shrink-0 px-6">
             <Link href="/dashboard" className="flex items-center">
-              <div className="w-7 h-7 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-lg flex items-center justify-center">
-                <Brain className="h-4 w-4 text-white" />
+              <div className="w-7 h-7 flex items-center justify-center">
+                <Image
+                  src="/LOGO.png"
+                  alt="AI-GiR Logo"
+                  width={28}
+                  height={28}
+                  className="w-7 h-7 object-contain"
+                />
               </div>
-              <span className="ml-3 text-xl font-medium bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">AI-GIR</span>
+              <span className="ml-3 text-xl font-medium bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">AI-GiR</span>
             </Link>
           </div>
           <div className="mt-8 flex-1 flex flex-col">

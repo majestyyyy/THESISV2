@@ -6,6 +6,7 @@ import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { ProtectedRoute } from '@/components/auth/protected-route'
 import PDFUpload from '@/components/upload/pdf-upload'
 import { FileText, Clock, CheckCircle, Trash2, BookOpen, Brain, ArrowRight } from 'lucide-react'
+import Image from "next/image"
 import { formatFileSize, getUserFiles, deleteFile, type UploadResult } from '@/lib/file-utils'
 import { useRouter } from 'next/navigation'
 import useSWR from "swr"

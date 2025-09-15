@@ -3,7 +3,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Clock, Target, TrendingUp, BookOpen, Brain, Award, Activity } from "lucide-react"
+import { Clock, Target, TrendingUp, BookOpen, Award, Activity } from "lucide-react"
+import Image from "next/image"
 import {
   PerformanceChart,
   SubjectPerformanceChart,
@@ -129,7 +130,7 @@ export default function AnalyticsPage() {
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="text-center p-4 border rounded-lg">
-                      <Brain className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+                      <Image src="/LOGO.png" alt="AI-GiR Logo" width={32} height={32} className="mx-auto mb-2" />
                       <p className="text-2xl font-bold text-gray-900">{mockPerformanceMetrics.filesUploaded}</p>
                       <p className="text-sm text-gray-600">Files Uploaded</p>
                     </div>

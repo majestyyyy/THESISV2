@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Brain } from "lucide-react"
+import Image from "next/image"
 import { supabase } from "@/lib/supabase"
 
 export default function ResetPasswordContent() {
@@ -187,7 +187,7 @@ export default function ResetPasswordContent() {
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
-              <Brain className="h-6 w-6 text-red-600" />
+              <Image src="/LOGO.png" alt="AI-GiR Logo" width={24} height={24} />
             </div>
             <CardTitle className="text-red-800">Invalid Reset Link</CardTitle>
             <CardDescription>This password reset link is invalid or has expired.</CardDescription>
@@ -228,7 +228,7 @@ export default function ResetPasswordContent() {
         <Card className="w-full max-w-md shadow-lg">
           <CardHeader className="text-center">
             <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 animate-pulse">
-              <Brain className="h-8 w-8 text-green-600" />
+              <Image src="/LOGO.png" alt="AI-GiR Logo" width={32} height={32} />
             </div>
             <CardTitle className="text-green-800 text-xl">🎉 Password Updated Successfully!</CardTitle>
             <CardDescription className="text-green-700">Your account is now secured with your new password</CardDescription>
@@ -277,7 +277,7 @@ export default function ResetPasswordContent() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-            <Brain className="h-6 w-6 text-blue-600" />
+            <Image src="/LOGO.png" alt="AI-GiR Logo" width={24} height={24} />
           </div>
           <CardTitle>Set New Password</CardTitle>
           <CardDescription>Choose a strong password for your account</CardDescription>

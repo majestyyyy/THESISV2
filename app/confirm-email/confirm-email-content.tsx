@@ -6,7 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Brain, Mail, CheckCircle, AlertCircle } from "lucide-react"
+import { Mail, CheckCircle, AlertCircle } from "lucide-react"
+import Image from "next/image"
 import { useAuth } from "@/components/auth/auth-provider"
 import { supabase } from "@/lib/supabase"
 
@@ -98,7 +99,7 @@ export default function ConfirmEmailContent() {
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-              <Brain className="h-6 w-6 text-blue-600" />
+              <Image src="/LOGO.png" alt="AI-GiR Logo" width={24} height={24} />
             </div>
             <CardTitle>Confirming Email...</CardTitle>
             <CardDescription>Please wait while we confirm your email address.</CardDescription>

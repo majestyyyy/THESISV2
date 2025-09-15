@@ -4,12 +4,12 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Brain } from "lucide-react"
 import { signIn } from "@/lib/auth"
 import { useAuth } from "@/components/auth/auth-provider"
 
@@ -62,8 +62,16 @@ export default function SignInContent() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <Brain className="h-8 w-8 text-blue-600" />
-            <h1 className="text-2xl font-bold">AI-GIR</h1>
+            <div className="w-10 h-10 flex items-center justify-center">
+              <Image
+                src="/LOGO.png"
+                alt="AI-GiR Logo"
+                width={40}
+                height={40}
+                className="w-10 h-10 object-contain"
+              />
+            </div>
+            <h1 className="text-2xl font-bold">AI-GiR</h1>
           </div>
           <CardTitle>Welcome Back</CardTitle>
           <CardDescription>Sign in to your account to continue learning</CardDescription>

@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Brain, CheckCircle, FileText, Upload } from "lucide-react"
+import Image from "next/image"
 import { QuizGenerationForm } from "@/components/quiz/quiz-generation-form"
 import { QuizPreview } from "@/components/quiz/quiz-preview"
 import { ProtectedRoute } from "@/components/auth/protected-route"
@@ -123,13 +124,13 @@ export default function GenerateQuizPage() {
     return (
       <ProtectedRoute>
         <DashboardLayout>
-          <div className="max-w-2xl mx-auto py-16 text-center">
-            <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-6" />
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">Quiz Saved Successfully!</h1>
-            <p className="text-gray-600 mb-8">Your quiz "{savedQuiz.title}" has been saved and is ready to be taken.</p>
+          <div className="max-w-2xl mx-auto py-12 sm:py-16 text-center px-4 sm:px-6">
+            <CheckCircle className="h-12 w-12 sm:h-16 sm:w-16 text-green-600 mx-auto mb-4 sm:mb-6" />
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Quiz Saved Successfully!</h1>
+            <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">Your quiz "{savedQuiz.title}" has been saved and is ready to be taken.</p>
             <div className="space-y-4">
               <Card className="text-left">
-                <CardContent className="p-6">
+                <CardContent className="p-4 sm:p-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-semibold">{savedQuiz.title}</h3>
@@ -151,16 +152,16 @@ export default function GenerateQuizPage() {
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <div className="space-y-8">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Generate AI Quiz</h1>
-            <p className="mt-2 text-gray-600 max-w-2xl mx-auto">
+        <div className="space-y-6 sm:space-y-8">
+          <div className="text-center px-4 sm:px-6">
+            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Generate AI Quiz</h1>
+            <p className="mt-2 text-sm sm:text-base text-gray-600 max-w-2xl mx-auto">
               Create personalized quizzes from your uploaded study materials using advanced AI technology.
             </p>
           </div>
 
           {!generatedQuiz && !isGenerating && (
-            <div className="max-w-2xl mx-auto">
+            <div className="max-w-2xl mx-auto px-4 sm:px-6">
               {filesLoading ? (
                 <Card className="bg-white/80 backdrop-blur-sm border-blue-100 shadow-lg shadow-blue-100/50">
                   <CardContent className="flex items-center justify-center py-12">
@@ -201,7 +202,7 @@ export default function GenerateQuizPage() {
           )}
 
           {isGenerating && (
-            <div className="max-w-2xl mx-auto">
+            <div className="max-w-2xl mx-auto px-4 sm:px-6">
               <Card className="bg-white/80 backdrop-blur-sm border-indigo-100 shadow-lg shadow-indigo-200/50">
                 <CardHeader className="text-center">
                   <Brain className="h-12 w-12 text-indigo-600 mx-auto mb-4 animate-pulse" />
@@ -222,8 +223,8 @@ export default function GenerateQuizPage() {
           )}
 
           {generatedQuiz ? (
-            <div className="max-w-4xl mx-auto">
-              <Alert className="mb-6 bg-emerald-50 border-emerald-200 text-emerald-800">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6">
+              <Alert className="mb-4 sm:mb-6 bg-emerald-50 border-emerald-200 text-emerald-800">
                 <CheckCircle className="h-4 w-4 text-emerald-600" />
                 <AlertDescription>
                   Quiz generated successfully! Review and edit the questions below, then save your quiz.
