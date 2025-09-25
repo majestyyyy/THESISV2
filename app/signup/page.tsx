@@ -25,7 +25,7 @@ export default function SignUpPage() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const { setUser } = useAuth()
+  // const { setUser } = useAuth() // Session management handles user state automatically
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
@@ -56,8 +56,7 @@ export default function SignUpPage() {
     if (result.error) {
       setError(result.error)
     } else if (result.user) {
-      // Set user in context for the confirmation flow
-      setUser(result.user)
+      // Session management handles user state automatically
       // Redirect to email confirmation page with signup flag
       router.push("/confirm-email?from-signup=true")
     }

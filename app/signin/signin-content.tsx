@@ -21,7 +21,7 @@ export default function SignInContent() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { setUser } = useAuth()
+  // const { } = useAuth() // Session management handles user state automatically
 
   useEffect(() => {
     const message = searchParams.get('message')
@@ -44,7 +44,7 @@ export default function SignInContent() {
     if (result.error) {
       setError(result.error)
     } else if (result.user) {
-      setUser(result.user)
+      // Session management handles user state automatically
       
       // Check if email is confirmed
       if (!result.user.emailConfirmed) {

@@ -49,7 +49,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const getUserInitials = () => {
     if (!user) return "U"
-    return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
+    const firstName = user.user_metadata?.first_name || user.email?.split('@')[0] || 'U'
+    const lastName = user.user_metadata?.last_name || ''
+    return `${firstName[0]}${lastName[0] || ''}`.toUpperCase()
   }
 
   return (
@@ -168,7 +170,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none text-gray-800">
-                        {user?.firstName} {user?.lastName}
+                        {user?.user_metadata?.first_name || user?.email?.split('@')[0]} {user?.user_metadata?.last_name || ''}
                       </p>
                       <p className="text-xs leading-none text-indigo-600">{user?.email}</p>
                     </div>

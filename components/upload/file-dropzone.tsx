@@ -7,8 +7,45 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Upload, type File, X, CheckCircle, AlertCircle, Loader2 } from "lucide-react"
-import { validateFile, formatFileSize, getFileIcon, extractTextFromFile, uploadFile } from "@/lib/file-utils"
-import type { FileUpload } from "@/lib/file-utils"
+import { validateFile, formatFileSize, uploadPDFFile } from "@/lib/file-utils"
+import type { UploadProgress } from "@/lib/file-utils"
+
+// Define the FileUpload interface locally since it's not in file-utils
+interface FileUpload {
+  id: string
+  file: File
+  progress: number
+  status: "uploading" | "processing" | "completed" | "error"
+  error?: string
+  extractedText?: string
+}
+
+// Helper function to get file icon based on file type
+function getFileIcon(fileType: string): string {
+  if (fileType === "application/pdf") return "📄"
+  if (fileType.includes("word") || fileType.includes("document")) return "📝"
+  if (fileType === "text/plain") return "📄"
+  return "📎"
+}
+
+// Mock function for extracting text from file (you'll need to implement this based on your needs)
+async function extractTextFromFile(file: File): Promise<string> {
+  // This is a placeholder - you'll need to implement actual text extraction
+  // For PDF files, you might use PDF.js or similar
+  // For now, return a placeholder
+  return `Extracted text from ${file.name}`
+}
+
+// Wrapper function to match the expected uploadFile signature
+async function uploadFile(file: File, onProgress: (progress: number) => void): Promise<void> {
+  const result = await uploadPDFFile(file, (progressData: UploadProgress) => {
+    onProgress(progressData.percentage)
+  })
+  
+  if (!result.success) {
+    throw new Error(result.error || "Upload failed")
+  }
+}
 
 interface FileDropzoneProps {
   onFilesUploaded: (files: FileUpload[]) => void
@@ -73,7 +110,7 @@ export function FileDropzone({ onFilesUploaded }: FileDropzoneProps) {
       const validFiles: File[] = []
       for (const file of acceptedFiles) {
         const validation = validateFile(file)
-        if (!validation.valid) {
+        if (!validation.isValid) {
           setError(validation.error || "Invalid file")
           return
         }

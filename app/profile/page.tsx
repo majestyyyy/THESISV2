@@ -20,8 +20,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("")
   const [formData, setFormData] = useState({
-    firstName: user?.firstName || "",
-    lastName: user?.lastName || "",
+    firstName: user?.user_metadata?.first_name || "",
+    lastName: user?.user_metadata?.last_name || "",
     email: user?.email || "",
   })
 
@@ -55,8 +55,8 @@ export default function ProfilePage() {
 
   const handleCancel = () => {
     setFormData({
-      firstName: user?.firstName || "",
-      lastName: user?.lastName || "",
+      firstName: user?.user_metadata?.first_name || "",
+      lastName: user?.user_metadata?.last_name || "",
       email: user?.email || "",
     })
     setEditing(false)
@@ -64,7 +64,9 @@ export default function ProfilePage() {
 
   const getUserInitials = () => {
     if (!user) return "U"
-    return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
+    const firstName = user.user_metadata?.first_name || user.email?.split('@')[0] || 'U'
+    const lastName = user.user_metadata?.last_name || ''
+    return `${firstName[0]}${lastName[0] || ''}`.toUpperCase()
   }
 
   return (
@@ -90,7 +92,7 @@ export default function ProfilePage() {
                   <AvatarFallback className="bg-blue-100 text-blue-700 text-xl">{getUserInitials()}</AvatarFallback>
                 </Avatar>
                 <CardTitle>
-                  {user?.firstName} {user?.lastName}
+                  {user?.user_metadata?.first_name || user?.email?.split('@')[0]} {user?.user_metadata?.last_name || ''}
                 </CardTitle>
                 <CardDescription>{user?.email}</CardDescription>
               </CardHeader>
@@ -101,7 +103,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex items-center space-x-2 text-sm text-gray-600">
                   <Shield className="h-4 w-4" />
-                  <span>Email {user?.emailConfirmed ? "Verified" : "Not Verified"}</span>
+                  <span>Email {user?.email_confirmed_at ? "Verified" : "Not Verified"}</span>
                 </div>
               </CardContent>
             </Card>

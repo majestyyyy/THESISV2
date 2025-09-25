@@ -28,7 +28,7 @@ export default function HomePage() {
           <div className="flex items-center space-x-4">
             {loading ? null : user ? (
               <>
-                <span className="text-indigo-700 font-semibold">Signed in as {user.firstName} {user.lastName}</span>
+                <span className="text-indigo-700 font-semibold">Signed in as {user.user_metadata?.first_name || user.email?.split('@')[0]} {user.user_metadata?.last_name || ''}</span>
                 <Link href="/dashboard">
                   <Button variant="default">Go to Dashboard</Button>
                 </Link>

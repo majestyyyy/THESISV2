@@ -109,7 +109,7 @@ export default function DashboardPage() {
         <div className="space-y-8 min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
           {/* Welcome Section */}
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Welcome back, {user?.firstName}!</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Welcome back, {user?.user_metadata?.first_name || user?.email?.split('@')[0]}!</h1>
             <p className="mt-2 text-gray-600">Here's an overview of your learning stats.</p>
           </div>
 

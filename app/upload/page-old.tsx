@@ -1,15 +1,27 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { FileText, Brain, Zap, BookOpen, ArrowRight } from "lucide-react"
+import { FileText, Brain, Zap, BookOpen, ArrowRight, Clock, CheckCircle, Trash2, Download } from "lucide-react"
 import { FileDropzone } from "@/components/upload/file-dropzone"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import type { FileUpload } from "@/lib/file-utils"
+import PDFUpload from '@/components/upload/pdf-upload'
+import { formatFileSize, getUserFiles, deleteFile, type UploadResult } from '@/lib/file-utils'
 import Link from "next/link"
+import Head from 'next/head'
+
+// Define FileUpload interface locally since it's not exported from file-utils
+interface FileUpload {
+  id: string
+  file: File
+  progress: number
+  status: "uploading" | "processing" | "completed" | "error"
+  error?: string
+  extractedText?: string
+}
 
 const features = [
   {
@@ -33,15 +45,6 @@ const features = [
     description: "Automatic categorization and tagging",
   },
 ]
-
-import Head from 'next/head'
-import { useState } from 'react'
-import DashboardLayout from '@/components/layout/dashboard-layout'
-import ProtectedRoute from '@/components/auth/protected-route'
-import PDFUpload from '@/components/upload/pdf-upload'
-import { FileText, Clock, CheckCircle, Trash2, Download } from 'lucide-react'
-import { formatFileSize, getUserFiles, deleteFile, type UploadResult } from '@/lib/file-utils'
-import { useEffect } from 'react'
 
 export default function UploadPage() {
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([])

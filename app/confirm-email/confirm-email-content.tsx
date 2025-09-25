@@ -32,7 +32,7 @@ export default function ConfirmEmailContent() {
     }
 
     // If user is already logged in and email is confirmed, redirect
-    if (user && user.emailConfirmed) {
+    if (user && user.email_confirmed_at) {
       router.push('/dashboard')
     }
   }, [searchParams, user, router])
