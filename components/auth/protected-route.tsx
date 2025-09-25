@@ -16,7 +16,7 @@ export function ProtectedRoute({
   children, 
   requireEmailConfirmed = false, // Changed default to false for more flexibility
   fallback 
-}: ProtectedRouteProps) {
+}: ProtectedRouteProps): React.JSX.Element {
   const { user, loading, isAuthenticated, error } = useAuth()
   const router = useRouter()
   const [isRedirecting, setIsRedirecting] = useState(false)
@@ -44,7 +44,7 @@ export function ProtectedRoute({
 
   // Show loading state
   if (loading || isRedirecting) {
-    return fallback || (
+    return (fallback as React.JSX.Element) || (
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
           <RefreshCw className="h-8 w-8 animate-spin text-blue-600" />
@@ -70,12 +70,12 @@ export function ProtectedRoute({
 
   // Don't render if not authenticated (will redirect)
   if (!isAuthenticated) {
-    return null
+    return <></>
   }
 
   // Don't render if email confirmation required but not confirmed
   if (requireEmailConfirmed && user && !user.email_confirmed_at) {
-    return null
+    return <></>
   }
 
   return <>{children}</>
