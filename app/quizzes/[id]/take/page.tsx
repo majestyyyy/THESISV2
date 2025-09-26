@@ -26,6 +26,7 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
   const [hasAnswered, setHasAnswered] = useState(false)
   const [isHydrated, setIsHydrated] = useState(false)
   const [submittedQuestions, setSubmittedQuestions] = useState<Set<number>>(new Set())
+  const [isTimerVisible, setIsTimerVisible] = useState(true)
 
     // TTS state
     const [isSpeaking, setIsSpeaking] = useState(false)
@@ -277,26 +278,26 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
       <ProtectedRoute>
         <div className="min-h-screen relative overflow-hidden">
           {/* Enhanced Loading Background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-purple-50"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-blue-100"></div>
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute -top-4 -left-4 w-72 h-72 bg-gradient-to-r from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute top-1/3 -right-8 w-96 h-96 bg-gradient-to-r from-purple-300/15 to-pink-300/15 rounded-full blur-3xl animate-pulse delay-1000"></div>
-            <div className="absolute -bottom-8 left-1/3 w-80 h-80 bg-gradient-to-r from-blue-300/20 to-indigo-300/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
+            <div className="absolute -top-4 -left-4 w-72 h-72 bg-gradient-to-r from-blue-400/20 to-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute top-1/3 -right-8 w-96 h-96 bg-gradient-to-r from-blue-300/15 to-blue-400/15 rounded-full blur-3xl animate-pulse delay-1000"></div>
+            <div className="absolute -bottom-8 left-1/3 w-80 h-80 bg-gradient-to-r from-blue-300/20 to-blue-400/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
           </div>
           
           <div className="relative z-10 flex flex-col items-center justify-center min-h-screen space-y-6">
             <div className="relative">
-              <div className="animate-spin rounded-full h-20 w-20 border-4 border-indigo-200/50"></div>
-              <div className="animate-spin rounded-full h-20 w-20 border-t-4 border-indigo-600 absolute top-0 left-0"></div>
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-400/20 to-purple-400/20 rounded-full blur-xl animate-pulse"></div>
+              <div className="animate-spin rounded-full h-20 w-20 border-4 border-blue-200/50"></div>
+              <div className="animate-spin rounded-full h-20 w-20 border-t-4 border-blue-600 absolute top-0 left-0"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-blue-500/20 rounded-full blur-xl animate-pulse"></div>
             </div>
             <div className="text-center space-y-3 bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg">
               <p className="text-2xl font-bold text-gray-800">Preparing your quiz...</p>
               <p className="text-gray-600">Creating the perfect learning experience</p>
               <div className="flex justify-center space-x-1 mt-4">
-                <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce delay-100"></div>
-                <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce delay-200"></div>
+                <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-100"></div>
+                <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce delay-200"></div>
               </div>
             </div>
           </div>
@@ -310,17 +311,17 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
       <ProtectedRoute>
         <div className="min-h-screen relative overflow-hidden">
           {/* Enhanced Error Background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-red-50 via-white to-orange-50"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-red-50 via-white to-red-100"></div>
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute -top-4 -left-4 w-72 h-72 bg-gradient-to-r from-red-400/15 to-orange-400/15 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute top-1/3 -right-8 w-96 h-96 bg-gradient-to-r from-orange-300/10 to-yellow-300/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-            <div className="absolute -bottom-8 left-1/3 w-80 h-80 bg-gradient-to-r from-red-300/15 to-pink-300/15 rounded-full blur-3xl animate-pulse delay-2000"></div>
+            <div className="absolute -top-4 -left-4 w-72 h-72 bg-gradient-to-r from-red-400/15 to-red-500/15 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute top-1/3 -right-8 w-96 h-96 bg-gradient-to-r from-red-300/10 to-red-400/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+            <div className="absolute -bottom-8 left-1/3 w-80 h-80 bg-gradient-to-r from-red-300/15 to-red-400/15 rounded-full blur-3xl animate-pulse delay-2000"></div>
           </div>
           
           <div className="relative z-10 flex items-center justify-center min-h-screen">
             <div className="max-w-md bg-white/90 backdrop-blur-sm p-8 rounded-3xl border border-white/20 shadow-2xl text-center">
               <div className="mb-6">
-                <div className="w-20 h-20 bg-gradient-to-r from-red-100 to-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <div className="w-20 h-20 bg-gradient-to-r from-red-100 to-red-200 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                   <span className="text-3xl animate-bounce">⚠️</span>
                 </div>
                 <p className="text-red-600 text-xl font-bold">{error || "Quiz not found"}</p>
@@ -329,7 +330,7 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
               <div className="space-y-4">
                 <button 
                   onClick={() => window.location.reload()}
-                  className="w-full px-6 py-4 text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg font-semibold text-lg"
+                  className="w-full px-6 py-4 text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 shadow-lg font-semibold text-lg"
                 >
                   🔄 Try Again
                 </button>
@@ -352,24 +353,24 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
       <ProtectedRoute>
         <div className="min-h-screen relative overflow-hidden">
           {/* Enhanced Session Loading Background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-purple-50"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-blue-100"></div>
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute -top-4 -left-4 w-72 h-72 bg-gradient-to-r from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute top-1/3 -right-8 w-96 h-96 bg-gradient-to-r from-purple-300/15 to-pink-300/15 rounded-full blur-3xl animate-pulse delay-1000"></div>
-            <div className="absolute -bottom-8 left-1/3 w-80 h-80 bg-gradient-to-r from-blue-300/20 to-indigo-300/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
+            <div className="absolute -top-4 -left-4 w-72 h-72 bg-gradient-to-r from-blue-400/20 to-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute top-1/3 -right-8 w-96 h-96 bg-gradient-to-r from-blue-300/15 to-blue-400/15 rounded-full blur-3xl animate-pulse delay-1000"></div>
+            <div className="absolute -bottom-8 left-1/3 w-80 h-80 bg-gradient-to-r from-blue-300/20 to-blue-400/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
           </div>
           
           <div className="relative z-10 flex flex-col items-center justify-center min-h-screen space-y-6">
             <div className="relative">
-              <div className="animate-pulse bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full h-20 w-20 shadow-2xl"></div>
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full h-20 w-20 animate-ping opacity-20"></div>
+              <div className="animate-pulse bg-gradient-to-r from-blue-400 to-blue-500 rounded-full h-20 w-20 shadow-2xl"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full h-20 w-20 animate-ping opacity-20"></div>
               <div className="absolute inset-2 bg-white rounded-full animate-pulse"></div>
             </div>
             <div className="text-center space-y-3 bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-xl">
               <p className="text-2xl font-bold text-gray-800">Setting up your session...</p>
               <p className="text-gray-600">Almost ready to begin!</p>
               <div className="w-32 h-1 bg-gray-200 rounded-full mx-auto overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full animate-pulse"></div>
+                <div className="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-full animate-pulse"></div>
               </div>
             </div>
           </div>
@@ -382,36 +383,36 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
     <ProtectedRoute>
       <div className="min-h-screen relative overflow-hidden">
         {/* Enhanced Animated Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-purple-50"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-blue-100"></div>
         
         {/* Floating Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-4 -left-4 w-72 h-72 bg-gradient-to-r from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute top-1/3 -right-8 w-96 h-96 bg-gradient-to-r from-purple-300/15 to-pink-300/15 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="absolute -bottom-8 left-1/3 w-80 h-80 bg-gradient-to-r from-blue-300/20 to-indigo-300/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
+          <div className="absolute -top-4 -left-4 w-72 h-72 bg-gradient-to-r from-blue-400/20 to-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute top-1/3 -right-8 w-96 h-96 bg-gradient-to-r from-blue-300/15 to-blue-400/15 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute -bottom-8 left-1/3 w-80 h-80 bg-gradient-to-r from-blue-300/20 to-blue-400/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
           
           {/* Subtle Grid Pattern */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(99,102,241,0.15)_1px,transparent_0)] bg-[length:40px_40px] animate-pulse opacity-30"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(59,130,246,0.15)_1px,transparent_0)] bg-[length:40px_40px] animate-pulse opacity-30"></div>
           
           {/* Floating Particles */}
-          <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-indigo-400/40 rounded-full animate-bounce delay-300"></div>
-          <div className="absolute top-3/4 left-3/4 w-1 h-1 bg-purple-400/60 rounded-full animate-bounce delay-700"></div>
+          <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-blue-400/40 rounded-full animate-bounce delay-300"></div>
+          <div className="absolute top-3/4 left-3/4 w-1 h-1 bg-blue-500/60 rounded-full animate-bounce delay-700"></div>
           <div className="absolute top-1/2 left-1/6 w-1.5 h-1.5 bg-blue-400/50 rounded-full animate-bounce delay-1100"></div>
-          <div className="absolute top-1/6 right-1/4 w-1 h-1 bg-indigo-500/40 rounded-full animate-bounce delay-1500"></div>
+          <div className="absolute top-1/6 right-1/4 w-1 h-1 bg-blue-600/40 rounded-full animate-bounce delay-1500"></div>
         </div>
         
         {/* Main Content with Enhanced Backdrop */}
         <div className="relative z-10 py-8">
           <div className="max-w-5xl mx-auto space-y-8 px-6">
           {/* Enhanced Quiz Header */}
-          <div className="bg-white/80 backdrop-blur-md p-8 rounded-3xl border border-white/30 shadow-2xl shadow-indigo-200/30 relative overflow-hidden">
+          <div className="bg-white/80 backdrop-blur-md p-8 rounded-3xl border border-white/30 shadow-2xl shadow-blue-200/30 relative overflow-hidden">
             {/* Card inner glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 via-transparent to-purple-50/50 rounded-3xl"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-transparent to-blue-100/50 rounded-3xl"></div>
             <div className="relative z-10">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 flex items-center mb-2">
-                  <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-2 rounded-xl mr-3">
+                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-2 rounded-xl mr-3">
                     <FileText className="h-6 w-6 text-white" />
                   </div>
                   {quiz.title}
@@ -419,14 +420,14 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
                 <p className="text-gray-600 text-lg">{quiz.description}</p>
               </div>
               <div className="text-right">
-                <span className="px-4 py-2 bg-gradient-to-r from-blue-100 to-indigo-100 text-indigo-800 text-sm rounded-full font-semibold shadow-sm">
+                <span className="px-4 py-2 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 text-sm rounded-full font-semibold shadow-sm">
                   {quiz.difficulty}
                 </span>
               </div>
             </div>
             
             {/* Enhanced Progress Section */}
-            <div className="bg-gradient-to-r from-gray-50 to-indigo-50 p-6 rounded-2xl">
+            <div className="bg-gradient-to-r from-gray-50 to-blue-50 p-6 rounded-2xl">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-8 text-sm font-medium">
                   <div className="flex items-center space-x-2">
@@ -443,7 +444,13 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
                   </div>
                 </div>
                 <div className="bg-white p-3 rounded-xl shadow-sm">
-                  <QuizTimer initialTime={session.timeRemaining} onTimeUp={handleTimeUp} isPaused={isSubmitting} />
+                  <QuizTimer 
+                    initialTime={session.timeRemaining} 
+                    onTimeUp={handleTimeUp} 
+                    isPaused={isSubmitting}
+                    isVisible={isTimerVisible}
+                    onToggleVisibility={() => setIsTimerVisible(!isTimerVisible)}
+                  />
                 </div>
               </div>
               <div className="relative">
@@ -474,7 +481,7 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
           {/* Enhanced Navigation */}
           <div className="bg-white/80 backdrop-blur-md p-6 rounded-3xl border border-white/30 shadow-2xl shadow-indigo-200/30 relative overflow-hidden">
             {/* Navigation card glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-50/40 via-transparent to-indigo-50/40 rounded-3xl"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/40 via-transparent to-blue-100/40 rounded-3xl"></div>
             <div className="relative z-10">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
               {/* Question Progress Indicators */}
@@ -496,12 +503,12 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
                         disabled={!canNavigate}
                         className={`relative flex-shrink-0 w-10 h-10 rounded-xl text-sm font-bold transition-all duration-300 transform hover:scale-105 ${
                           index === currentQuestion
-                            ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-300/50 ring-2 ring-indigo-300 ring-offset-2"
+                            ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-300/50 ring-2 ring-blue-300 ring-offset-2"
                             : isSubmitted
                               ? "bg-gradient-to-r from-gray-300 to-gray-400 text-gray-600 cursor-not-allowed opacity-60"
                               : isAnswered
                                 ? "bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-md shadow-emerald-200/50"
-                                : "bg-white text-gray-600 hover:bg-gradient-to-r hover:from-indigo-100 hover:to-purple-100 shadow-md border border-gray-200"
+                                : "bg-white text-gray-600 hover:bg-gradient-to-r hover:from-blue-100 hover:to-blue-200 shadow-md border border-gray-200"
                         }`}
                       >
                         {index + 1}
@@ -546,7 +553,7 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
               ) : (
                 <button 
                   onClick={handleSubmitAnswer}
-                  className="group px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-indigo-300/50"
+                  className="group px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg shadow-blue-300/50"
                 >
                   ✨ Submit Answer
                 </button>
@@ -562,7 +569,7 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
             ) : (
               <button 
                 onClick={handleSubmitAnswer}
-                className="group px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-indigo-300/50"
+                className="group px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg shadow-blue-300/50"
               >
                 Submit
               </button>

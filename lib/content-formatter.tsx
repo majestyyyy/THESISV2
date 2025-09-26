@@ -55,7 +55,7 @@ export const formatMarkdownContent = (content: string, isPreview = false): React
     
     if (trimmedLine.startsWith('### ')) {
       return (
-        <h3 key={index} className="text-lg font-medium text-indigo-700 mt-4 mb-2">
+        <h3 key={index} className="text-lg font-medium text-blue-700 mt-4 mb-2">
           {trimmedLine.substring(4)}
         </h3>
       )

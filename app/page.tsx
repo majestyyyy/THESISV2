@@ -9,7 +9,7 @@ import { useAuth } from "@/components/auth/auth-provider"
 export default function HomePage() {
   const { user, loading } = useAuth();
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200">
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -106,7 +106,7 @@ export default function HomePage() {
 
           <Card className="text-center">
             <CardHeader>
-              <BookOpen className="h-12 w-12 text-purple-600 mx-auto mb-4" />
+              <BookOpen className="h-12 w-12 text-blue-600 mx-auto mb-4" />
               <CardTitle>Smart Reviewers</CardTitle>
             </CardHeader>
             <CardContent>
@@ -152,8 +152,8 @@ export default function HomePage() {
               </p>
             </div>
             <div className="space-y-4">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto">
-                <span className="text-2xl font-bold text-purple-600">3</span>
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+                <span className="text-2xl font-bold text-blue-600">3</span>
               </div>
               <h4 className="text-xl font-semibold">Learn & Track</h4>
               <p className="text-gray-600">

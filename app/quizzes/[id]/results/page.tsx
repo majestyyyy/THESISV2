@@ -185,7 +185,7 @@ export default function QuizResultsPage({ params }: { params: Promise<{ id: stri
       <ProtectedRoute>
         <DashboardLayout>
           <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             <p className="text-gray-600">Loading quiz results...</p>
           </div>
         </DashboardLayout>
@@ -203,7 +203,7 @@ export default function QuizResultsPage({ params }: { params: Promise<{ id: stri
               <div className="space-y-3">
                 <button 
                   onClick={() => window.location.reload()}
-                  className="w-full px-6 py-3 text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-colors"
+                  className="w-full px-6 py-3 text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors"
                 >
                   Retry Loading
                 </button>
@@ -226,16 +226,16 @@ export default function QuizResultsPage({ params }: { params: Promise<{ id: stri
       <DashboardLayout>
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Results Header */}
-          <div className="bg-white/80 backdrop-blur-sm p-8 rounded-2xl border border-purple-100 shadow-lg shadow-purple-100/50">
+          <div className="bg-white/80 backdrop-blur-sm p-8 rounded-2xl border border-blue-100 shadow-lg shadow-blue-100/50">
             <div className="text-center">
               <div className="flex justify-center mb-4">{getPerformanceIcon(results.score)}</div>
-              <h1 className="text-2xl font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+              <h1 className="text-2xl font-semibold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent mb-2">
                 {isShowingBestScore ? "Your Best Performance!" : "Quiz Complete!"}
               </h1>
               <p className="text-gray-600">{quiz.title}</p>
               {totalAttempts > 1 && (
                 <div className="mt-3">
-                  <span className="px-3 py-1 bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-700 text-sm rounded-full">
+                  <span className="px-3 py-1 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700 text-sm rounded-full">
                     {isShowingBestScore 
                       ? `Best of ${totalAttempts} attempts` 
                       : `Attempt ${totalAttempts}`
@@ -247,22 +247,22 @@ export default function QuizResultsPage({ params }: { params: Promise<{ id: stri
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
               <div className="text-center">
-                <div className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-1">{results.score}%</div>
+                <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent mb-1">{results.score}%</div>
                 <p className="text-sm text-gray-600">
                   {isShowingBestScore ? "Best Score" : "Final Score"}
                 </p>
                 {isShowingBestScore && totalAttempts > 1 && (
-                  <p className="text-xs text-emerald-600 mt-1">🏆 Personal Best</p>
+                  <p className="text-xs text-blue-600 mt-1">🏆 Personal Best</p>
                 )}
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-1">
+                <div className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-blue-600 bg-clip-text text-transparent mb-1">
                   {results.correctAnswers}/{results.totalQuestions}
                 </div>
                 <p className="text-sm text-gray-600">Correct Answers</p>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-500 bg-clip-text text-transparent mb-1">{formatTime(results.timeSpent)}</div>
+                <div className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-blue-500 bg-clip-text text-transparent mb-1">{formatTime(results.timeSpent)}</div>
                 <p className="text-sm text-gray-600">Time Spent</p>
               </div>
             </div>
@@ -270,18 +270,18 @@ export default function QuizResultsPage({ params }: { params: Promise<{ id: stri
             <div className="mt-8">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-medium text-gray-700">Overall Performance</span>
-                <span className="px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-700">
+                <span className="px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700">
                   {results.score}%
                 </span>
               </div>
-              <Progress value={results.score} className="h-2 bg-gradient-to-r from-blue-100 to-purple-100" />
+              <Progress value={results.score} className="h-2 bg-gradient-to-r from-blue-100 to-blue-200" />
               <p className="text-center text-gray-600 mt-4">{getPerformanceMessage(results.score)}</p>
             </div>
           </div>
 
           {/* Detailed Results */}
           <div className="w-full">
-            <div className="flex space-x-1 bg-gradient-to-r from-blue-100 to-purple-100 p-1 rounded-xl mb-6">
+            <div className="flex space-x-1 bg-gradient-to-r from-blue-100 to-blue-200 p-1 rounded-xl mb-6">
               <button 
                 onClick={() => setActiveTab('summary')}
                 className={`flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
@@ -296,8 +296,8 @@ export default function QuizResultsPage({ params }: { params: Promise<{ id: stri
                 onClick={() => setActiveTab('review')}
                 className={`flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                   activeTab === 'review' 
-                    ? 'bg-white text-gray-900 shadow-sm shadow-purple-200/50' 
-                    : 'text-purple-700 hover:text-purple-900 hover:bg-white/50'
+                    ? 'bg-white text-gray-900 shadow-sm shadow-blue-200/50' 
+                    : 'text-blue-700 hover:text-blue-900 hover:bg-white/50'
                 }`}
               >
                 Review Answers
@@ -322,7 +322,7 @@ export default function QuizResultsPage({ params }: { params: Promise<{ id: stri
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-600">Accuracy Rate</span>
-                        <span className="font-medium bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">{results.score}%</span>
+                        <span className="font-medium bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">{results.score}%</span>
                       </div>
                     </div>
                     <div className="space-y-3">
@@ -338,7 +338,7 @@ export default function QuizResultsPage({ params }: { params: Promise<{ id: stri
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-600">Difficulty</span>
-                        <span className="px-2 py-1 bg-gradient-to-r from-blue-100 to-purple-100 text-indigo-700 text-xs rounded-full">
+                        <span className="px-2 py-1 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700 text-xs rounded-full">
                           {quiz.difficulty}
                         </span>
                       </div>
@@ -446,7 +446,7 @@ export default function QuizResultsPage({ params }: { params: Promise<{ id: stri
               </button>
             </Link>
             <Link href="/quizzes">
-              <button className="flex items-center justify-center px-6 py-3 text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-indigo-200/50 transition-all">
+              <button className="flex items-center justify-center px-6 py-3 text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl hover:from-blue-700 hover:to-blue-800 shadow-lg shadow-blue-200/50 transition-all">
                 <Eye className="mr-2 h-4 w-4" />
                 View All Quizzes
               </button>

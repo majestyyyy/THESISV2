@@ -67,17 +67,15 @@ export function SurveyStats({ className }: SurveyStatsProps) {
               <p className="text-xs text-gray-600">Completion Rate</p>
             </div>
             
-            <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <div className="flex items-center justify-center gap-1 mb-2">
-                <span className="text-2xl font-bold text-purple-600">{stats.averageTime}m</span>
-              </div>
-              <p className="text-xs text-gray-600">Avg. Time</p>
+            <div className="text-center p-4 bg-blue-50 rounded-lg">
+              <p className="text-sm text-gray-600 mb-1">Average Time</p>
+                <span className="text-2xl font-bold text-blue-600">{stats.averageTime}m</span>
             </div>
             
-            <div className="text-center p-4 bg-amber-50 rounded-lg">
+            <div className="text-center p-4 bg-blue-50 rounded-lg">
               <div className="flex items-center justify-center gap-1 mb-2">
-                <Award className="h-4 w-4 text-amber-600" />
-                <span className="text-2xl font-bold text-amber-600">{stats.satisfactionScore.toFixed(1)}</span>
+                <Award className="h-4 w-4 text-blue-600" />
+                <span className="text-2xl font-bold text-blue-600">{stats.satisfactionScore.toFixed(1)}</span>
               </div>
               <p className="text-xs text-gray-600">Satisfaction</p>
             </div>

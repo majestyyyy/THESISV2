@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { FileText, Brain, BookOpen, Sparkles, ArrowLeft, Download, Save, Eye, Upload } from "lucide-react"
+import { FileText, Brain, BookOpen, Sparkles, ArrowLeft, Download, Save, Eye, Upload, Target, Settings, Zap } from "lucide-react"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { generateReviewerFromFile, saveStudyMaterial } from "@/lib/reviewer-utils"
@@ -138,175 +138,262 @@ export default function GenerateReviewerPage() {
     return (
       <ProtectedRoute>
         <DashboardLayout>
-          <div className="space-y-6">
-            {/* Header */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setGeneratedReviewer(null)}
-                    className="text-gray-600 hover:text-gray-900"
-                  >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Generate Another
-                  </Button>
-                  <div className="h-6 w-px bg-gray-300" />
-                  <div>
-                    <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        {getTypeIcon(generatedReviewer.type)}
-                      </div>
-                      <div>
-                        <h1 className="text-2xl font-bold text-gray-900">{generatedReviewer.title}</h1>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <Badge className="bg-green-100 text-green-800 border-green-200">Generated</Badge>
-                          <span className="text-sm text-gray-500">
-                            {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
+          <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30">
+            <div className="max-w-6xl mx-auto p-4 lg:p-8">
+              
+              {/* Modern Header */}
+              <div className="relative mb-8">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl transform rotate-1"></div>
+                <div className="relative bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-8 text-white shadow-2xl">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-32 translate-x-32"></div>
+                  <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-3xl translate-y-24 -translate-x-24"></div>
+                  
+                  <div className="relative z-10">
+                    {/* Top section with title and content */}
+                    <div className="flex items-start justify-between mb-6">
+                      <div className="flex items-start space-x-6 flex-1">
+                        <div className="relative flex-shrink-0">
+                          <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg border border-white/30">
+                            {getTypeIcon(generatedReviewer.type)}
+                          </div>
+                          <div className="absolute -top-2 -right-2 w-6 h-6 bg-blue-400 rounded-full flex items-center justify-center">
+                            <Sparkles className="w-3 h-3 text-white" />
+                          </div>
+                        </div>
+                        <div className="space-y-3 flex-1 min-w-0">
+                          <div>
+                            <h1 className="text-3xl lg:text-4xl font-bold text-white leading-tight">
+                              {generatedReviewer.title}
+                            </h1>
+                            <p className="text-lg lg:text-xl text-blue-100 mt-2">
+                              AI-Generated {generatedReviewer.type.charAt(0).toUpperCase() + generatedReviewer.type.slice(1)}
+                            </p>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-3 text-sm">
+                            <div className="flex items-center space-x-2 bg-white/15 px-3 py-1 rounded-full">
+                              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                              <span className="text-blue-100">Ready for Review</span>
+                            </div>
+                            <div className="flex items-center space-x-2 text-blue-200">
+                              <Target className="w-4 h-4" />
+                              <span>{new Date().toLocaleDateString()}</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
+                    
+                    {/* Action buttons - positioned at the bottom for better UX */}
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t border-white/20">
+                      <Button 
+                        variant="outline"
+                        onClick={() => setGeneratedReviewer(null)}
+                        className="bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm px-6 py-3 rounded-xl transition-all duration-300 flex items-center justify-center"
+                      >
+                        <ArrowLeft className="mr-2 h-5 w-5" />
+                        Generate New Material
+                      </Button>
+                      
+                      <Button 
+                        className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center shadow-lg ${
+                          isSaved 
+                            ? 'bg-blue-500 hover:bg-blue-600 text-white' 
+                            : 'bg-white text-blue-700 hover:bg-blue-50 hover:shadow-xl'
+                        }`}
+                        onClick={handleSaveToLibrary}
+                        disabled={isSaving || isSaved}
+                      >
+                        <Save className="mr-2 h-5 w-5" />
+                        {isSaving ? 'Saving...' : isSaved ? 'Saved to Library!' : 'Save to Library'}
+                      </Button>
+                    </div>
                   </div>
                 </div>
-                <div className="flex space-x-3">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className={`text-gray-700 border-gray-300 hover:bg-gray-50 ${
-                      isSaved ? 'bg-green-50 border-green-300 text-green-700' : ''
-                    }`}
-                    onClick={handleSaveToLibrary}
-                    disabled={isSaving || isSaved}
-                  >
-                    <Save className="mr-2 h-4 w-4" />
-                    {isSaving ? 'Saving...' : isSaved ? 'Saved!' : 'Save to Library'}
-                  </Button>
-                  <Button variant="outline" size="sm" className="text-gray-700 border-gray-300 hover:bg-gray-50">
-                    <Download className="mr-2 h-4 w-4" />
-                    Export
-                  </Button>
+              </div>
+
+              {/* Main Content Display */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-gray-200/50 overflow-hidden">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-indigo-50/30"></div>
+                  <div className="relative px-8 py-6 border-b border-gray-200/50">
+                    
+                  </div>
+                </div>
+                <div className="p-8 lg:p-12">
+                  {generatedReviewer.type === "summary" && generatedReviewer.content.summary && (
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl transform rotate-1"></div>
+                      <div className="relative bg-gradient-to-br from-white to-blue-50/30 rounded-3xl p-8 lg:p-10 border border-blue-100/50 shadow-lg">
+                        <div className="flex items-center space-x-4 mb-8">
+                          <div className="relative">
+                            <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+                              <FileText className="h-7 w-7 text-white" />
+                            </div>
+                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-400 rounded-full flex items-center justify-center">
+                              <Sparkles className="w-3 h-3 text-white" />
+                            </div>
+                          </div>
+                          <div>
+                            <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">
+                              Study Summary
+                            </h3>
+                            <p className="text-gray-600 mt-1">Comprehensive overview for effective learning</p>
+                          </div>
+                        </div>
+                        <div className="prose prose-lg max-w-none">
+                          <div className="space-y-6 text-gray-700 leading-relaxed">
+                            {formatMarkdownContent(generatedReviewer.content.summary)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {generatedReviewer.type === "flashcards" && generatedReviewer.content.flashcards && (
+                    <div className="space-y-8">
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl transform -rotate-1"></div>
+                        <div className="relative bg-gradient-to-br from-white to-blue-50/30 rounded-3xl p-8 border border-blue-100/50 shadow-lg">
+                          <div className="flex items-center space-x-4 mb-8">
+                            <div className="relative">
+                              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                <Brain className="h-7 w-7 text-white" />
+                              </div>
+                              <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-400 rounded-full flex items-center justify-center">
+                                <span className="text-xs font-bold text-white">{generatedReviewer.content.flashcards.length}</span>
+                              </div>
+                            </div>
+                            <div>
+                              <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">
+                                Flashcards
+                              </h3>
+                              <p className="text-gray-600 mt-1">{generatedReviewer.content.flashcards.length} cards for active recall practice</p>
+                            </div>
+                          </div>
+                          
+                          <div className="grid gap-6">
+                            {generatedReviewer.content.flashcards.map((card, index) => (
+                              <div key={index} className="group relative">
+                                <div className="absolute inset-0 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-2xl transform rotate-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <div className="relative bg-white rounded-2xl border border-gray-200/50 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
+                                  <div className="p-6">
+                                    <div className="flex items-center justify-between mb-6">
+                                      <div className="flex items-center space-x-3">
+                                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 text-white rounded-xl flex items-center justify-center text-sm font-bold shadow-lg">
+                                          {index + 1}
+                                        </div>
+                                        <div>
+                                          <span className="text-sm font-semibold text-gray-700">Flashcard {index + 1}</span>
+                                          <div className="text-xs text-gray-500">Active Recall Practice</div>
+                                        </div>
+                                      </div>
+                                      {card.difficulty && (
+                                        <Badge 
+                                          className={`px-3 py-1 text-xs font-medium ${
+                                            card.difficulty === 'basic' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                                            card.difficulty === 'intermediate' ? 'bg-amber-100 text-amber-700 border-amber-200' :
+                                            'bg-red-100 text-red-700 border-red-200'
+                                          }`}
+                                        >
+                                          {card.difficulty.charAt(0).toUpperCase() + card.difficulty.slice(1)}
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                      <div className="relative">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl"></div>
+                                        <div className="relative bg-white/70 backdrop-blur-sm rounded-xl p-5 border border-blue-100/50">
+                                          <div className="flex items-center space-x-2 mb-3">
+                                            <div className="w-6 h-6 bg-blue-500 rounded-lg flex items-center justify-center">
+                                              <span className="text-xs font-bold text-white">Q</span>
+                                            </div>
+                                            <span className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Question</span>
+                                          </div>
+                                          <p className="font-medium text-gray-800 leading-relaxed">{card.front}</p>
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="relative">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl"></div>
+                                        <div className="relative bg-white/70 backdrop-blur-sm rounded-xl p-5 border border-indigo-100/50">
+                                          <div className="flex items-center space-x-2 mb-3">
+                                            <div className="w-6 h-6 bg-indigo-600 rounded-lg flex items-center justify-center">
+                                              <span className="text-xs font-bold text-white">A</span>
+                                            </div>
+                                            <span className="text-xs font-semibold text-indigo-600 uppercase tracking-wide">Answer</span>
+                                          </div>
+                                          <p className="text-gray-700 leading-relaxed">{card.back}</p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {generatedReviewer.type === "notes" && generatedReviewer.content.notes && (
+                    <div className="space-y-8">
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl transform rotate-1"></div>
+                        <div className="relative bg-gradient-to-br from-white to-blue-50/30 rounded-3xl p-8 border border-blue-100/50 shadow-lg">
+                          <div className="flex items-center space-x-4 mb-8">
+                            <div className="relative">
+                              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                <BookOpen className="h-7 w-7 text-white" />
+                              </div>
+                              <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-400 rounded-full flex items-center justify-center">
+                                <span className="text-xs font-bold text-white">{generatedReviewer.content.notes.length}</span>
+                              </div>
+                            </div>
+                            <div>
+                              <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">
+                                Study Notes
+                              </h3>
+                              <p className="text-gray-600 mt-1">{generatedReviewer.content.notes.length} organized notes for comprehensive understanding</p>
+                            </div>
+                          </div>
+                          
+                          <div className="grid gap-6">
+                            {generatedReviewer.content.notes.map((note, index) => (
+                              <div key={index} className="group relative">
+                                <div className="absolute inset-0 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-2xl transform -rotate-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <div className="relative bg-white rounded-2xl border border-gray-200/50 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
+                                  <div className="p-6">
+                                    <div className="flex items-start space-x-4">
+                                      <div className="flex-shrink-0">
+                                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 text-white rounded-xl flex items-center justify-center font-bold shadow-lg">
+                                          {index + 1}
+                                        </div>
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="mb-3">
+                                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200">
+                                            Note {index + 1}
+                                          </span>
+                                        </div>
+                                        <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed">
+                                          {formatMarkdownContent(note)}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
-
-            {/* Full Study Material Display */}
-            <Card className="shadow-sm border-0 bg-white">
-              <CardHeader className="border-b border-gray-100 bg-gray-50/50">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-xl text-gray-900">Generated Study Material</CardTitle>
-                    <CardDescription className="text-gray-600">
-                      Your AI-generated {generatedReviewer.type} with enhanced formatting
-                    </CardDescription>
-                  </div>
-                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                    {generatedReviewer.type === "summary" ? "Summary" :
-                     generatedReviewer.type === "flashcards" ? "Flashcards" : "Notes"}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="p-8">
-                {generatedReviewer.type === "summary" && generatedReviewer.content.summary && (
-                  <div className="prose prose-lg max-w-none">
-                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-8 border border-blue-100 shadow-sm">
-                      <div className="space-y-4">
-                        {formatMarkdownContent(generatedReviewer.content.summary)}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {generatedReviewer.type === "flashcards" && generatedReviewer.content.flashcards && (
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        Flashcard Set ({generatedReviewer.content.flashcards.length} cards)
-                      </h3>
-                    </div>
-                    <div className="grid gap-6">
-                      {generatedReviewer.content.flashcards.map((card, index) => (
-                        <Card key={index} className="border-l-4 border-l-purple-500 shadow-sm hover:shadow-md transition-all duration-200 bg-white">
-                          <CardContent className="p-6">
-                            <div className="space-y-5">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-3">
-                                  <div className="bg-purple-100 text-purple-700 rounded-full w-10 h-10 flex items-center justify-center text-sm font-bold">
-                                    {index + 1}
-                                  </div>
-                                  <span className="text-sm font-medium text-gray-600">Flashcard</span>
-                                </div>
-                                <div className="flex gap-2">
-                                  {card.difficulty && (
-                                    <Badge 
-                                      variant="secondary" 
-                                      className={`text-xs font-medium ${
-                                        card.difficulty === 'basic' ? 'bg-green-100 text-green-700 border-green-200' :
-                                        card.difficulty === 'intermediate' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
-                                        'bg-red-100 text-red-700 border-red-200'
-                                      }`}
-                                    >
-                                      {card.difficulty}
-                                    </Badge>
-                                  )}
-                                  {card.category && (
-                                    <Badge variant="outline" className="text-xs border-gray-300">
-                                      {card.category}
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="grid gap-4">
-                                <div className="bg-purple-50 p-5 rounded-lg border border-purple-100">
-                                  <div className="flex items-center mb-2">
-                                    <span className="text-xs font-semibold text-purple-600 uppercase tracking-wide">Question</span>
-                                  </div>
-                                  <p className="font-medium text-purple-900 text-base leading-relaxed">{card.front}</p>
-                                </div>
-                                <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
-                                  <div className="flex items-center mb-2">
-                                    <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Answer</span>
-                                  </div>
-                                  <p className="text-gray-800 text-base leading-relaxed">{card.back}</p>
-                                </div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {generatedReviewer.type === "notes" && generatedReviewer.content.notes && (
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        Study Notes ({generatedReviewer.content.notes.length} notes)
-                      </h3>
-                    </div>
-                    <div className="space-y-4">
-                      {generatedReviewer.content.notes.map((note, index) => (
-                        <div
-                          key={index}
-                          className="flex items-start space-x-4 p-6 rounded-xl border-l-4 border-l-green-500 bg-gradient-to-r from-green-50 to-emerald-50 shadow-sm hover:shadow-md transition-all duration-200"
-                        >
-                          <div className="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                            {index + 1}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-gray-800 text-base leading-relaxed">
-                              {formatMarkdownContent(note)}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
           </div>
         </DashboardLayout>
       </ProtectedRoute>
@@ -316,22 +403,64 @@ export default function GenerateReviewerPage() {
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Generate Study Materials</h1>
-              <p className="mt-2 text-gray-600">
-                Create comprehensive, AI-powered study guides with enhanced learning features.
-              </p>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+          <div className="max-w-7xl mx-auto p-6 space-y-8">
+            {/* Enhanced Header */}
+            <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-600 rounded-2xl p-8 text-white shadow-xl">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/80 to-indigo-600/80"></div>
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-xl"></div>
+              <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-xl"></div>
+              
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-6">
+                  <Link href="/library">
+                    <Button variant="ghost" className="text-white hover:bg-white/20 border border-white/30 backdrop-blur-sm">
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Back to Library
+                    </Button>
+                  </Link>
+                  
+                  <div className="flex items-center space-x-3">
+                    <Badge className="bg-blue-500 text-white shadow-lg">
+                      <Brain className="mr-1 h-3 w-3" />
+                      AI Study Generator
+                    </Badge>
+                    <Badge className="bg-white/20 text-white border border-white/30 backdrop-blur-sm">
+                      Smart Learning
+                    </Badge>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-4 mb-4">
+                  <div className="w-14 h-14 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <Zap className="w-7 h-7 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h1 className="text-3xl font-bold text-white mb-2">Generate Study Materials</h1>
+                    <p className="text-blue-100 text-lg">
+                      Create comprehensive study guides from your documents
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-blue-100">
+                    <div className="flex items-center space-x-2">
+                      <Brain className="h-4 w-4 text-blue-200" />
+                      <span>AI-powered content analysis</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Target className="h-4 w-4 text-blue-200" />
+                      <span>Customizable material types</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Settings className="h-4 w-4 text-blue-200" />
+                      <span>Multiple format options</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <Link href="/library">
-              <Button variant="outline">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Library
-              </Button>
-            </Link>
-          </div>
 
           {isGenerating ? (
             <Card>
@@ -465,7 +594,7 @@ export default function GenerateReviewerPage() {
                           <RadioGroupItem value="flashcards" id="flashcards" />
                           <div className="flex-1">
                             <div className="flex items-center space-x-2">
-                              <Brain className="h-4 w-4 text-purple-600" />
+                              <Brain className="h-4 w-4 text-blue-600" />
                               <Label htmlFor="flashcards" className="font-medium cursor-pointer">
                                 Flashcards
                               </Label>
@@ -480,7 +609,7 @@ export default function GenerateReviewerPage() {
                           <RadioGroupItem value="notes" id="notes" />
                           <div className="flex-1">
                             <div className="flex items-center space-x-2">
-                              <BookOpen className="h-4 w-4 text-green-600" />
+                              <BookOpen className="h-4 w-4 text-blue-600" />
                               <Label htmlFor="notes" className="font-medium cursor-pointer">
                                 Quick Notes
                               </Label>
@@ -574,13 +703,14 @@ export default function GenerateReviewerPage() {
 
                     <Button onClick={handleGenerate} disabled={!selectedFileId} className="w-full">
                       <Sparkles className="mr-2 h-4 w-4" />
-                      Generate Study Material
+                      Generate
                     </Button>
                   </CardContent>
                 </Card>
               </div>
             </div>
           )}
+          </div>
         </div>
       </DashboardLayout>
     </ProtectedRoute>

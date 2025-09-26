@@ -3,7 +3,7 @@
 import React, { useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Upload, File, X, CheckCircle, AlertCircle } from 'lucide-react'
-import { uploadPDFFile, validateFile, FILE_CONSTRAINTS, formatFileSize, type UploadResult } from '@/lib/file-utils'
+import { uploadPDFFile, validateFileWithStorageLimit, FILE_CONSTRAINTS, formatFileSize, type UploadResult } from '@/lib/file-utils'
 
 interface FileUploadProps {
   onUploadSuccess?: (result: UploadResult) => void
@@ -42,8 +42,8 @@ export default function PDFUpload({ onUploadSuccess, onUploadError, className }:
       uploadedFile: null
     })
 
-    // Validate file
-    const validation = validateFile(file)
+    // Validate file including storage limit
+    const validation = await validateFileWithStorageLimit(file)
     if (!validation.isValid) {
       setUploadState(prev => ({
         ...prev,
@@ -176,9 +176,11 @@ export default function PDFUpload({ onUploadSuccess, onUploadError, className }:
                 {isDragActive ? 'Drop your PDF file here' : 'Drag & drop a PDF file here'}
               </p>
               <p className="text-sm text-gray-500">or click to select a file</p>
-              <p className="text-xs text-gray-400 mt-2">
-                PDF files only • Max {FILE_CONSTRAINTS.MAX_SIZE / (1024 * 1024)}MB
-              </p>
+                            <div className="mt-3 space-y-1">
+                <p className="text-xs text-gray-400">
+                  PDF files only • Max {FILE_CONSTRAINTS.MAX_SIZE / (1024 * 1024)}MB per file
+                </p>
+              </div>
             </div>
           </div>
         )}

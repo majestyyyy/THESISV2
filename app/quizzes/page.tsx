@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,15 +11,18 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Search, Plus, Filter, Play, Edit, Trash2, MoreVertical, Clock, Target, FileText, Eye, RotateCcw } from "lucide-react"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { getDifficultyColor, getUserQuizzesList, type QuizListItem } from "@/lib/quiz-utils"
+import { getDifficultyColor, getUserQuizzesList, deleteQuiz, type QuizListItem } from "@/lib/quiz-utils"
 import { getCurrentUser } from "@/lib/auth"
+import { toast } from "sonner"
 import useSWR from "swr"
 
 export default function QuizzesPage() {
+  const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
   const [filterDifficulty, setFilterDifficulty] = useState<string>("all")
   const [takenQuizzes, setTakenQuizzes] = useState<Set<string>>(new Set())
   const [isHydrated, setIsHydrated] = useState(false)
+  const [deletingQuizId, setDeletingQuizId] = useState<string | null>(null)
 
   // Helper function to check if a quiz has been taken
   const hasQuizResults = (quizId: string) => {
@@ -60,7 +64,7 @@ export default function QuizzesPage() {
     setTakenQuizzes(taken)
     return userQuizzes
   }
-  const { data: quizzes, error } = useSWR(isHydrated ? "userQuizzesList" : null, fetchQuizzes, {
+  const { data: quizzes, error, mutate } = useSWR(isHydrated ? "userQuizzesList" : null, fetchQuizzes, {
     shouldRetryOnError: false,
     revalidateOnFocus: false,
     onError: (err) => {
@@ -71,6 +75,40 @@ export default function QuizzesPage() {
   useEffect(() => {
     setIsHydrated(true)
   }, [])
+
+  const handleEditQuiz = (quizId: string) => {
+    router.push(`/quizzes/${quizId}/edit`)
+  }
+
+  const handleDeleteQuiz = async (quizId: string, quizTitle: string) => {
+    if (deletingQuizId) return // Prevent multiple delete operations
+    
+    const confirmed = window.confirm(`Are you sure you want to delete "${quizTitle}"? This action cannot be undone.`)
+    if (!confirmed) return
+
+    setDeletingQuizId(quizId)
+    try {
+      const success = await deleteQuiz(quizId)
+      if (success) {
+        toast.success("Quiz deleted successfully!")
+        // Remove from taken quizzes set
+        setTakenQuizzes(prev => {
+          const newSet = new Set(prev)
+          newSet.delete(quizId)
+          return newSet
+        })
+        // Refresh the quizzes list
+        mutate()
+      } else {
+        toast.error("Failed to delete quiz. Please try again.")
+      }
+    } catch (error) {
+      console.error("Error deleting quiz:", error)
+      toast.error("Failed to delete quiz. Please try again.")
+    } finally {
+      setDeletingQuizId(null)
+    }
+  }
 
   const filteredQuizzes = (quizzes || []).filter((quiz) => {
     const matchesSearch = quiz.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -83,7 +121,7 @@ export default function QuizzesPage() {
       <ProtectedRoute>
         <DashboardLayout>
           <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             <p className="text-gray-600">Loading quizzes...</p>
           </div>
         </DashboardLayout>
@@ -111,13 +149,13 @@ export default function QuizzesPage() {
           {/* Header */}
           <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div>
-              <h1 className="text-2xl font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">My Quizzes</h1>
+              <h1 className="text-2xl font-semibold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">My Quizzes</h1>
               <p className="text-gray-600">Manage and take your AI-generated quizzes</p>
             </div>
             <Link href="/quizzes/generate">
-              <Button className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl px-6 shadow-lg shadow-indigo-200">
+              <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl px-6 shadow-lg shadow-blue-200">
                 <Plus className="mr-2 h-4 w-4" />
-                Create Quiz
+                Create
               </Button>
             </Link>
           </div>
@@ -153,7 +191,7 @@ export default function QuizzesPage() {
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-blue-100 shadow-lg shadow-blue-100/50">
               <div className="flex items-center">
-                <div className="p-3 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl">
+                <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl">
                   <FileText className="h-6 w-6 text-blue-600" />
                 </div>
                 <div className="ml-4">
@@ -162,10 +200,10 @@ export default function QuizzesPage() {
                 </div>
               </div>
             </div>
-            <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-emerald-100 shadow-lg shadow-emerald-100/50">
+            <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-blue-100 shadow-lg shadow-blue-100/50">
               <div className="flex items-center">
-                <div className="p-3 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-xl">
-                  <Target className="h-6 w-6 text-emerald-600" />
+                <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl">
+                  <Target className="h-6 w-6 text-blue-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Completed</p>
@@ -178,7 +216,7 @@ export default function QuizzesPage() {
           {/* Quizzes Grid */}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredQuizzes.map((quiz) => (
-              <div key={quiz.id} className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-purple-100 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-100/50 transition-all duration-300">
+              <div key={quiz.id} className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-blue-100 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-100/50 transition-all duration-300">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">{quiz.title}</h3>
@@ -186,18 +224,34 @@ export default function QuizzesPage() {
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-indigo-50">
-                        <MoreVertical className="h-4 w-4 text-indigo-600" />
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-blue-50">
+                        <MoreVertical className="h-4 w-4 text-blue-600" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-white/95 backdrop-blur-sm border-indigo-100">
-                      <DropdownMenuItem className="hover:bg-indigo-50">
+                    <DropdownMenuContent className="bg-white/95 backdrop-blur-sm border-blue-100">
+                      <DropdownMenuItem 
+                        className="hover:bg-blue-50 cursor-pointer"
+                        onClick={() => handleEditQuiz(quiz.id)}
+                      >
                         <Edit className="mr-2 h-4 w-4" />
                         Edit Quiz
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-600 hover:bg-red-50">
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete Quiz
+                      <DropdownMenuItem 
+                        className="text-red-600 hover:bg-red-50 cursor-pointer"
+                        onClick={() => handleDeleteQuiz(quiz.id, quiz.title)}
+                        disabled={deletingQuizId === quiz.id}
+                      >
+                        {deletingQuizId === quiz.id ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-red-600 border-t-transparent mr-2"></div>
+                            Deleting...
+                          </>
+                        ) : (
+                          <>
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete Quiz
+                          </>
+                        )}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -208,11 +262,11 @@ export default function QuizzesPage() {
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${getDifficultyColor(quiz.difficulty)}`}>
                       {quiz.difficulty}
                     </span>
-                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-700">
+                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700">
                       {quiz.totalQuestions} questions
                     </span>
                     {takenQuizzes.has(quiz.id) && (
-                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700">
+                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700">
                         Completed
                       </span>
                     )}
@@ -220,11 +274,11 @@ export default function QuizzesPage() {
 
                   <div className="flex flex-col space-y-2">
                     <Link href={`/quizzes/${quiz.id}/take`}>
-                      <Button className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl shadow-lg shadow-indigo-200">
+                      <Button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl shadow-lg shadow-blue-200">
                         {takenQuizzes.has(quiz.id) ? (
                           <>
                             <RotateCcw className="mr-2 h-4 w-4" />
-                            Retake Quiz
+                            Retake
                           </>
                         ) : (
                           <>
@@ -237,9 +291,9 @@ export default function QuizzesPage() {
                     
                     {takenQuizzes.has(quiz.id) && (
                       <Link href={`/quizzes/${quiz.id}/results?showBest=true`}>
-                        <Button variant="outline" className="w-full border-indigo-200 text-indigo-700 hover:bg-indigo-50 rounded-xl">
+                        <Button variant="outline" className="w-full border-blue-200 text-blue-700 hover:bg-blue-50 rounded-xl">
                           <Eye className="mr-2 h-4 w-4" />
-                          Review Answers
+                          Review
                         </Button>
                       </Link>
                     )}
@@ -251,8 +305,8 @@ export default function QuizzesPage() {
 
           {filteredQuizzes.length === 0 && (
             <div className="text-center py-16">
-              <div className="p-4 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl inline-block mb-4">
-                <FileText className="mx-auto h-8 w-8 text-indigo-600" />
+              <div className="p-4 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl inline-block mb-4">
+                <FileText className="mx-auto h-8 w-8 text-blue-600" />
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No quizzes found</h3>
               <p className="text-gray-600 mb-8 max-w-md mx-auto">
@@ -261,7 +315,7 @@ export default function QuizzesPage() {
                   : "Get started by creating your first AI-powered quiz"}
               </p>
               <Link href="/quizzes/generate">
-                <Button className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl px-6 shadow-lg shadow-indigo-200">
+                <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl px-6 shadow-lg shadow-blue-200">
                   <Plus className="mr-2 h-4 w-4" />
                   Create Your First Quiz
                 </Button>

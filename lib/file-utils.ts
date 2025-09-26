@@ -24,7 +24,8 @@ export interface UploadProgress {
 
 // File validation constants
 export const FILE_CONSTRAINTS = {
-  MAX_SIZE: 5 * 1024 * 1024, // 5MB in bytes
+  MAX_SIZE: 5 * 1024 * 1024, // 5MB in bytes (individual file)
+  MAX_TOTAL_SIZE: 5 * 1024 * 1024, // 5MB in bytes (total user storage)
   ALLOWED_TYPES: ['application/pdf'] as const,
   ALLOWED_EXTENSIONS: ['.pdf'] as const
 } as const
@@ -33,7 +34,7 @@ export const FILE_CONSTRAINTS = {
 export type { FileRecord }
 
 /**
- * Validate uploaded file for PDF type and size constraints
+ * Validate uploaded file for PDF type and size constraints (basic validation)
  */
 export function validateFile(file: File): FileValidationResult {
   // Check file type
@@ -74,6 +75,20 @@ export function validateFile(file: File): FileValidationResult {
 }
 
 /**
+ * Comprehensive file validation including storage limit check
+ */
+export async function validateFileWithStorageLimit(file: File): Promise<FileValidationResult> {
+  // First do basic file validation
+  const basicValidation = validateFile(file)
+  if (!basicValidation.isValid) {
+    return basicValidation
+  }
+
+  // Then check storage limit
+  return await validateTotalStorageLimit(file.size)
+}
+
+/**
  * Generate a unique filename for storage
  */
 function generateUniqueFilename(originalName: string, userId: string): string {
@@ -94,11 +109,34 @@ async function extractTextFromPDF(file: File): Promise<string> {
   }
 
   try {
-    const { extractTextFromPDF: clientExtractText } = await import('./pdf-utils')
-    return await clientExtractText(file)
-  } catch (error) {
-    console.error('PDF extraction failed:', error)
-    throw new Error('Failed to extract text from PDF. Please ensure the file is a valid PDF document.')
+    // Try to use the main PDF extraction with PDF.js
+    const pdfUtils = await import('@/lib/pdf-utils')
+    return await pdfUtils.extractTextFromPDF(file)
+  } catch (pdfError) {
+    console.error('Primary PDF extraction failed:', pdfError)
+    
+    try {
+      // Fallback to simple text extraction
+      console.log('Primary PDF extraction failed, using fallback method...')
+      const fallbackUtils = await import('@/lib/pdf-fallback')
+      const fallbackText = await fallbackUtils.extractTextFromPDFFallback(file)
+      console.log('Fallback PDF extraction completed successfully')
+      return fallbackText
+    } catch (fallbackError) {
+      console.error('Fallback PDF extraction also failed:', fallbackError)
+      
+      // Provide more specific error messages
+      if (pdfError instanceof Error) {
+        if (pdfError.message.includes('Loading chunk') || pdfError.message.includes('Failed to fetch')) {
+          throw new Error('PDF processing service is temporarily unavailable. Please refresh the page and try again.')
+        }
+        if (pdfError.message.includes('worker')) {
+          throw new Error('PDF processing failed due to worker configuration. Please refresh the page and try again.')
+        }
+      }
+      
+      throw new Error('Failed to extract text from PDF. The file has been uploaded successfully, but text extraction is currently unavailable. You can still generate study materials using the file.')
+    }
   }
 }
 
@@ -308,6 +346,56 @@ export async function getUserFiles() {
   } catch (error) {
     console.error('Error fetching user files:', error)
     return []
+  }
+}
+
+/**
+ * Get total size of user's uploaded files
+ */
+export async function getTotalUserFileSize(): Promise<number> {
+  try {
+    const { data, error } = await supabase
+      .from('files')
+      .select('file_size')
+
+    if (error) {
+      console.error('Error fetching user file sizes:', error)
+      return 0
+    }
+
+    return (data || []).reduce((total, file) => total + (file.file_size || 0), 0)
+  } catch (error) {
+    console.error('Error calculating total file size:', error)
+    return 0
+  }
+}
+
+/**
+ * Validate if new file upload would exceed total storage limit
+ */
+export async function validateTotalStorageLimit(newFileSize: number): Promise<FileValidationResult> {
+  try {
+    const currentTotalSize = await getTotalUserFileSize()
+    const newTotalSize = currentTotalSize + newFileSize
+    
+    if (newTotalSize > FILE_CONSTRAINTS.MAX_TOTAL_SIZE) {
+      const maxSizeMB = FILE_CONSTRAINTS.MAX_TOTAL_SIZE / (1024 * 1024)
+      const currentSizeMB = (currentTotalSize / (1024 * 1024)).toFixed(1)
+      const newFileSizeMB = (newFileSize / (1024 * 1024)).toFixed(1)
+      
+      return {
+        isValid: false,
+        error: `Upload would exceed ${maxSizeMB}MB storage limit. Current usage: ${currentSizeMB}MB. New file: ${newFileSizeMB}MB. Please delete some files first.`
+      }
+    }
+    
+    return { isValid: true }
+  } catch (error) {
+    console.error('Error validating storage limit:', error)
+    return {
+      isValid: false,
+      error: 'Unable to validate storage limit. Please try again.'
+    }
   }
 }
 

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 
 export default function ConfirmEmailPage() {
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+		<div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200 flex items-center justify-center p-4">
 			<Card className="w-full max-w-md">
 				<CardHeader className="text-center">
 					<CheckCircle className="mx-auto h-10 w-10 text-green-500 mb-2" />

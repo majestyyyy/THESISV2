@@ -85,7 +85,7 @@ export default function AnalyticsPage() {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center">
-                  <BookOpen className="h-8 w-8 text-purple-600" />
+                  <BookOpen className="h-8 w-8 text-blue-600" />
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Quizzes Taken</p>
                     <p className="text-2xl font-bold text-gray-900">{mockPerformanceMetrics.quizzesTaken}</p>
@@ -97,7 +97,7 @@ export default function AnalyticsPage() {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center">
-                  <Activity className="h-8 w-8 text-orange-600" />
+                  <Activity className="h-8 w-8 text-blue-600" />
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Study Streak</p>
                     <p className="text-2xl font-bold text-gray-900">{mockPerformanceMetrics.studyStreak} days</p>

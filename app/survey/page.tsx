@@ -47,9 +47,9 @@ export default function SurveyPage() {
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200">
           {/* Header Section */}
-          <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-2xl mb-8 p-8 text-white">
+          <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 rounded-2xl mb-8 p-8 text-white">
             <div className="absolute inset-0 bg-black/10"></div>
             <div className="relative z-10">
               <div className="flex items-center gap-4 mb-6">
@@ -135,7 +135,7 @@ export default function SurveyPage() {
               <Card className="overflow-hidden shadow-lg">
                 <CardContent className="p-0">
                   {isLoading ? (
-                    <div className="flex flex-col items-center justify-center py-20 bg-gradient-to-br from-blue-50 to-indigo-50">
+                    <div className="flex flex-col items-center justify-center py-20 bg-gradient-to-br from-blue-50 to-blue-100">
                       <div className="relative">
                         <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200"></div>
                         <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-600 border-t-transparent absolute top-0 left-0"></div>

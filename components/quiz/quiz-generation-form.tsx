@@ -161,19 +161,6 @@ export function QuizGenerationForm({ files, onGenerate, isGenerating }: QuizGene
           </div>
         </div>
 
-        {/* Focus Areas */}
-        <div className="space-y-2">
-          <Label htmlFor="focus-areas">Focus Areas (Optional)</Label>
-          <Textarea
-            id="focus-areas"
-            placeholder="Enter specific topics or areas to focus on, separated by commas (e.g., cell structure, photosynthesis, mitosis)"
-            value={focusAreas}
-            onChange={(e) => setFocusAreas(e.target.value)}
-            rows={3}
-          />
-          <p className="text-xs text-gray-500">Leave blank to generate questions from the entire document content</p>
-        </div>
-
         {/* Generate Button */}
         <Button
           onClick={handleGenerate}
@@ -189,7 +176,7 @@ export function QuizGenerationForm({ files, onGenerate, isGenerating }: QuizGene
           ) : (
             <>
               <Zap className="mr-2 h-4 w-4" />
-              Generate Quiz with AI
+              Generate Quiz
             </>
           )}
         </Button>

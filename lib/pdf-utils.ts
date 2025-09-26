@@ -3,11 +3,23 @@
 // Import PDF.js for client-side PDF text extraction
 import * as pdfjsLib from 'pdfjs-dist'
 
-// Configure PDF.js worker to use the local version
-if (typeof window !== 'undefined') {
-  // Use the local worker from public directory
-  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('/pdfjs/pdf.worker.min.js', window.location.origin).toString()
+// Configure PDF.js worker with better error handling
+const configureWorker = () => {
+  if (typeof window !== 'undefined' && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    try {
+      // Use the local worker from public directory
+      pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdfjs/pdf.worker.min.js'
+      console.log('PDF.js worker configured successfully')
+    } catch (error) {
+      console.error('Failed to configure PDF.js worker:', error)
+      // Fallback to CDN worker
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@4.0.379/build/pdf.worker.min.js'
+    }
+  }
 }
+
+// Initialize worker configuration
+configureWorker()
 
 /**
  * Extract text content from PDF file using PDF.js (client-side only)
@@ -21,23 +33,31 @@ export async function extractTextFromPDF(file: File): Promise<string> {
     console.log('Starting PDF text extraction for:', file.name)
     
     // Ensure worker is properly configured
+    configureWorker()
+    
     if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('/pdfjs/pdf.worker.min.js', window.location.origin).toString()
-      console.log('Worker configured to:', pdfjsLib.GlobalWorkerOptions.workerSrc)
+      throw new Error('PDF worker could not be configured. Please refresh the page and try again.')
     }
     
     // Convert file to array buffer
     const arrayBuffer = await file.arrayBuffer()
     
-    // Load PDF document with timeout
+    // Load PDF document with better error handling
     const loadingTask = pdfjsLib.getDocument({
       data: arrayBuffer,
       useWorkerFetch: false,
       isEvalSupported: false,
-      useSystemFonts: true
+      useSystemFonts: true,
+      maxImageSize: 1024 * 1024, // 1MB max per image
+      cMapPacked: true,
     })
     
-    const pdf = await loadingTask.promise
+    // Add timeout to prevent hanging
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('PDF loading timeout - file may be too large or corrupted')), 30000)
+    })
+    
+    const pdf = await Promise.race([loadingTask.promise, timeoutPromise]) as any
     
     console.log('PDF loaded, pages:', pdf.numPages)
     
@@ -57,7 +77,7 @@ export async function extractTextFromPDF(file: File): Promise<string> {
             }
             return ''
           })
-          .filter(str => str.trim().length > 0)
+          .filter((str: string) => str.trim().length > 0)
           .join(' ')
           .replace(/\s+/g, ' ') // Normalize whitespace
           .trim()

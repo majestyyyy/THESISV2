@@ -4,6 +4,7 @@ import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import "./globals.css"
 import { AuthProvider } from "@/components/auth/auth-provider"
+import { Toaster } from "sonner"
 
 export const metadata: Metadata = {
   title: "AI-GiR - AI-Powered Learning Platform",
@@ -36,6 +37,7 @@ html {
         <AuthProvider>
           {children}
         </AuthProvider>
+        <Toaster position="top-right" />
       </body>
     </html>
   )

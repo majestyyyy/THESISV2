@@ -150,9 +150,22 @@ export default function LibraryPage() {
     return (
       <ProtectedRoute>
         <DashboardLayout>
-          <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
-            <p className="text-red-600">{error.message || "Failed to load study materials."}</p>
-            <Button onClick={() => window.location.reload()} className="mt-4">Retry</Button>
+          <div className="flex flex-col items-center justify-center min-h-96 space-y-6 p-6">
+            <div className="bg-red-50 border border-red-200 rounded-2xl p-8 text-center max-w-md">
+              <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <svg className="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Unable to Load Library</h3>
+              <p className="text-red-600 mb-6">{error.message || "Failed to load study materials."}</p>
+              <Button 
+                onClick={() => window.location.reload()} 
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 font-medium"
+              >
+                Try Again
+              </Button>
+            </div>
           </div>
         </DashboardLayout>
       </ProtectedRoute>
@@ -163,9 +176,14 @@ export default function LibraryPage() {
     return (
       <ProtectedRoute>
         <DashboardLayout>
-          <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-            <p className="text-gray-600">Loading library...</p>
+          <div className="flex flex-col items-center justify-center min-h-96 space-y-6 p-6">
+            <div className="bg-white/90 backdrop-blur-sm border border-blue-200 rounded-2xl p-10 text-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <div className="animate-spin rounded-full h-10 w-10 border-3 border-white border-t-transparent"></div>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Loading Your Library</h3>
+              <p className="text-blue-600 font-medium">Gathering your study materials...</p>
+            </div>
           </div>
         </DashboardLayout>
       </ProtectedRoute>
@@ -221,132 +239,160 @@ export default function LibraryPage() {
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <div className="space-y-6 min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">My Library</h1>
-              <p className="mt-2 text-gray-600">Store and manage your AI-generated study materials</p>
-            </div>
-            <div className="flex space-x-2">
-              <Link href="/analytics">
-                <Button variant="outline" className="bg-transparent">
-                  <BarChart3 className="mr-2 h-4 w-4" />
-                  View Analytics
-                </Button>
-              </Link>
-              <Link href="/reviewers/generate">
-                <Button className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl px-6 shadow-lg shadow-indigo-200">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Study Materials
-                </Button>
-              </Link>
-            </div>
-          </div>
-
-          {/* Search */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search study materials..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-
-          {/* Study Materials List */}
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle>Study Materials</CardTitle>
-              <CardDescription>AI-generated study guides and reviewers</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {filteredReviewers.map((reviewer) => (
-                <div
-                  key={reviewer.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        {getReviewerTypeIcon(reviewer.type)}
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900">{reviewer.title}</p>
-                      <p className="text-xs text-gray-500 mt-1">From: {reviewer.fileName}</p>
-                      <div className="flex items-center space-x-4 mt-1">
-                        <p className="text-xs text-gray-500">
-                          Created {new Date(reviewer.createdAt).toLocaleDateString()}
-                        </p>
-                        <Badge variant="outline" className="text-xs">
-                          {reviewer.type}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Link href={`/library/reviewers/${reviewer.id}`}>
-                      <Button size="sm" variant="outline">
-                        <Eye className="mr-1 h-3 w-3" />
-                        View
-                      </Button>
-                    </Link>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem
-                          onClick={async () => {
-                            const newTitle = prompt('Enter new name for this study material:', reviewer.title)
-                            if (newTitle && newTitle.trim() && newTitle !== reviewer.title) {
-                              const result = await updateStudyMaterialTitle(reviewer.id, newTitle.trim())
-                              if (result.success) {
-                                mutate((prev: any) => prev.map((mat: any) => mat.id === reviewer.id ? { ...mat, title: newTitle.trim() } : mat), false)
-                              } else {
-                                alert(result.error || 'Failed to rename study material')
-                              }
-                            }
-                          }}
-                        >
-                          <BookOpen className="mr-2 h-4 w-4" />
-                          Rename
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          className="text-red-600"
-                          onClick={() => handleDeleteMaterial(reviewer.id)}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
+        <div className="space-y-8 p-6 max-w-7xl mx-auto">
+          {/* Enhanced Header */}
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl border border-blue-200 shadow-lg shadow-blue-100/50 p-6">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg">
+                  <BookOpen className="h-8 w-8 text-white" />
                 </div>
-                ))}
-                
-                {filteredReviewers.length === 0 && (
-                  <div className="text-center py-8">
-                    <BookOpen className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                    <p className="text-gray-500 mb-4">No study materials found</p>
-                    <Link href="/reviewers/generate">
-                      <Button className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl px-6 shadow-lg shadow-indigo-200">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Create Study Materials
-                      </Button>
-                    </Link>
-                  </div>
-                )}
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">My Library</h1>
+                  <p className="text-blue-700 font-medium">Organize and access your AI-generated study materials</p>
+                </div>
               </div>
-            </CardContent>
-          </Card>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+               
+                <Link href="/reviewers/generate">
+                  <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg shadow-blue-200 hover:shadow-blue-300 transition-all duration-200 px-6 font-semibold">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create New
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Enhanced Search and Filters */}
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-blue-200 shadow-lg p-6">
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-400" />
+                <Input
+                  placeholder="Search by title, file name, or type..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-12 pr-4 py-3 border-blue-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 rounded-xl text-sm"
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Badge variant="outline" className="text-blue-700 border-blue-300 bg-blue-50">
+                  {filteredReviewers.length} found
+                </Badge>
+              </div>
+            </div>
+          </div>
+
+          {/* Enhanced Study Materials Grid */}
+          <div className="space-y-6">
+            {filteredReviewers.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredReviewers.map((reviewer) => (
+                  <Card key={reviewer.id} className="bg-white/90 backdrop-blur-sm border-blue-200 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-100/50 transition-all duration-300 transform hover:-translate-y-1">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="p-2 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl">
+                            {getReviewerTypeIcon(reviewer.type)}
+                          </div>
+                          <div className="flex-1">
+                            <Badge 
+                              variant="outline" 
+                              className="text-xs capitalize bg-blue-50 text-blue-700 border-blue-200 mb-2"
+                            >
+                              {reviewer.type}
+                            </Badge>
+                          </div>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-blue-50">
+                              <MoreVertical className="h-4 w-4 text-blue-600" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="bg-white/95 backdrop-blur-sm border-blue-100">
+                            <DropdownMenuItem
+                              className="hover:bg-blue-50 cursor-pointer"
+                              onClick={async () => {
+                                const newTitle = prompt('Enter new name for this study material:', reviewer.title)
+                                if (newTitle && newTitle.trim() && newTitle !== reviewer.title) {
+                                  const result = await updateStudyMaterialTitle(reviewer.id, newTitle.trim())
+                                  if (result.success) {
+                                    mutate((prev: any) => prev.map((mat: any) => mat.id === reviewer.id ? { ...mat, title: newTitle.trim() } : mat), false)
+                                  } else {
+                                    alert(result.error || 'Failed to rename study material')
+                                  }
+                                }
+                              }}
+                            >
+                              <BookOpen className="mr-2 h-4 w-4" />
+                              Rename
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="text-red-600 hover:bg-red-50 cursor-pointer"
+                              onClick={() => handleDeleteMaterial(reviewer.id)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+
+                      <div className="space-y-3">
+                        <h3 className="font-semibold text-gray-900 text-lg line-clamp-2 leading-tight">
+                          {reviewer.title}
+                        </h3>
+                        
+                        <div className="bg-blue-50 rounded-lg p-3 border border-blue-100">
+                          <p className="text-sm text-blue-700 font-medium mb-1">Source File</p>
+                          <p className="text-sm text-blue-600 truncate">{reviewer.fileName}</p>
+                        </div>
+
+                        <div className="flex items-center justify-between text-sm text-gray-500">
+                          <div className="flex items-center space-x-1">
+                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                            <span>Created {new Date(reviewer.createdAt).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-6 pt-4 border-t border-blue-100">
+                        <Link href={`/library/reviewers/${reviewer.id}`}>
+                          <Button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl shadow-lg shadow-blue-200 hover:shadow-blue-300 transition-all duration-200">
+                            <Eye className="mr-2 h-4 w-4" />
+                            Study
+                          </Button>
+                        </Link>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-blue-200 shadow-lg p-12 max-w-md mx-auto">
+                  <div className="p-4 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl inline-block mb-6">
+                    <BookOpen className="h-12 w-12 text-blue-600" />
+                  </div>
+                  <h3 className="text-2xl font-semibold text-gray-900 mb-3">No Study Materials Yet</h3>
+                  <p className="text-gray-600 mb-8 leading-relaxed">
+                    {searchTerm 
+                      ? `No materials found matching "${searchTerm}". Try adjusting your search.`
+                      : "Start building your knowledge base by creating AI-powered study materials from your documents."
+                    }
+                  </p>
+                  <Link href="/reviewers/generate">
+                    <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg shadow-blue-200 hover:shadow-blue-300 transition-all duration-200 px-8 py-3 text-lg font-semibold">
+                      <Plus className="mr-2 h-5 w-5" />
+                      Create Your First Material
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </DashboardLayout>
     </ProtectedRoute>

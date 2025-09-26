@@ -32,7 +32,7 @@ export function SurveyBanner() {
   if (!showBanner) return null
 
   return (
-    <div className="fixed bottom-4 right-4 max-w-sm bg-gradient-to-r from-pink-500 to-rose-500 text-white p-4 rounded-lg shadow-lg z-50 animate-in slide-in-from-bottom-4">
+    <div className="fixed bottom-4 right-4 max-w-sm bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-lg shadow-lg z-50 animate-in slide-in-from-bottom-4">
       <button
         onClick={dismissBanner}
         className="absolute top-2 right-2 text-white/80 hover:text-white"
@@ -52,7 +52,7 @@ export function SurveyBanner() {
           <Link href="/survey">
             <Button
               size="sm"
-              className="bg-white text-pink-600 hover:bg-white/90 text-xs"
+              className="bg-white text-blue-600 hover:bg-white/90 text-xs"
               onClick={dismissBanner}
             >
               Take Survey

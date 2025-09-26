@@ -55,11 +55,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200">
       {/* Mobile Sidebar */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="sm" className="lg:hidden fixed top-4 left-4 z-50 text-indigo-600 hover:bg-indigo-100">
+          <Button variant="ghost" size="sm" className="lg:hidden fixed top-4 left-4 z-50 text-blue-600 hover:bg-blue-100">
             <Menu className="h-5 w-5" />
           </Button>
         </SheetTrigger>
@@ -67,7 +67,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           {/* Visually hidden dialog title for accessibility */}
           <SheetTitle className="sr-only">Sidebar Navigation</SheetTitle>
           <div className="flex h-full flex-col">
-            <div className="flex h-16 items-center px-4 sm:px-6 border-b border-indigo-100">
+            <div className="flex h-16 items-center px-4 sm:px-6 border-b border-blue-100">
               <div className="w-7 h-7 flex items-center justify-center">
                 <Image
                   src="/LOGO.png"
@@ -77,7 +77,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   className="w-7 h-7 object-contain"
                 />
               </div>
-              <span className="ml-3 text-lg sm:text-xl font-medium bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">AI-GiR</span>
+              <span className="ml-3 text-lg sm:text-xl font-medium bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">AI-GiR</span>
             </div>
             <nav className="flex-1 space-y-1 px-2 sm:px-4 py-4 sm:py-6">
               {navigation.map((item) => {
@@ -89,8 +89,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     className={cn(
                       "group flex items-center px-2 sm:px-3 py-2 text-sm sm:text-base font-medium rounded-xl transition-all duration-200",
                       isActive
-                        ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-200"
-                        : "text-gray-600 hover:text-indigo-700 hover:bg-indigo-50"
+                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-200"
+                        : "text-gray-600 hover:text-blue-700 hover:bg-blue-50"
                     )}
                     onClick={() => setSidebarOpen(false)}
                   >
@@ -118,7 +118,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   className="w-7 h-7 object-contain"
                 />
               </div>
-              <span className="ml-3 text-xl font-medium bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">AI-GiR</span>
+              <span className="ml-3 text-xl font-medium bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">AI-GiR</span>
             </Link>
           </div>
           <div className="mt-8 flex-1 flex flex-col">
@@ -132,8 +132,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     className={cn(
                       "group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200",
                       isActive
-                        ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-200"
-                        : "text-gray-600 hover:text-indigo-700 hover:bg-indigo-50"
+                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-200"
+                        : "text-gray-600 hover:text-blue-700 hover:bg-blue-50"
                     )}
                   >
                     <item.icon
@@ -162,7 +162,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-9 w-9 rounded-xl hover:bg-indigo-50">
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-gradient-to-br from-indigo-100 to-purple-100 text-indigo-700 font-medium">{getUserInitials()}</AvatarFallback>
+                      <AvatarFallback className="bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 font-medium">{getUserInitials()}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>

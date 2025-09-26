@@ -1,18 +1,19 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Clock, AlertTriangle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Clock, Eye, EyeOff } from "lucide-react"
 import { formatTime } from "@/lib/quiz-session"
 
 interface QuizTimerProps {
   initialTime: number // in seconds
   onTimeUp: () => void
   isPaused?: boolean
+  isVisible?: boolean
+  onToggleVisibility?: () => void
 }
 
-export function QuizTimer({ initialTime, onTimeUp, isPaused = false }: QuizTimerProps) {
+export function QuizTimer({ initialTime, onTimeUp, isPaused = false, isVisible = true, onToggleVisibility }: QuizTimerProps) {
   const [timeRemaining, setTimeRemaining] = useState(initialTime)
 
   useEffect(() => {
@@ -31,41 +32,47 @@ export function QuizTimer({ initialTime, onTimeUp, isPaused = false }: QuizTimer
     return () => clearInterval(interval)
   }, [timeRemaining, onTimeUp, isPaused])
 
-  const progressPercentage = (timeRemaining / initialTime) * 100
-  const isLowTime = timeRemaining <= 300 // 5 minutes
   const isCriticalTime = timeRemaining <= 60 // 1 minute
 
-  return (
-    <Card className={`${isCriticalTime ? "border-red-500" : isLowTime ? "border-yellow-500" : ""}`}>
-      <CardContent className="p-4">
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-2">
-            {isCriticalTime ? (
-              <AlertTriangle className="h-5 w-5 text-red-500" />
-            ) : (
-              <Clock className="h-5 w-5 text-gray-500" />
-            )}
-            <span
-              className={`font-mono text-lg font-semibold ${
-                isCriticalTime ? "text-red-600" : isLowTime ? "text-yellow-600" : "text-gray-900"
-              }`}
-            >
-              {formatTime(timeRemaining)}
-            </span>
-          </div>
-          <div className="flex-1">
-            <Progress
-              value={progressPercentage}
-              className={`h-2 ${isCriticalTime ? "bg-red-100" : isLowTime ? "bg-yellow-100" : ""}`}
-            />
-          </div>
-        </div>
-        {isLowTime && (
-          <p className={`text-xs mt-2 ${isCriticalTime ? "text-red-600" : "text-yellow-600"}`}>
-            {isCriticalTime ? "Time is running out!" : "Less than 5 minutes remaining"}
-          </p>
+  // If timer is hidden, show only toggle button
+  if (!isVisible) {
+    return (
+      <div className="flex items-center space-x-2">
+        {onToggleVisibility && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onToggleVisibility}
+            className="text-gray-600 hover:text-gray-800"
+          >
+            <Eye className="h-4 w-4 mr-1" />
+            Show Timer
+          </Button>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex items-center space-x-3 bg-white rounded-lg border border-gray-200 px-4 py-2 shadow-sm">
+      <Clock className={`h-4 w-4 ${isCriticalTime ? 'text-red-500' : 'text-gray-500'}`} />
+      
+      <span className={`font-mono text-lg font-semibold ${
+        isCriticalTime ? 'text-red-600' : 'text-gray-900'
+      }`}>
+        {formatTime(timeRemaining)}
+      </span>
+
+      {onToggleVisibility && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onToggleVisibility}
+          className="text-gray-400 hover:text-gray-600 p-1"
+        >
+          <EyeOff className="h-4 w-4" />
+        </Button>
+      )}
+    </div>
   )
 }

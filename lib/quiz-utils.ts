@@ -434,3 +434,70 @@ export async function getQuizById(quizId: string): Promise<Quiz | null> {
     return null
   }
 }
+
+export async function updateQuiz(quizId: string, quiz: Partial<Quiz>): Promise<boolean> {
+  try {
+    const { user } = await getCurrentUser()
+    if (!user) {
+      throw new Error("Authentication required")
+    }
+
+    const updateData: any = {}
+    
+    if (quiz.title) updateData.title = quiz.title
+    if (quiz.description) updateData.description = quiz.description
+    if (quiz.difficulty) updateData.difficulty = quiz.difficulty
+    if (quiz.questions) {
+      updateData.questions = quiz.questions
+      updateData.total_questions = quiz.questions.length
+    }
+
+    const { error } = await supabase
+      .from('quizzes')
+      .update(updateData)
+      .eq('id', quizId)
+      .eq('user_id', user.id) // Ensure user can only update their own quizzes
+
+    if (error) {
+      console.error('Error updating quiz:', error)
+      return false
+    }
+
+    return true
+  } catch (error) {
+    console.error("Error updating quiz:", error)
+    return false
+  }
+}
+
+export async function deleteQuiz(quizId: string): Promise<boolean> {
+  try {
+    const { user } = await getCurrentUser()
+    if (!user) {
+      throw new Error("Authentication required")
+    }
+
+    const { error } = await supabase
+      .from('quizzes')
+      .delete()
+      .eq('id', quizId)
+      .eq('user_id', user.id) // Ensure user can only delete their own quizzes
+
+    if (error) {
+      console.error('Error deleting quiz:', error)
+      return false
+    }
+
+    // Also clean up any local storage data for this quiz
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(`quiz-${quizId}`)
+      localStorage.removeItem(`quiz-results-${quizId}`)
+      localStorage.removeItem(`quiz-progress-${quizId}`)
+    }
+
+    return true
+  } catch (error) {
+    console.error("Error deleting quiz:", error)
+    return false
+  }
+}
