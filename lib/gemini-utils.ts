@@ -27,10 +27,21 @@ export async function generateQuizWithGemini(options: GenerateQuizOptions) {
     throw new Error("Please configure a valid GEMINI_API_KEY environment variable")
   }
 
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }) // Updated to use gemini-1.5-flash model
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }) // Updated to use gemini-2.0-flash model
 
   const questionTypesStr = options.questionTypes.join(", ")
   const focusAreasStr = options.focusAreas?.length ? `Focus on these areas: ${options.focusAreas.join(", ")}. ` : ""
+  
+  // Create specific instructions for each question type
+  const typeInstructions = options.questionTypes.map(type => {
+    switch(type) {
+      case 'multiple_choice': return '- For multiple_choice: 4 options with one correct answer'
+      case 'true_false': return '- For true_false: "True" or "False" as the correct answer'
+      case 'identification': return '- For identification: a specific term, concept, or name to identify. The question should ask "What is..." or "Identify..." or "Name the..." and the correct answer should be a single term or short phrase (1-3 words maximum)'
+      case 'fill_in_blanks': return '- For fill_in_blanks: provide a sentence with one blank to fill'
+      default: return ''
+    }
+  }).filter(Boolean).join('\n')
 
   const prompt = `
 You are an expert educational content creator. Generate a quiz based on the following content.
@@ -41,16 +52,17 @@ ${options.content}
 Requirements:
 - Generate exactly ${options.numberOfQuestions} questions
 - Difficulty level: ${options.difficulty}
-- Question types: ${questionTypesStr}
+- Question types MUST ONLY be from these selected types: ${questionTypesStr}
 - ${focusAreasStr}
+
+CRITICAL: You MUST only generate questions using the specified question types: ${questionTypesStr}. Do NOT create any other question types.
 
 For each question, provide:
 1. Question text
-2. Question type (multiple_choice, true_false, or identification)
-3. For multiple choice: 4 options with one correct answer
-4. For true/false: "True" or "False" as the correct answer
-5. For identification: a specific term, concept, or name to identify. The question should ask "What is..." or "Identify..." or "Name the..." and the correct answer should be a single term or short phrase (1-3 words maximum)
-6. A detailed, pedagogical explanation of why the answer is correct, including:
+2. Question type (ONLY from: ${questionTypesStr})
+3. Answer format based on the specific question type:
+${typeInstructions}
+4. A detailed, pedagogical explanation of why the answer is correct, including:
    - The reasoning behind the answer
    - Key concepts or facts from the content that support the answer
    - Common misconceptions and why they are incorrect
@@ -58,22 +70,34 @@ For each question, provide:
 
 IMPORTANT: Do NOT use phrases like "the text describes", "provided by the text", "according to the text", or similar references to the source material in your explanations. Write explanations as standalone educational content.
 
-Format your response as a JSON array with this structure:
-[
-  {
-    "questionText": "Question here",
-    "questionType": "multiple_choice",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
-    "correctAnswer": "Option A",
-    "explanation": "Detailed explanation here"
-  },
-  {
-    "questionText": "What is the powerhouse of the cell?",
-    "questionType": "identification",
-    "correctAnswer": "Mitochondria",
-    "explanation": "Detailed explanation here"
-  }
-]
+Format your response as a JSON array. Here are examples for each allowed question type:
+
+${options.questionTypes.includes('multiple_choice') ? `Multiple Choice Example:
+{
+  "questionText": "Which of the following best describes...?",
+  "questionType": "multiple_choice",
+  "options": ["Option A", "Option B", "Option C", "Option D"],
+  "correctAnswer": "Option A",
+  "explanation": "Detailed explanation here"
+}` : ''}
+
+${options.questionTypes.includes('true_false') ? `True/False Example:
+{
+  "questionText": "The statement XYZ is correct.",
+  "questionType": "true_false",
+  "correctAnswer": "True",
+  "explanation": "Detailed explanation here"
+}` : ''}
+
+${options.questionTypes.includes('identification') ? `Identification Example:
+{
+  "questionText": "What is the term for...?",
+  "questionType": "identification",
+  "correctAnswer": "Short Answer",
+  "explanation": "Detailed explanation here"
+}` : ''}
+
+REMEMBER: Only generate questions with questionType values from this list: ${questionTypesStr}
 
 Make sure the questions test understanding of key concepts from the content. Explanations should be clear, thorough, and help students learn and retain the material. Do not reference the source text in your explanations.
 `
@@ -90,7 +114,23 @@ Make sure the questions test understanding of key concepts from the content. Exp
     }
 
     const questions = JSON.parse(jsonMatch[0])
-    return questions
+    
+    // Validate that all questions use only the requested question types
+    const allowedTypes = options.questionTypes
+    const filteredQuestions = questions.filter((question: any) => {
+      if (!allowedTypes.includes(question.questionType)) {
+        console.warn(`Filtered out question with unauthorized type: ${question.questionType}. Only allowed: ${allowedTypes.join(', ')}`)
+        return false
+      }
+      return true
+    })
+    
+    // If we lost too many questions due to filtering, log a warning
+    if (filteredQuestions.length < questions.length) {
+      console.warn(`Filtered ${questions.length - filteredQuestions.length} questions with unauthorized types`)
+    }
+    
+    return filteredQuestions
   } catch (error) {
     console.error("Error generating quiz with Gemini:", error)
     throw new Error("Failed to generate quiz questions")
@@ -106,7 +146,7 @@ export async function generateReviewerWithGemini(options: GenerateReviewerOption
   console.log("Generating reviewer with content length:", options.content.length)
   console.log("Content sample (first 200 chars):", options.content.substring(0, 200))
 
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }) // Updated to use gemini-1.5-flash model
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }) // Updated to use gemini-2.0-flash model
 
   let prompt = ""
   const focusAreasStr = options.focusAreas?.length ? `Focus on these areas: ${options.focusAreas.join(", ")}. ` : ""

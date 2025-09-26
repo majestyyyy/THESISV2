@@ -189,19 +189,11 @@ export function QuestionDisplay({
               />
             </div>
             
-            {/* Show user answer vs correct answer comparison in review mode */}
+            {/* Show correct answer in review mode */}
             {showExplanation && (
-              <div className="space-y-3">
-                {selectedAnswer && (
-                  <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                    <h4 className="font-semibold text-gray-900 mb-1">Your Answer:</h4>
-                    <p className="text-gray-800">{selectedAnswer || "No answer provided"}</p>
-                  </div>
-                )}
-                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <h4 className="font-semibold text-green-900 mb-1">Correct Answer:</h4>
-                  <p className="text-green-800">{question.correctAnswer}</p>
-                </div>
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                <h4 className="font-semibold text-green-900 mb-1">Correct Answer:</h4>
+                <p className="text-green-800">{question.correctAnswer}</p>
               </div>
             )}
             
@@ -390,19 +382,11 @@ export function QuestionDisplay({
                   />
                 </div>
                 
-                {/* Show user answer vs correct answer comparison in review mode */}
+                {/* Show correct answer in review mode */}
                 {showExplanation && (
-                  <div className="space-y-3">
-                    {selectedAnswer && (
-                      <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                        <h4 className="font-semibold text-gray-900 mb-1">Your Answer:</h4>
-                        <p className="text-gray-800">{selectedAnswer || "No answer provided"}</p>
-                      </div>
-                    )}
-                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <h4 className="font-semibold text-green-900 mb-1">Correct Answer:</h4>
-                      <p className="text-green-800">{question.correctAnswer}</p>
-                    </div>
+                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <h4 className="font-semibold text-green-900 mb-1">Correct Answer:</h4>
+                    <p className="text-green-800">{question.correctAnswer}</p>
                   </div>
                 )}
               </div>

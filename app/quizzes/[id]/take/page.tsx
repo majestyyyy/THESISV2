@@ -3,11 +3,11 @@
 import { useState, useEffect, use } from "react"
 import { useRouter } from "next/navigation"
 import { Progress } from "@/components/ui/progress"
-import { ChevronLeft, Flag, CheckCircle, FileText, ArrowRight } from "lucide-react"
+import { Flag, FileText, ArrowRight } from "lucide-react"
 import { QuestionDisplay } from "@/components/quiz/question-display"
 import { QuizTimer } from "@/components/quiz/quiz-timer"
 import { ProtectedRoute } from "@/components/auth/protected-route"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
+// Removed DashboardLayout import for focused quiz experience
 import { createQuizSession, calculateQuizResults } from "@/lib/quiz-session"
 import { getQuizById } from "@/lib/quiz-utils"
 import type { QuizSession } from "@/lib/quiz-session"
@@ -25,6 +25,7 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
   const [showExplanation, setShowExplanation] = useState(false)
   const [hasAnswered, setHasAnswered] = useState(false)
   const [isHydrated, setIsHydrated] = useState(false)
+  const [submittedQuestions, setSubmittedQuestions] = useState<Set<number>>(new Set())
 
     // TTS state
     const [isSpeaking, setIsSpeaking] = useState(false)
@@ -117,6 +118,29 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
     setCurrentUtterance(null);
   }, [currentQuestion])
 
+  // Add keyboard support for Enter key
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'Enter' && quiz) {
+        if (!showExplanation) {
+          // If explanation is not shown, submit the answer
+          handleSubmitAnswer()
+        } else if (currentQuestion === quiz.questions.length - 1 && showExplanation) {
+          // If on last question and explanation is shown, submit quiz
+          handleSubmitQuiz()
+        } else if (showExplanation && currentQuestion < quiz.questions.length - 1) {
+          // If explanation is shown and not on last question, go to next
+          handleNextQuestion()
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyPress)
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress)
+    }
+  }, [currentQuestion, showExplanation, hasAnswered, quiz])
+
   const handleAnswerChange = (answer: string) => {
     if (!session || showExplanation || !quiz) return
 
@@ -132,8 +156,10 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
   }
 
   const handleSubmitAnswer = () => {
-    if (!hasAnswered) return
+    // Allow submission even without selecting an answer (blank submission)
     setShowExplanation(true)
+    // Mark current question as submitted to prevent backtracking
+    setSubmittedQuestions(prev => new Set([...prev, currentQuestion]))
   }
 
   const handleNextQuestion = () => {
@@ -143,11 +169,7 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
     }
   }
 
-  const handlePreviousQuestion = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion(currentQuestion - 1)
-    }
-  }
+  // Removed previous question functionality to prevent backtracking
 
   const handleTimeUp = () => {
     handleSubmitQuiz()
@@ -253,12 +275,32 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
   if (!isHydrated || loading) {
     return (
       <ProtectedRoute>
-        <DashboardLayout>
-          <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-            <p className="text-gray-600">Loading quiz...</p>
+        <div className="min-h-screen relative overflow-hidden">
+          {/* Enhanced Loading Background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-purple-50"></div>
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute -top-4 -left-4 w-72 h-72 bg-gradient-to-r from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute top-1/3 -right-8 w-96 h-96 bg-gradient-to-r from-purple-300/15 to-pink-300/15 rounded-full blur-3xl animate-pulse delay-1000"></div>
+            <div className="absolute -bottom-8 left-1/3 w-80 h-80 bg-gradient-to-r from-blue-300/20 to-indigo-300/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
           </div>
-        </DashboardLayout>
+          
+          <div className="relative z-10 flex flex-col items-center justify-center min-h-screen space-y-6">
+            <div className="relative">
+              <div className="animate-spin rounded-full h-20 w-20 border-4 border-indigo-200/50"></div>
+              <div className="animate-spin rounded-full h-20 w-20 border-t-4 border-indigo-600 absolute top-0 left-0"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-indigo-400/20 to-purple-400/20 rounded-full blur-xl animate-pulse"></div>
+            </div>
+            <div className="text-center space-y-3 bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg">
+              <p className="text-2xl font-bold text-gray-800">Preparing your quiz...</p>
+              <p className="text-gray-600">Creating the perfect learning experience</p>
+              <div className="flex justify-center space-x-1 mt-4">
+                <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce delay-100"></div>
+                <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce delay-200"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </ProtectedRoute>
     )
   }
@@ -266,27 +308,41 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
   if (error || !quiz) {
     return (
       <ProtectedRoute>
-        <DashboardLayout>
-          <div className="flex items-center justify-center min-h-96">
-            <div className="max-w-md bg-white p-8 rounded-2xl border border-gray-100 text-center">
-              <p className="text-red-600 mb-6">{error || "Quiz not found"}</p>
-              <div className="space-y-3">
+        <div className="min-h-screen relative overflow-hidden">
+          {/* Enhanced Error Background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-red-50 via-white to-orange-50"></div>
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute -top-4 -left-4 w-72 h-72 bg-gradient-to-r from-red-400/15 to-orange-400/15 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute top-1/3 -right-8 w-96 h-96 bg-gradient-to-r from-orange-300/10 to-yellow-300/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+            <div className="absolute -bottom-8 left-1/3 w-80 h-80 bg-gradient-to-r from-red-300/15 to-pink-300/15 rounded-full blur-3xl animate-pulse delay-2000"></div>
+          </div>
+          
+          <div className="relative z-10 flex items-center justify-center min-h-screen">
+            <div className="max-w-md bg-white/90 backdrop-blur-sm p-8 rounded-3xl border border-white/20 shadow-2xl text-center">
+              <div className="mb-6">
+                <div className="w-20 h-20 bg-gradient-to-r from-red-100 to-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <span className="text-3xl animate-bounce">⚠️</span>
+                </div>
+                <p className="text-red-600 text-xl font-bold">{error || "Quiz not found"}</p>
+                <p className="text-gray-600 mt-2">Something went wrong, but don't worry!</p>
+              </div>
+              <div className="space-y-4">
                 <button 
                   onClick={() => window.location.reload()}
-                  className="w-full px-6 py-3 text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-colors"
+                  className="w-full px-6 py-4 text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg font-semibold text-lg"
                 >
-                  Retry Loading
+                  🔄 Try Again
                 </button>
                 <button 
                   onClick={() => router.push("/quizzes")}
-                  className="w-full px-6 py-3 text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+                  className="w-full px-6 py-4 text-gray-700 bg-white/80 border border-gray-200 rounded-2xl hover:bg-white transition-all duration-300 transform hover:scale-105 shadow-md font-semibold text-lg"
                 >
-                  Back to Quizzes
+                  ← Back to Quizzes
                 </button>
               </div>
             </div>
           </div>
-        </DashboardLayout>
+        </div>
       </ProtectedRoute>
     )
   }
@@ -294,44 +350,111 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
   if (!session) {
     return (
       <ProtectedRoute>
-        <DashboardLayout>
-          <div className="flex flex-col items-center justify-center min-h-96 space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-            <p className="text-gray-600">Initializing quiz session...</p>
+        <div className="min-h-screen relative overflow-hidden">
+          {/* Enhanced Session Loading Background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-purple-50"></div>
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute -top-4 -left-4 w-72 h-72 bg-gradient-to-r from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute top-1/3 -right-8 w-96 h-96 bg-gradient-to-r from-purple-300/15 to-pink-300/15 rounded-full blur-3xl animate-pulse delay-1000"></div>
+            <div className="absolute -bottom-8 left-1/3 w-80 h-80 bg-gradient-to-r from-blue-300/20 to-indigo-300/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
           </div>
-        </DashboardLayout>
+          
+          <div className="relative z-10 flex flex-col items-center justify-center min-h-screen space-y-6">
+            <div className="relative">
+              <div className="animate-pulse bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full h-20 w-20 shadow-2xl"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full h-20 w-20 animate-ping opacity-20"></div>
+              <div className="absolute inset-2 bg-white rounded-full animate-pulse"></div>
+            </div>
+            <div className="text-center space-y-3 bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-xl">
+              <p className="text-2xl font-bold text-gray-800">Setting up your session...</p>
+              <p className="text-gray-600">Almost ready to begin!</p>
+              <div className="w-32 h-1 bg-gray-200 rounded-full mx-auto overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </ProtectedRoute>
     )
   }
 
   return (
     <ProtectedRoute>
-      <DashboardLayout>
-        <div className="max-w-4xl mx-auto space-y-6">
-          {/* Quiz Header */}
-          <div className="bg-white p-6 rounded-2xl border border-gray-100">
-            <div className="flex items-center justify-between mb-4">
+      <div className="min-h-screen relative overflow-hidden">
+        {/* Enhanced Animated Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-purple-50"></div>
+        
+        {/* Floating Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-4 -left-4 w-72 h-72 bg-gradient-to-r from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute top-1/3 -right-8 w-96 h-96 bg-gradient-to-r from-purple-300/15 to-pink-300/15 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute -bottom-8 left-1/3 w-80 h-80 bg-gradient-to-r from-blue-300/20 to-indigo-300/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
+          
+          {/* Subtle Grid Pattern */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(99,102,241,0.15)_1px,transparent_0)] bg-[length:40px_40px] animate-pulse opacity-30"></div>
+          
+          {/* Floating Particles */}
+          <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-indigo-400/40 rounded-full animate-bounce delay-300"></div>
+          <div className="absolute top-3/4 left-3/4 w-1 h-1 bg-purple-400/60 rounded-full animate-bounce delay-700"></div>
+          <div className="absolute top-1/2 left-1/6 w-1.5 h-1.5 bg-blue-400/50 rounded-full animate-bounce delay-1100"></div>
+          <div className="absolute top-1/6 right-1/4 w-1 h-1 bg-indigo-500/40 rounded-full animate-bounce delay-1500"></div>
+        </div>
+        
+        {/* Main Content with Enhanced Backdrop */}
+        <div className="relative z-10 py-8">
+          <div className="max-w-5xl mx-auto space-y-8 px-6">
+          {/* Enhanced Quiz Header */}
+          <div className="bg-white/80 backdrop-blur-md p-8 rounded-3xl border border-white/30 shadow-2xl shadow-indigo-200/30 relative overflow-hidden">
+            {/* Card inner glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 via-transparent to-purple-50/50 rounded-3xl"></div>
+            <div className="relative z-10">
+            <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-xl font-semibold text-gray-900 flex items-center">
-                  <FileText className="mr-2 h-5 w-5" />
+                <h1 className="text-2xl font-bold text-gray-900 flex items-center mb-2">
+                  <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-2 rounded-xl mr-3">
+                    <FileText className="h-6 w-6 text-white" />
+                  </div>
                   {quiz.title}
                 </h1>
-                <p className="text-gray-600 mt-1">{quiz.description}</p>
+                <p className="text-gray-600 text-lg">{quiz.description}</p>
               </div>
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full font-medium">
-                {quiz.difficulty}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-6 text-sm text-gray-600">
-                <span>
-                  Questions: {getAnsweredQuestions()}/{quiz.totalQuestions}
+              <div className="text-right">
+                <span className="px-4 py-2 bg-gradient-to-r from-blue-100 to-indigo-100 text-indigo-800 text-sm rounded-full font-semibold shadow-sm">
+                  {quiz.difficulty}
                 </span>
-                <span>Progress: {Math.round((getAnsweredQuestions() / quiz.totalQuestions) * 100)}%</span>
               </div>
-              <QuizTimer initialTime={session.timeRemaining} onTimeUp={handleTimeUp} isPaused={isSubmitting} />
             </div>
-            <Progress value={(getAnsweredQuestions() / quiz.totalQuestions) * 100} className="mt-4" />
+            
+            {/* Enhanced Progress Section */}
+            <div className="bg-gradient-to-r from-gray-50 to-indigo-50 p-6 rounded-2xl">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-8 text-sm font-medium">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full"></div>
+                    <span className="text-gray-700">
+                      Question {currentQuestion + 1} of {quiz.totalQuestions}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full"></div>
+                    <span className="text-gray-700">
+                      {Math.round((getAnsweredQuestions() / quiz.totalQuestions) * 100)}% Complete
+                    </span>
+                  </div>
+                </div>
+                <div className="bg-white p-3 rounded-xl shadow-sm">
+                  <QuizTimer initialTime={session.timeRemaining} onTimeUp={handleTimeUp} isPaused={isSubmitting} />
+                </div>
+              </div>
+              <div className="relative">
+                <Progress 
+                  value={(getAnsweredQuestions() / quiz.totalQuestions) * 100} 
+                  className="h-3 bg-white/80 rounded-full overflow-hidden"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-full animate-pulse"></div>
+              </div>
+            </div>
+            </div>
           </div>
 
           {/* Question Display */}
@@ -348,55 +471,49 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
             onStopTTS={handleStopSpeaking}
           />
 
-          {hasAnswered && !showExplanation && (
-            <div className="bg-blue-50 border border-blue-200 p-6 rounded-2xl">
-              <div className="text-center">
-                <p className="text-blue-800 mb-4">Ready to see the explanation?</p>
-                <button 
-                  onClick={handleSubmitAnswer} 
-                  className="flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors mx-auto"
-                >
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  Submit Answer & Show Explanation
-                </button>
-              </div>
-            </div>
-          )}
+          {/* Enhanced Navigation */}
+          <div className="bg-white/80 backdrop-blur-md p-6 rounded-3xl border border-white/30 shadow-2xl shadow-indigo-200/30 relative overflow-hidden">
+            {/* Navigation card glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-50/40 via-transparent to-indigo-50/40 rounded-3xl"></div>
+            <div className="relative z-10">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+              {/* Question Progress Indicators */}
+              <div className="flex-1"></div>
 
-          {/* Navigation */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <button
-              onClick={handlePreviousQuestion}
-              disabled={currentQuestion === 0}
-              className={`flex items-center px-6 py-3 rounded-xl transition-colors ${
-                currentQuestion === 0 
-                  ? 'text-gray-400 bg-gray-100 cursor-not-allowed' 
-                  : 'text-gray-700 bg-white border border-gray-200 hover:bg-gray-50'
-              }`}
-            >
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Previous
-            </button>
-
-            <div className="flex items-center justify-center">
-              {/* Question indicators with scroll */}
-              <div className="relative">
-                <div className="flex space-x-1 max-w-xs sm:max-w-md md:max-w-lg overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 px-2 py-1 rounded-lg">
-                  {quiz.questions.map((_, index: number) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentQuestion(index)}
-                      className={`flex-shrink-0 w-8 h-8 rounded-full text-xs font-medium transition-colors ${
-                        index === currentQuestion
-                          ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md"
-                          : session.answers[quiz.questions[index].id]
-                            ? "bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800"
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
-                    >
-                      {index + 1}
-                    </button>
-                  ))}
+            <div className="flex items-center justify-center flex-1">
+              {/* Enhanced Question indicators with scroll */}
+              <div className="relative bg-white/60 p-3 rounded-2xl backdrop-blur-sm">
+                <div className="flex space-x-2 max-w-xs sm:max-w-md md:max-w-2xl overflow-x-auto scrollbar-thin scrollbar-thumb-indigo-200 scrollbar-track-transparent px-2 py-1">
+                  {quiz.questions.map((_, index: number) => {
+                    const isSubmitted = submittedQuestions.has(index)
+                    const canNavigate = index === currentQuestion || (!isSubmitted && index > currentQuestion)
+                    const isAnswered = session.answers[quiz.questions[index].id]
+                    
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => canNavigate ? setCurrentQuestion(index) : undefined}
+                        disabled={!canNavigate}
+                        className={`relative flex-shrink-0 w-10 h-10 rounded-xl text-sm font-bold transition-all duration-300 transform hover:scale-105 ${
+                          index === currentQuestion
+                            ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-300/50 ring-2 ring-indigo-300 ring-offset-2"
+                            : isSubmitted
+                              ? "bg-gradient-to-r from-gray-300 to-gray-400 text-gray-600 cursor-not-allowed opacity-60"
+                              : isAnswered
+                                ? "bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-md shadow-emerald-200/50"
+                                : "bg-white text-gray-600 hover:bg-gradient-to-r hover:from-indigo-100 hover:to-purple-100 shadow-md border border-gray-200"
+                        }`}
+                      >
+                        {index + 1}
+                        {isAnswered && !isSubmitted && (
+                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white"></div>
+                        )}
+                        {isSubmitted && (
+                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-gray-500 rounded-full border-2 border-white"></div>
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
                 {/* Scroll indicators */}
                 {quiz.questions.length > 10 && (
@@ -417,42 +534,45 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
                 <button 
                   onClick={handleSubmitQuiz} 
                   disabled={isSubmitting}
-                  className={`flex items-center px-6 py-3 rounded-xl transition-colors ${
+                  className={`group flex items-center px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 ${
                     isSubmitting 
                       ? 'text-gray-400 bg-gray-100 cursor-not-allowed' 
-                      : 'text-white bg-gray-900 hover:bg-gray-800'
+                      : 'text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg shadow-green-300/50'
                   }`}
                 >
-                  <Flag className="mr-2 h-4 w-4" />
-                  {isSubmitting ? "Submitting..." : "Finish Quiz"}
+                  <Flag className="mr-3 h-5 w-5 transition-transform group-hover:rotate-12" />
+                  {isSubmitting ? "Submitting..." : "🎉 Finish Quiz"}
                 </button>
               ) : (
                 <button 
-                  disabled={!hasAnswered} 
-                  className="px-6 py-3 text-gray-400 bg-gray-100 rounded-xl cursor-not-allowed"
+                  onClick={handleSubmitAnswer}
+                  className="group px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-indigo-300/50"
                 >
-                  Submit answer first
+                  ✨ Submit Answer
                 </button>
               )
             ) : showExplanation ? (
               <button 
                 onClick={handleNextQuestion}
-                className="flex items-center px-6 py-3 text-white bg-gray-900 rounded-xl hover:bg-gray-800 transition-colors"
+                className="group flex items-center px-8 py-4 text-white bg-gradient-to-r from-gray-800 to-gray-900 rounded-2xl hover:from-gray-900 hover:to-black transition-all duration-300 transform hover:scale-105 shadow-lg shadow-gray-400/50 font-semibold"
               >
-                Continue
-                <ArrowRight className="ml-2 h-4 w-4" />
+                Next
+                <ArrowRight className="ml-3 h-5 w-5 transition-transform group-hover:translate-x-1" />
               </button>
             ) : (
               <button 
-                disabled={!hasAnswered} 
-                className="px-6 py-3 text-gray-400 bg-gray-100 rounded-xl cursor-not-allowed"
+                onClick={handleSubmitAnswer}
+                className="group px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-indigo-300/50"
               >
-                Submit answer first
+                Submit
               </button>
             )}
+            </div>
+            </div>
           </div>
         </div>
-      </DashboardLayout>
+        </div>
+      </div>
     </ProtectedRoute>
   )
 }
