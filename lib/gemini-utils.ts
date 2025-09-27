@@ -1,12 +1,18 @@
-import { GoogleGenerativeAI } from "@google/generative-ai"
-
 const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyCfoVpVtoHQ18KihATj0QHHu31upGzuIGM"
 
 if (!apiKey) {
-  throw new Error("NEXT_PUBLIC_GEMINI_API_KEY environment variable is required")
+  console.warn("NEXT_PUBLIC_GEMINI_API_KEY environment variable is not set")
 }
 
-const genAI = new GoogleGenerativeAI(apiKey)
+async function getGeminiAI() {
+  try {
+    const { GoogleGenerativeAI } = await import("@google/generative-ai")
+    return new GoogleGenerativeAI(apiKey)
+  } catch (error) {
+    console.error("Failed to load Google Generative AI:", error)
+    throw new Error("Google Generative AI is not available")
+  }
+}
 
 export interface GenerateQuizOptions {
   content: string
@@ -27,6 +33,7 @@ export async function generateQuizWithGemini(options: GenerateQuizOptions) {
     throw new Error("Please configure a valid GEMINI_API_KEY environment variable")
   }
 
+  const genAI = await getGeminiAI()
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }) // Updated to use gemini-2.0-flash model
 
   const questionTypesStr = options.questionTypes.join(", ")
@@ -146,6 +153,7 @@ export async function generateReviewerWithGemini(options: GenerateReviewerOption
   console.log("Generating reviewer with content length:", options.content.length)
   console.log("Content sample (first 200 chars):", options.content.substring(0, 200))
 
+  const genAI = await getGeminiAI()
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }) // Updated to use gemini-2.0-flash model
 
   let prompt = ""

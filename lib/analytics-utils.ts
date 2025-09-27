@@ -113,16 +113,33 @@ export const mockPerformanceMetrics: PerformanceMetrics = {
 export function generateStudyInsights(metrics: PerformanceMetrics): StudyInsight[] {
   const insights: StudyInsight[] = []
 
-  // Strengths
-  const bestSubject = metrics.subjectPerformance.reduce((best, current) =>
-    current.averageScore > best.averageScore ? current : best,
-  )
-  insights.push({
-    type: "strength",
-    title: `Strong Performance in ${bestSubject.subject}`,
-    description: `You're excelling in ${bestSubject.subject} with an average score of ${bestSubject.averageScore}%`,
-    icon: "🎯",
-  })
+  // Only generate insights if we have subject performance data
+  if (metrics.subjectPerformance && metrics.subjectPerformance.length > 0) {
+    // Strengths
+    const bestSubject = metrics.subjectPerformance.reduce((best, current) =>
+      current.averageScore > best.averageScore ? current : best,
+    )
+    insights.push({
+      type: "strength",
+      title: `Strong Performance in ${bestSubject.subject}`,
+      description: `You're excelling in ${bestSubject.subject} with an average score of ${bestSubject.averageScore}%`,
+      icon: "🎯",
+    })
+
+    // Weaknesses and recommendations
+    const weakestSubject = metrics.subjectPerformance.reduce((weakest, current) =>
+      current.averageScore < weakest.averageScore ? current : weakest,
+    )
+    if (weakestSubject.averageScore < 80) {
+      insights.push({
+        type: "weakness",
+        title: `Focus Needed: ${weakestSubject.subject}`,
+        description: `Your ${weakestSubject.subject} average is ${weakestSubject.averageScore}%. Consider additional practice.`,
+        actionable: `Generate more quizzes for ${weakestSubject.subject} topics`,
+        icon: "📚",
+      })
+    }
+  }
 
   // Study streak achievement
   if (metrics.studyStreak >= 7) {
@@ -134,20 +151,6 @@ export function generateStudyInsights(metrics: PerformanceMetrics): StudyInsight
     })
   }
 
-  // Weaknesses and recommendations
-  const weakestSubject = metrics.subjectPerformance.reduce((weakest, current) =>
-    current.averageScore < weakest.averageScore ? current : weakest,
-  )
-  if (weakestSubject.averageScore < 80) {
-    insights.push({
-      type: "weakness",
-      title: `Focus Needed: ${weakestSubject.subject}`,
-      description: `Your ${weakestSubject.subject} average is ${weakestSubject.averageScore}%. Consider additional practice.`,
-      actionable: `Generate more quizzes for ${weakestSubject.subject} topics`,
-      icon: "📚",
-    })
-  }
-
   // Study time recommendation
   if (metrics.totalStudyTime < 120) {
     insights.push({
@@ -156,6 +159,17 @@ export function generateStudyInsights(metrics: PerformanceMetrics): StudyInsight
       description: "Consider spending more time studying to improve your performance.",
       actionable: "Aim for at least 30 minutes of study time per day",
       icon: "⏰",
+    })
+  }
+
+  // Welcome message for new users
+  if (insights.length === 0) {
+    insights.push({
+      type: "recommendation",
+      title: "Welcome to Your Learning Journey!",
+      description: "Start by uploading study materials or taking some quizzes to see your analytics here.",
+      actionable: "Upload your first document or generate a quiz to get started",
+      icon: "🚀",
     })
   }
 

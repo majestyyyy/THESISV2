@@ -12,43 +12,43 @@ export default function SettingsPage() {
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6 p-3 sm:p-0">
           {/* Header */}
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-            <p className="mt-2 text-gray-600">Manage your account preferences and application settings</p>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Settings</h1>
+            <p className="mt-2 text-gray-600 text-sm sm:text-base">Manage your account preferences and application settings</p>
           </div>
 
           {/* Notification Settings */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Bell className="mr-2 h-5 w-5" />
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center text-base sm:text-lg">
+                <Bell className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 Notifications
               </CardTitle>
-              <CardDescription>Control how you receive notifications from the app</CardDescription>
+              <CardDescription className="text-sm">Control how you receive notifications from the app</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="email-notifications" className="flex flex-col">
-                  <span>Email notifications</span>
-                  <span className="font-normal text-sm text-gray-500">Receive quiz results and reminders via email</span>
+            <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
+              <div className="flex items-start sm:items-center justify-between gap-3">
+                <Label htmlFor="email-notifications" className="flex flex-col text-sm">
+                  <span className="font-medium">Email notifications</span>
+                  <span className="font-normal text-xs sm:text-sm text-gray-500">Receive quiz results and reminders via email</span>
                 </Label>
-                <Switch id="email-notifications" />
+                <Switch id="email-notifications" className="mt-1 sm:mt-0" />
               </div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="push-notifications" className="flex flex-col">
-                  <span>Push notifications</span>
-                  <span className="font-normal text-sm text-gray-500">Get notified when new quizzes are available</span>
+              <div className="flex items-start sm:items-center justify-between gap-3">
+                <Label htmlFor="push-notifications" className="flex flex-col text-sm">
+                  <span className="font-medium">Push notifications</span>
+                  <span className="font-normal text-xs sm:text-sm text-gray-500">Get notified when new quizzes are available</span>
                 </Label>
-                <Switch id="push-notifications" />
+                <Switch id="push-notifications" className="mt-1 sm:mt-0" />
               </div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="weekly-digest" className="flex flex-col">
-                  <span>Weekly digest</span>
-                  <span className="font-normal text-sm text-gray-500">Receive a summary of your quiz performance</span>
+              <div className="flex items-start sm:items-center justify-between gap-3">
+                <Label htmlFor="weekly-digest" className="flex flex-col text-sm">
+                  <span className="font-medium">Weekly digest</span>
+                  <span className="font-normal text-xs sm:text-sm text-gray-500">Receive a summary of your quiz performance</span>
                 </Label>
-                <Switch id="weekly-digest" />
+                <Switch id="weekly-digest" className="mt-1 sm:mt-0" />
               </div>
             </CardContent>
           </Card>

@@ -132,52 +132,52 @@ export default function DashboardPage() {
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <div className="space-y-8 p-6 max-w-7xl mx-auto">
+        <div className="space-y-4 sm:space-y-6 lg:space-y-8 p-3 sm:p-4 lg:p-6 max-w-7xl mx-auto">
           {/* Welcome Section */}
-          <div className="mb-8 text-center sm:text-left">
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
+          <div className="mb-4 sm:mb-6 lg:mb-8 text-center sm:text-left">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
               Magandang buhay, {user?.user_metadata?.first_name || user?.email?.split('@')[0]}! 👋
             </h1>
-            <p className="text-lg text-gray-600">Here's an overview of your learning progress and activities.</p>
+            <p className="text-base sm:text-lg text-gray-600">Here's an overview of your learning progress and activities.</p>
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-gray-600">Total Files</h3>
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-                  <FileText className="h-5 w-5 text-white" />
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="bg-white/90 backdrop-blur-sm p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <h3 className="text-xs sm:text-sm font-medium text-gray-600">Total Files</h3>
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg sm:rounded-xl flex items-center justify-center">
+                  <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                 </div>
               </div>
-              <div className="text-2xl font-semibold text-gray-900">{stats.totalFiles}</div>
+              <div className="text-xl sm:text-2xl font-semibold text-gray-900">{stats.totalFiles}</div>
               <p className="text-xs text-gray-500 mt-1">Uploaded documents</p>
             </div>
             
-            <div className="bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-gray-600">Quizzes Generated</h3>
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-500 rounded-xl flex items-center justify-center">
-                  <Target className="h-5 w-5 text-white" />
+            <div className="bg-white/90 backdrop-blur-sm p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <h3 className="text-xs sm:text-sm font-medium text-gray-600">Quizzes Generated</h3>
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-400 to-blue-500 rounded-lg sm:rounded-xl flex items-center justify-center">
+                  <Target className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                 </div>
               </div>
-              <div className="text-2xl font-semibold text-gray-900">{stats.totalQuizzes}</div>
+              <div className="text-xl sm:text-2xl font-semibold text-gray-900">{stats.totalQuizzes}</div>
               <p className="text-xs text-gray-500 mt-1">AI-generated quizzes</p>
             </div>
 
-            <div className="bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-gray-600">Study Materials</h3>
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
-                  <BookOpen className="h-5 w-5 text-white" />
+            <div className="bg-white/90 backdrop-blur-sm p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <h3 className="text-xs sm:text-sm font-medium text-gray-600">Study Materials</h3>
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg sm:rounded-xl flex items-center justify-center">
+                  <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                 </div>
               </div>
-              <div className="text-2xl font-semibold text-gray-900">{stats.studyMaterials}</div>
+              <div className="text-xl sm:text-2xl font-semibold text-gray-900">{stats.studyMaterials}</div>
               <p className="text-xs text-gray-500 mt-1">Reviewer materials</p>
             </div>
 
-            <div className="bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
-              <div className="flex items-center justify-between mb-4">
+            <div className="bg-white/90 backdrop-blur-sm p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <h3 className="text-sm font-medium text-gray-600">Recent Activity</h3>
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-300 to-blue-400 rounded-xl flex items-center justify-center">
                   <TrendingUp className="h-5 w-5 text-white" />

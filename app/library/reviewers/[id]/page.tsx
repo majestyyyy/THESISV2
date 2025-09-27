@@ -263,26 +263,21 @@ export default function StudyMaterialPage({ params }: StudyMaterialPageProps) {
                           {/* Card Header */}
                           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-2xl p-6 border border-blue-100 border-b-0">
                             <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-4">
-                                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg group-hover:scale-110 transition-transform duration-200">
-                                  {currentFlashcardIndex + 1}
-                                </div>
-                              </div>
-                              <div className="flex gap-3">
-                                {card.difficulty && (
-                                  <Badge className={`text-xs font-medium shadow-sm ${
-                                    card.difficulty === 'basic' ? 'bg-blue-100 text-blue-700 border-blue-200' :
-                                    card.difficulty === 'intermediate' ? 'bg-blue-200 text-blue-800 border-blue-300' :
-                                    'bg-blue-300 text-blue-900 border-blue-400'
-                                  }`}>
-                                    {card.difficulty === 'basic' ? '🟢 Basic' : 
-                                     card.difficulty === 'intermediate' ? '🟡 Intermediate' : '🔴 Advanced'}
-                                  </Badge>
-                                )}
-                                {card.category && (
-                                  <Badge variant="outline" className="text-xs border-blue-300 text-blue-700 bg-blue-50">
-                                    🏷️ {card.category}
-                                  </Badge>
+                              <div className="flex items-center">
+                                {!showAnswer ? (
+                                  <>
+                                    <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-4 shadow-md">
+                                      <span className="text-white text-sm font-bold">Q</span>
+                                    </div>
+                                    <span className="text-sm font-bold text-blue-700 uppercase tracking-wider">Question</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center mr-4 shadow-md">
+                                      <span className="text-white text-sm font-bold">A</span>
+                                    </div>
+                                    <span className="text-sm font-bold text-indigo-700 uppercase tracking-wider">Answer</span>
+                                  </>
                                 )}
                               </div>
                             </div>
@@ -295,12 +290,6 @@ export default function StudyMaterialPage({ params }: StudyMaterialPageProps) {
                                 /* Question Side */
                                 <div className="w-full h-full bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-100 border-t-0 rounded-b-2xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer" onClick={toggleAnswer}>
                                   <div className="p-8 h-full flex flex-col justify-center">
-                                    <div className="flex items-center mb-6">
-                                      <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-4 shadow-md">
-                                        <span className="text-white text-sm font-bold">Q</span>
-                                      </div>
-                                      <span className="text-sm font-bold text-blue-700 uppercase tracking-wider">Question</span>
-                                    </div>
                                     <div className="flex-1 flex items-center justify-center">
                                       <p className="text-blue-900 font-semibold text-xl leading-relaxed text-center">{card.front}</p>
                                     </div>
@@ -316,12 +305,6 @@ export default function StudyMaterialPage({ params }: StudyMaterialPageProps) {
                                 /* Answer Side */
                                 <div className="w-full h-full bg-gradient-to-br from-indigo-50 to-indigo-100 border border-blue-100 border-t-0 rounded-b-2xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer" onClick={toggleAnswer}>
                                   <div className="p-8 h-full flex flex-col justify-center">
-                                    <div className="flex items-center mb-6">
-                                      <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center mr-4 shadow-md">
-                                        <span className="text-white text-sm font-bold">A</span>
-                                      </div>
-                                      <span className="text-sm font-bold text-indigo-700 uppercase tracking-wider">Answer</span>
-                                    </div>
                                     <div className="flex-1 flex items-center justify-center">
                                       <p className="text-indigo-800 font-medium text-lg leading-relaxed text-center">{card.back}</p>
                                     </div>

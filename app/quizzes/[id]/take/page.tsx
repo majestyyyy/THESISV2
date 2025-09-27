@@ -6,10 +6,13 @@ import { Progress } from "@/components/ui/progress"
 import { Flag, FileText, ArrowRight } from "lucide-react"
 import { QuestionDisplay } from "@/components/quiz/question-display"
 import { QuizTimer } from "@/components/quiz/quiz-timer"
-import { ProtectedRoute } from "@/components/auth/protected-route"
+import { AuthRequired } from "@/components/auth/auth-required"
 // Removed DashboardLayout import for focused quiz experience
 import { createQuizSession, calculateQuizResults } from "@/lib/quiz-session"
 import { getQuizById } from "@/lib/quiz-utils"
+import { saveQuizAttempt } from "@/lib/quiz-attempts"
+import { supabase } from "@/lib/supabase"
+import { studySessionTracker } from "@/lib/study-session-tracker"
 import type { QuizSession } from "@/lib/quiz-session"
 import type { Quiz } from "@/lib/quiz-utils"
 
@@ -93,8 +96,24 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
           return
         }
         setQuiz(quizData)
+        
+        // Get current user for session tracking
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          // Start study session tracking
+          await studySessionTracker.startSession({
+            activityType: 'quiz',
+            resourceId: resolvedParams.id,
+            resourceName: quizData.title,
+            metadata: {
+              difficulty: quizData.difficulty,
+              totalQuestions: quizData.totalQuestions
+            }
+          })
+        }
+        
         // Initialize quiz session
-        const newSession = createQuizSession(resolvedParams.id, "user-id", quizData.totalQuestions, 30) // 30 minutes
+        const newSession = createQuizSession(resolvedParams.id, user?.id || "anonymous", quizData.totalQuestions, 30) // 30 minutes
         setSession(newSession)
         
         console.log("Quiz session created:", newSession)
@@ -181,38 +200,55 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
 
     setIsSubmitting(true)
 
-    // Calculate results
-    const results = calculateQuizResults(session, quiz)
+    try {
+      console.log('🎯 Starting quiz submission process...')
+      
+      // Get current user - ensure authentication
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError || !user) {
+        console.error('❌ User not authenticated:', authError)
+        throw new Error('Please sign in to save your quiz results')
+      }
 
-    // Store quiz data
-    localStorage.setItem(`quiz-${resolvedParams.id}`, JSON.stringify(quiz))
-    
-    // Get existing attempts for this quiz
-    const existingAttemptsKey = `quiz-attempts-${resolvedParams.id}`
-    const existingAttempts = localStorage.getItem(existingAttemptsKey)
-    let attempts = existingAttempts ? JSON.parse(existingAttempts) : []
-    
-    // Add current attempt with timestamp
-    const newAttempt = {
-      ...results,
-      attemptId: Date.now().toString(),
-      timestamp: new Date().toISOString()
+      console.log('👤 User authenticated:', user.id)
+      
+      // Calculate results
+      const results = calculateQuizResults(session, quiz)
+      console.log('📊 Quiz results calculated:', results)
+
+      // Prepare attempt data for database
+      const attemptData = {
+        user_id: user.id,
+        quiz_id: resolvedParams.id,
+        score: results.score,
+        total_questions: results.totalQuestions,
+        time_taken: results.timeSpent,
+        answers: results.answers
+      }
+
+      console.log('💾 Saving quiz attempt to database...')
+      
+      // Save directly to database
+      await saveQuizAttempt(attemptData)
+
+      console.log('✅ Quiz attempt saved successfully to database!')
+
+      // Mark quiz as newly completed for automatic refresh
+      localStorage.setItem('quiz_completed', resolvedParams.id)
+
+      // End study session
+      await studySessionTracker.endSession()
+      
+      // Navigate to results page with the attempt ID for immediate display
+      router.push(`/quizzes/${resolvedParams.id}/results`)
+    } catch (error) {
+      console.error('❌ Error submitting quiz:', error)
+      
+      // Show error to user - don't proceed without saving
+      alert(`Failed to save quiz results: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again or ensure you're signed in.`)
+    } finally {
+      setIsSubmitting(false)
     }
-    attempts.push(newAttempt)
-    
-    // Store all attempts
-    localStorage.setItem(existingAttemptsKey, JSON.stringify(attempts))
-    
-    // Find and store the best attempt (highest score)
-    const bestAttempt = attempts.reduce((best: any, current: any) => 
-      current.score > best.score ? current : best
-    )
-    localStorage.setItem(`quiz-results-${resolvedParams.id}`, JSON.stringify(bestAttempt))
-    
-    // Store current attempt as latest results for immediate display
-    localStorage.setItem("quiz-results", JSON.stringify(results))
-    
-    router.push(`/quizzes/${resolvedParams.id}/results`)
   }
 
   const getAnsweredQuestions = () => {
@@ -275,7 +311,7 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
   // Show loading until hydrated
   if (!isHydrated || loading) {
     return (
-      <ProtectedRoute>
+      <AuthRequired message="Please sign in to take quizzes and save your progress.">
         <div className="min-h-screen relative overflow-hidden">
           {/* Enhanced Loading Background */}
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-blue-100"></div>
@@ -302,13 +338,13 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
             </div>
           </div>
         </div>
-      </ProtectedRoute>
+      </AuthRequired>
     )
   }
 
   if (error || !quiz) {
     return (
-      <ProtectedRoute>
+      <AuthRequired message="Please sign in to take quizzes and save your progress.">
         <div className="min-h-screen relative overflow-hidden">
           {/* Enhanced Error Background */}
           <div className="absolute inset-0 bg-gradient-to-br from-red-50 via-white to-red-100"></div>
@@ -344,13 +380,13 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
             </div>
           </div>
         </div>
-      </ProtectedRoute>
+      </AuthRequired>
     )
   }
 
   if (!session) {
     return (
-      <ProtectedRoute>
+      <AuthRequired message="Please sign in to take quizzes and save your progress.">
         <div className="min-h-screen relative overflow-hidden">
           {/* Enhanced Session Loading Background */}
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-blue-100"></div>
@@ -375,12 +411,12 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
             </div>
           </div>
         </div>
-      </ProtectedRoute>
+      </AuthRequired>
     )
   }
 
   return (
-    <ProtectedRoute>
+    <AuthRequired message="Please sign in to take quizzes and save your progress.">
       <div className="min-h-screen relative overflow-hidden">
         {/* Enhanced Animated Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-blue-100"></div>
@@ -411,11 +447,14 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
             <div className="relative z-10">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 flex items-center mb-2">
-                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-2 rounded-xl mr-3">
+                <h1 
+                  className="text-2xl font-bold text-gray-900 flex items-start mb-2 leading-tight"
+                  style={{ wordBreak: 'break-word' }}
+                >
+                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-2 rounded-xl mr-3 flex-shrink-0">
                     <FileText className="h-6 w-6 text-white" />
                   </div>
-                  {quiz.title}
+                  <span className="flex-1 min-w-0">{quiz.title}</span>
                 </h1>
                 <p className="text-gray-600 text-lg">{quiz.description}</p>
               </div>
@@ -580,6 +619,6 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
         </div>
         </div>
       </div>
-    </ProtectedRoute>
+    </AuthRequired>
   )
 }

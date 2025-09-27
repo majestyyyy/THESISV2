@@ -47,44 +47,44 @@ export default function SurveyPage() {
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 p-3 sm:p-0">
           {/* Header Section */}
-          <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 rounded-2xl mb-8 p-8 text-white">
+          <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 rounded-xl sm:rounded-2xl mb-4 sm:mb-6 lg:mb-8 p-4 sm:p-6 lg:p-8 text-white">
             <div className="absolute inset-0 bg-black/10"></div>
             <div className="relative z-10">
-              <div className="flex items-center gap-4 mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-4 sm:mb-6">
                 <Link href="/dashboard">
-                  <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back to Dashboard
+                  <Button variant="ghost" size="sm" className="text-white hover:bg-white/20 self-start">
+                    <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
+                    <span className="text-sm">Back to Dashboard</span>
                   </Button>
                 </Link>
-                <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                <Badge variant="secondary" className="bg-white/20 text-white border-white/30 self-start sm:self-center">
                   <Star className="h-3 w-3 mr-1" />
-                  Research Participation
+                  <span className="text-xs sm:text-sm">Research Participation</span>
                 </Badge>
               </div>
               
               <div className="max-w-3xl">
-                <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
                   Help Shape the Future of AI Education
                 </h1>
-                <p className="text-xl text-blue-100 mb-6">
+                <p className="text-base sm:text-lg lg:text-xl text-blue-100 mb-4 sm:mb-6">
                   Your experience with our AI-powered learning system is invaluable to our research. 
                   Share your insights to help us improve educational technology for students worldwide.
                 </p>
                 
-                <div className="flex flex-wrap gap-4 text-sm">
+                <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm">
                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
+                    <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     <span>5-8 minutes</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4" />
+                    <Shield className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     <span>Completely anonymous</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
+                    <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     <span>Helping improve education</span>
                   </div>
                 </div>

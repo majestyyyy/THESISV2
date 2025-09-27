@@ -9,6 +9,9 @@ import { QuestionDisplay } from "@/components/quiz/question-display"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { getScoreColor, getScoreBadgeColor, formatTime } from "@/lib/quiz-session"
+import { getQuizAttempts, getBestQuizAttempt } from "@/lib/quiz-attempts"
+import { getQuizById } from "@/lib/quiz-utils"
+import { supabase } from "@/lib/supabase"
 import type { QuizResult } from "@/lib/quiz-session"
 import type { Quiz } from "@/lib/quiz-utils"
 
@@ -101,8 +104,12 @@ export default function QuizResultsPage({ params }: { params: Promise<{ id: stri
         setLoading(true)
         setError(null)
         
-        // Add a small delay to ensure proper client-side initialization
-        await new Promise(resolve => setTimeout(resolve, 100))
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) {
+          setError('User not authenticated')
+          return
+        }
         
         console.log("Loading quiz results for ID:", resolvedParams.id)
         
@@ -110,42 +117,58 @@ export default function QuizResultsPage({ params }: { params: Promise<{ id: stri
         const urlParams = new URLSearchParams(window.location.search)
         const showBest = urlParams.get('showBest') === 'true'
         
-        // Get attempts data
-        const attemptsData = localStorage.getItem(`quiz-attempts-${resolvedParams.id}`)
-        const attempts = attemptsData ? JSON.parse(attemptsData) : []
+        // Get attempts from database
+        const attempts = await getQuizAttempts(user.id, resolvedParams.id)
         setTotalAttempts(attempts.length)
         
         let resultsToShow
         if (showBest && attempts.length > 0) {
           // Show best attempt when accessed from review
-          resultsToShow = attempts.reduce((best: any, current: any) => 
-            current.score > best.score ? current : best
-          )
-          setIsShowingBestScore(true)
-        } else {
-          // Show latest attempt (just completed) or fallback to best
-          const latestResults = localStorage.getItem("quiz-results")
-          if (latestResults) {
-            resultsToShow = JSON.parse(latestResults)
-          } else {
-            // Fallback to best score if no latest results
-            const quizSpecificResults = localStorage.getItem(`quiz-results-${resolvedParams.id}`)
-            if (quizSpecificResults) {
-              resultsToShow = JSON.parse(quizSpecificResults)
-              setIsShowingBestScore(true)
+          const bestAttempt = await getBestQuizAttempt(user.id, resolvedParams.id)
+          if (bestAttempt) {
+            resultsToShow = {
+              sessionId: bestAttempt.id,
+              quizId: bestAttempt.quiz_id,
+              score: bestAttempt.score,
+              totalQuestions: bestAttempt.total_questions,
+              correctAnswers: Math.round((bestAttempt.score / 100) * bestAttempt.total_questions),
+              timeSpent: bestAttempt.time_taken,
+              answers: bestAttempt.answers,
+              completedAt: new Date(bestAttempt.completed_at)
             }
+            setIsShowingBestScore(true)
+          }
+        } else if (attempts.length > 0) {
+          // Load latest attempt from database
+          const latestAttempt = attempts[0] // Already ordered by completed_at desc
+          resultsToShow = {
+            sessionId: latestAttempt.id,
+            quizId: latestAttempt.quiz_id,
+            score: latestAttempt.score,
+            totalQuestions: latestAttempt.total_questions,
+            correctAnswers: Math.round((latestAttempt.score / 100) * latestAttempt.total_questions),
+            timeSpent: latestAttempt.time_taken,
+            answers: latestAttempt.answers,
+            completedAt: new Date(latestAttempt.completed_at)
           }
         }
         
         if (resultsToShow) {
           setResults(resultsToShow)
           
-          // Also try to get the quiz data from localStorage or use mock data
-          const storedQuiz = localStorage.getItem(`quiz-${resolvedParams.id}`)
-          if (storedQuiz) {
-            setQuiz(JSON.parse(storedQuiz))
-          } else {
-            // Fallback to mock quiz data
+          // Load quiz data
+          try {
+            const quizData = await getQuizById(resolvedParams.id)
+            if (quizData) {
+              setQuiz(quizData)
+            } else {
+              // Fallback to mock quiz if not found in database
+              console.warn('Quiz not found in database, using mock data')
+              setQuiz(mockQuiz)
+            }
+          } catch (quizError) {
+            console.error('Error loading quiz data:', quizError)
+            // Use mock quiz as fallback
             setQuiz(mockQuiz)
           }
           
@@ -232,7 +255,13 @@ export default function QuizResultsPage({ params }: { params: Promise<{ id: stri
               <h1 className="text-2xl font-semibold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent mb-2">
                 {isShowingBestScore ? "Your Best Performance!" : "Quiz Complete!"}
               </h1>
-              <p className="text-gray-600">{quiz.title}</p>
+              <p 
+                className="text-gray-600 break-words max-w-2xl mx-auto"
+                style={{ wordBreak: 'break-word' }}
+                title={quiz.title}
+              >
+                {quiz.title}
+              </p>
               {totalAttempts > 1 && (
                 <div className="mt-3">
                   <span className="px-3 py-1 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700 text-sm rounded-full">

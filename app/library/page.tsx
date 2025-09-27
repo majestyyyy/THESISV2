@@ -239,24 +239,24 @@ export default function LibraryPage() {
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <div className="space-y-8 p-6 max-w-7xl mx-auto">
+        <div className="space-y-4 sm:space-y-6 lg:space-y-8 p-3 sm:p-4 lg:p-6 max-w-7xl mx-auto">
           {/* Enhanced Header */}
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl border border-blue-200 shadow-lg shadow-blue-100/50 p-6">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg">
-                  <BookOpen className="h-8 w-8 text-white" />
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl sm:rounded-2xl border border-blue-200 shadow-lg shadow-blue-100/50 p-4 sm:p-6">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-3 sm:space-y-4 lg:space-y-0">
+              <div className="flex items-center space-x-3 sm:space-x-4">
+                <div className="p-2.5 sm:p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl sm:rounded-2xl shadow-lg">
+                  <BookOpen className="h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900">My Library</h1>
-                  <p className="text-blue-700 font-medium">Organize and access your AI-generated study materials</p>
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">My Library</h1>
+                  <p className="text-blue-700 font-medium text-sm sm:text-base">Organize and access your AI-generated study materials</p>
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
                
                 <Link href="/reviewers/generate">
-                  <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg shadow-blue-200 hover:shadow-blue-300 transition-all duration-200 px-6 font-semibold">
-                    <Plus className="mr-2 h-4 w-4" />
+                  <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg shadow-blue-200 hover:shadow-blue-300 transition-all duration-200 px-4 sm:px-6 py-2 sm:py-2.5 font-semibold text-sm sm:text-base">
+                    <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     Create New
                   </Button>
                 </Link>
@@ -265,19 +265,19 @@ export default function LibraryPage() {
           </div>
 
           {/* Enhanced Search and Filters */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-blue-200 shadow-lg p-6">
-            <div className="flex flex-col sm:flex-row gap-4 items-center">
-              <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-400" />
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-blue-200 shadow-lg p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center">
+              <div className="relative flex-1 w-full">
+                <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />
                 <Input
                   placeholder="Search by title, file name, or type..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-12 pr-4 py-3 border-blue-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 rounded-xl text-sm"
+                  className="pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3 border-blue-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 rounded-lg sm:rounded-xl text-sm"
                 />
               </div>
-              <div className="flex items-center space-x-2">
-                <Badge variant="outline" className="text-blue-700 border-blue-300 bg-blue-50">
+              <div className="flex items-center space-x-2 w-full sm:w-auto justify-center">
+                <Badge variant="outline" className="text-blue-700 border-blue-300 bg-blue-50 text-xs sm:text-sm px-2 sm:px-3 py-1">
                   {filteredReviewers.length} found
                 </Badge>
               </div>
@@ -285,12 +285,12 @@ export default function LibraryPage() {
           </div>
 
           {/* Enhanced Study Materials Grid */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {filteredReviewers.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {filteredReviewers.map((reviewer) => (
                   <Card key={reviewer.id} className="bg-white/90 backdrop-blur-sm border-blue-200 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-100/50 transition-all duration-300 transform hover:-translate-y-1">
-                    <CardContent className="p-6">
+                    <CardContent className="p-4 sm:p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center space-x-3">
                           <div className="p-2 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl">

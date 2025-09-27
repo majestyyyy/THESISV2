@@ -138,44 +138,44 @@ export default function GenerateReviewerPage() {
     return (
       <ProtectedRoute>
         <DashboardLayout>
-          <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30">
-            <div className="max-w-6xl mx-auto p-4 lg:p-8">
+          <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 p-3 sm:p-0">
+            <div className="max-w-6xl mx-auto p-3 sm:p-4 lg:p-8">
               
               {/* Modern Header */}
-              <div className="relative mb-8">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl transform rotate-1"></div>
-                <div className="relative bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-8 text-white shadow-2xl">
+              <div className="relative mb-4 sm:mb-6 lg:mb-8">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl sm:rounded-3xl transform rotate-1"></div>
+                <div className="relative bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 text-white shadow-2xl">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-32 translate-x-32"></div>
                   <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-3xl translate-y-24 -translate-x-24"></div>
                   
                   <div className="relative z-10">
                     {/* Top section with title and content */}
-                    <div className="flex items-start justify-between mb-6">
-                      <div className="flex items-start space-x-6 flex-1">
-                        <div className="relative flex-shrink-0">
-                          <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg border border-white/30">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-4 sm:mb-6">
+                      <div className="flex flex-col sm:flex-row sm:items-start space-y-4 sm:space-y-0 sm:space-x-4 lg:space-x-6 flex-1">
+                        <div className="relative flex-shrink-0 self-start">
+                          <div className="w-16 h-16 sm:w-18 sm:h-18 lg:w-20 lg:h-20 bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg border border-white/30">
                             {getTypeIcon(generatedReviewer.type)}
                           </div>
-                          <div className="absolute -top-2 -right-2 w-6 h-6 bg-blue-400 rounded-full flex items-center justify-center">
-                            <Sparkles className="w-3 h-3 text-white" />
+                          <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 w-5 h-5 sm:w-6 sm:h-6 bg-blue-400 rounded-full flex items-center justify-center">
+                            <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" />
                           </div>
                         </div>
-                        <div className="space-y-3 flex-1 min-w-0">
+                        <div className="space-y-2 sm:space-y-3 flex-1 min-w-0">
                           <div>
-                            <h1 className="text-3xl lg:text-4xl font-bold text-white leading-tight">
+                            <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-white leading-tight">
                               {generatedReviewer.title}
                             </h1>
-                            <p className="text-lg lg:text-xl text-blue-100 mt-2">
+                            <p className="text-base sm:text-lg lg:text-xl text-blue-100 mt-1 sm:mt-2">
                               AI-Generated {generatedReviewer.type.charAt(0).toUpperCase() + generatedReviewer.type.slice(1)}
                             </p>
                           </div>
-                          <div className="flex flex-wrap items-center gap-3 text-sm">
-                            <div className="flex items-center space-x-2 bg-white/15 px-3 py-1 rounded-full">
+                          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-3 text-xs sm:text-sm">
+                            <div className="flex items-center space-x-2 bg-white/15 px-2 sm:px-3 py-1 rounded-full self-start">
                               <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
                               <span className="text-blue-100">Ready for Review</span>
                             </div>
                             <div className="flex items-center space-x-2 text-blue-200">
-                              <Target className="w-4 h-4" />
+                              <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                               <span>{new Date().toLocaleDateString()}</span>
                             </div>
                           </div>
@@ -184,18 +184,18 @@ export default function GenerateReviewerPage() {
                     </div>
                     
                     {/* Action buttons - positioned at the bottom for better UX */}
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t border-white/20">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-white/20">
                       <Button 
                         variant="outline"
                         onClick={() => setGeneratedReviewer(null)}
-                        className="bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm px-6 py-3 rounded-xl transition-all duration-300 flex items-center justify-center"
+                        className="bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl transition-all duration-300 flex items-center justify-center text-sm sm:text-base"
                       >
-                        <ArrowLeft className="mr-2 h-5 w-5" />
+                        <ArrowLeft className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                         Generate New Material
                       </Button>
                       
                       <Button 
-                        className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center shadow-lg ${
+                        className={`px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-semibold transition-all duration-300 flex items-center justify-center shadow-lg text-sm sm:text-base ${
                           isSaved 
                             ? 'bg-blue-500 hover:bg-blue-600 text-white' 
                             : 'bg-white text-blue-700 hover:bg-blue-50 hover:shadow-xl'

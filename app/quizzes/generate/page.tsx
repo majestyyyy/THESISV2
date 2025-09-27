@@ -136,34 +136,34 @@ export default function GenerateQuizPage() {
     return (
       <ProtectedRoute>
         <DashboardLayout>
-          <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
-            <div className="max-w-4xl mx-auto p-6 space-y-8">
+          <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 p-3 sm:p-0">
+            <div className="max-w-4xl mx-auto p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6 lg:space-y-8">
               {/* Success Header */}
-              <div className="relative overflow-hidden bg-gradient-to-r from-green-600 via-emerald-700 to-green-600 rounded-2xl p-8 text-white shadow-xl">
+              <div className="relative overflow-hidden bg-gradient-to-r from-green-600 via-emerald-700 to-green-600 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 text-white shadow-xl">
                 <div className="absolute inset-0 bg-gradient-to-r from-green-600/80 to-emerald-600/80"></div>
                 <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-xl"></div>
                 <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-xl"></div>
                 
                 <div className="relative z-10 text-center">
-                  <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-sm border border-white/30">
-                    <CheckCircle className="w-10 h-10 text-white" />
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 backdrop-blur-sm border border-white/30">
+                    <CheckCircle className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
                   </div>
-                  <h1 className="text-3xl font-bold text-white mb-4">Quiz Successfully Created!</h1>
-                  <p className="text-green-100 text-lg mb-6">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-3 sm:mb-4">Quiz Successfully Created!</h1>
+                  <p className="text-green-100 text-sm sm:text-base lg:text-lg mb-4 sm:mb-6">
                     Your AI-generated quiz "{savedQuiz.title}" is ready for learning
                   </p>
                   
-                  <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-green-100">
+                  <div className="flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs sm:text-sm text-green-100">
                     <div className="flex items-center space-x-2">
-                      <Brain className="h-4 w-4 text-green-200" />
+                      <Brain className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-200" />
                       <span>{savedQuiz.totalQuestions} AI-crafted questions</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Target className="h-4 w-4 text-green-200" />
+                      <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-200" />
                       <span>{savedQuiz.difficulty} difficulty level</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Sparkles className="h-4 w-4 text-green-200" />
+                      <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-200" />
                       <span>Optimized for learning</span>
                     </div>
                   </div>
@@ -179,25 +179,25 @@ export default function GenerateQuizPage() {
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-          <div className="max-w-7xl mx-auto p-6 space-y-8">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-3 sm:p-0">
+          <div className="max-w-7xl mx-auto p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6 lg:space-y-8">
             {/* Enhanced Header */}
-            <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-600 rounded-2xl p-8 text-white shadow-xl">
+            <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-600 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 text-white shadow-xl">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600/80 to-indigo-600/80"></div>
               <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-xl"></div>
               <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-xl"></div>
               
               <div className="relative z-10">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3">
                   <Link href="/quizzes">
-                    <Button variant="ghost" className="text-white hover:bg-white/20 border border-white/30 backdrop-blur-sm">
-                      <ArrowLeft className="mr-2 h-4 w-4" />
+                    <Button variant="ghost" className="text-white hover:bg-white/20 border border-white/30 backdrop-blur-sm text-sm self-start">
+                      <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       Back to Quizzes
                     </Button>
                   </Link>
                   
-                  <div className="flex items-center space-x-3">
-                    <Badge className="bg-blue-500 text-white shadow-lg">
+                  <div className="flex items-center space-x-2 sm:space-x-3">
+                    <Badge className="bg-blue-500 text-white shadow-lg text-xs sm:text-sm">
                       <Brain className="mr-1 h-3 w-3" />
                       AI Quiz Generator
                     </Badge>
