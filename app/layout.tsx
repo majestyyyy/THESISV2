@@ -4,6 +4,7 @@ import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import "./globals.css"
 import { AuthProvider } from "@/components/auth/auth-provider"
+import { FloatingHelpButton } from "@/components/ui/help-system"
 import { Toaster } from "sonner"
 
 export const metadata: Metadata = {
@@ -36,6 +37,7 @@ html {
       <body>
         <AuthProvider>
           {children}
+          <FloatingHelpButton />
         </AuthProvider>
         <Toaster position="top-right" />
       </body>

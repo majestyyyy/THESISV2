@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { signUp } from "@/lib/auth"
 import { useAuth } from "@/components/auth/auth-provider"
+import { Footer } from "@/components/layout/footer"
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
@@ -65,7 +66,8 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200 flex flex-col">
+      <div className="flex-1 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
@@ -177,6 +179,8 @@ export default function SignUpPage() {
           </div>
         </CardContent>
       </Card>
+      </div>
+      <Footer />
     </div>
   )
 }

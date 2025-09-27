@@ -17,9 +17,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
-import { Home, Upload, BookOpen, FileText, BarChart3, Settings, LogOut, Menu, User, MessageSquare } from "lucide-react"
+import { Home, Upload, BookOpen, FileText, BarChart3, Settings, LogOut, Menu, User, MessageSquare, Mail } from "lucide-react"
 import { useAuth } from "@/components/auth/auth-provider"
 import { SurveyBanner } from "@/components/survey-banner"
+import { SurveyNotificationBadge } from "@/components/ui/survey-notification-badge"
+import { Footer } from "@/components/layout/footer"
 import { cn } from "@/lib/utils"
 
 interface DashboardLayoutProps {
@@ -34,6 +36,10 @@ const navigation = [
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Research Survey", href: "/survey", icon: MessageSquare },
   { name: "Settings", href: "/settings", icon: Settings },
+]
+
+const supportNavigation = [
+  { name: "Contact Support", href: "mailto:parungao.johnlloyd@ue.edu.ph", icon: Mail, external: true },
 ]
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
@@ -87,7 +93,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     key={item.name}
                     href={item.href}
                     className={cn(
-                      "group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200",
+                      "group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 relative",
                       isActive
                         ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-200"
                         : "text-gray-600 hover:text-blue-700 hover:bg-blue-50"
@@ -96,9 +102,25 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   >
                     <item.icon className="mr-3 h-4 w-4 flex-shrink-0" />
                     <span className="truncate">{item.name}</span>
+                    {item.name === "Research Survey" && <SurveyNotificationBadge />}
                   </Link>
                 )
               })}
+              
+              {/* Support Section */}
+              <div className="pt-4 mt-4 border-t border-gray-200">
+                {supportNavigation.map((item) => (
+                  <a
+                    key={item.name}
+                    href={item.href}
+                    className="group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 text-gray-600 hover:text-blue-700 hover:bg-blue-50"
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <item.icon className="mr-3 h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">{item.name}</span>
+                  </a>
+                ))}
+              </div>
             </nav>
           </div>
         </SheetContent>
@@ -130,7 +152,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     key={item.name}
                     href={item.href}
                     className={cn(
-                      "group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200",
+                      "group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 relative",
                       isActive
                         ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-200"
                         : "text-gray-600 hover:text-blue-700 hover:bg-blue-50"
@@ -143,9 +165,24 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                       )}
                     />
                     <span className="truncate">{item.name}</span>
+                    {item.name === "Research Survey" && <SurveyNotificationBadge />}
                   </Link>
                 )
               })}
+              
+              {/* Support Section */}
+              <div className="pt-4 mt-4 border-t border-gray-200">
+                {supportNavigation.map((item) => (
+                  <a
+                    key={item.name}
+                    href={item.href}
+                    className="group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 text-gray-600 hover:text-blue-700 hover:bg-blue-50"
+                  >
+                    <item.icon className="mr-3 h-4 w-4 xl:h-5 xl:w-5 flex-shrink-0 text-indigo-400 group-hover:text-indigo-600" />
+                    <span className="truncate">{item.name}</span>
+                  </a>
+                ))}
+              </div>
             </nav>
           </div>
         </div>
@@ -191,6 +228,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-indigo-100" />
+                  <DropdownMenuItem asChild>
+                    <a href="mailto:parungao.johnlloyd@ue.edu.ph" className="cursor-pointer text-gray-700 hover:text-indigo-700 hover:bg-indigo-50 text-sm">
+                      <Mail className="mr-2 h-4 w-4" />
+                      Contact Support
+                    </a>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-indigo-100" />
                   <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-gray-700 hover:text-indigo-700 hover:bg-indigo-50 text-sm">
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign out
@@ -202,9 +246,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
 
         {/* Page content */}
-        <main className="py-4 sm:py-6 lg:py-8">
+        <main className="py-4 sm:py-6 lg:py-8 min-h-screen">
           <div className="mx-auto w-full max-w-7xl px-3 sm:px-4 md:px-6 lg:px-8">{children}</div>
         </main>
+        
+        {/* Footer */}
+        <Footer />
       </div>
       
       {/* Survey Banner */}

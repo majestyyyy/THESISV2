@@ -5,9 +5,18 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BookOpen, FileText, BarChart3 } from "lucide-react"
 import { useAuth } from "@/components/auth/auth-provider"
+import SignInModal from "@/components/auth/sign-in-modal"
+import SignUpModal from "@/components/auth/sign-up-modal"
+import { useRouter } from "next/navigation"
 
 export default function HomePage() {
-  const { user, loading } = useAuth();
+  const { user, loading } = useAuth()
+  const router = useRouter()
+
+  const handleAuthSuccess = () => {
+    // Redirect to dashboard after successful sign in/up
+    router.push('/dashboard')
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200">
       {/* Header */}
@@ -39,16 +48,16 @@ export default function HomePage() {
               </>
             ) : (
               <>
-                <Link href="/signin">
+                <SignInModal onSuccess={handleAuthSuccess}>
                   <Button variant="ghost" size="sm" className="text-xs sm:text-sm">
                     Sign In
                   </Button>
-                </Link>
-                <Link href="/signup">
+                </SignInModal>
+                <SignUpModal onSuccess={handleAuthSuccess}>
                   <Button size="sm" className="text-xs sm:text-sm">
                     Get Started
                   </Button>
-                </Link>
+                </SignUpModal>
               </>
             )}
           </div>
@@ -72,11 +81,11 @@ export default function HomePage() {
               </Button>
             </Link>
           ) : (
-            <Link href="/signup">
+            <SignUpModal onSuccess={handleAuthSuccess}>
               <Button size="sm" className="text-sm sm:text-base md:text-lg sm:px-6 md:px-8 py-2 sm:py-3">
                 Start Learning Today
               </Button>
-            </Link>
+            </SignUpModal>
           )}
         </div>
 

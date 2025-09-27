@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ArrowLeft } from "lucide-react"
 import { resetPassword } from "@/lib/auth"
+import { Footer } from "@/components/layout/footer"
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
@@ -69,8 +70,9 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200 flex flex-col">
+      <div className="flex-1 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
             <div className="w-8 h-8 flex items-center justify-center">
@@ -158,7 +160,9 @@ export default function ForgotPasswordPage() {
             </Link>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
+      <Footer />
     </div>
   )
 }

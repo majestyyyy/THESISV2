@@ -72,10 +72,45 @@ export default function ProfilePage() {
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <div className="space-y-4 sm:space-y-6 p-3 sm:p-0">
-          <div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Profile Settings</h1>
-            <p className="mt-2 text-gray-600 text-sm sm:text-base">Manage your account information and preferences.</p>
+        <div className="space-y-4 sm:space-y-6 lg:space-y-8 p-3 sm:p-4 lg:p-6 max-w-7xl mx-auto">
+          {/* Enhanced Header Section */}
+          <div className="mb-8 lg:mb-12">
+            <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-3xl p-8 lg:p-12 text-white shadow-2xl">
+              {/* Background Pattern */}
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-10 left-10 w-2 h-2 bg-white rounded-full"></div>
+                <div className="absolute top-20 left-32 w-1 h-1 bg-white rounded-full"></div>
+                <div className="absolute top-32 left-20 w-1.5 h-1.5 bg-white rounded-full"></div>
+                <div className="absolute top-16 right-24 w-2 h-2 bg-white rounded-full"></div>
+                <div className="absolute top-40 right-16 w-1 h-1 bg-white rounded-full"></div>
+              </div>
+              
+              {/* Floating Elements */}
+              <div className="absolute top-4 right-4 opacity-20">
+                <Shield className="h-8 w-8 animate-pulse" />
+              </div>
+              <div className="absolute bottom-4 left-4 opacity-20">
+                <User className="h-6 w-6 animate-bounce" />
+              </div>
+              
+              <div className="relative z-10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center mb-4">
+                    <div className="bg-white/20 backdrop-blur-sm rounded-full p-3 mr-4">
+                      <User className="h-8 w-8 text-blue-200" />
+                    </div>
+                    <div>
+                      <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2">
+                        Profile Settings
+                      </h1>
+                      <p className="text-lg sm:text-xl text-blue-100">
+                        Manage your account information and customize your learning experience.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {message && (

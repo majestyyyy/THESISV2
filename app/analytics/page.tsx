@@ -244,100 +244,147 @@ export default function AnalyticsPage() {
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <div className="space-y-4 sm:space-y-6 lg:space-y-8">
-          {/* Enhanced Header */}
-          <div className="relative bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 border border-blue-100 shadow-lg shadow-blue-100/50">
-            <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex items-center space-x-2 sm:space-x-3">
-              <Button
-                onClick={() => mutate()}
-                variant="outline"
-                size="sm"
-                className="bg-white/80 hover:bg-white text-xs sm:text-sm px-2 sm:px-3"
-                disabled={isLoading}
-              >
-                {isLoading ? 'Refreshing...' : 'Refresh'}
-              </Button>
-              <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg">
-                <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8 text-white" />
+        <div className="space-y-4 sm:space-y-6 lg:space-y-8 p-3 sm:p-4 lg:p-6 max-w-7xl mx-auto">
+          {/* Enhanced Header Section */}
+          <div className="mb-8 lg:mb-12">
+            <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-3xl p-8 lg:p-12 text-white shadow-2xl">
+              {/* Background Pattern */}
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-10 left-10 w-2 h-2 bg-white rounded-full"></div>
+                <div className="absolute top-20 left-32 w-1 h-1 bg-white rounded-full"></div>
+                <div className="absolute top-32 left-20 w-1.5 h-1.5 bg-white rounded-full"></div>
+                <div className="absolute top-16 right-24 w-2 h-2 bg-white rounded-full"></div>
+                <div className="absolute top-40 right-16 w-1 h-1 bg-white rounded-full"></div>
               </div>
-            </div>
-            <div className="max-w-xl sm:max-w-2xl pr-16 sm:pr-20">
-              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2 sm:mb-4">
-                Learning Analytics
-              </h1>
-              <p className="text-sm sm:text-base lg:text-lg text-gray-600 leading-relaxed">
-                Track your progress, discover insights about your learning patterns, and unlock your full potential with AI-powered analytics.
-              </p>
+              
+              {/* Floating Elements */}
+              <div className="absolute top-4 right-4 opacity-20">
+                <BarChart3 className="h-8 w-8 animate-pulse" />
+              </div>
+              <div className="absolute bottom-4 left-4 opacity-20">
+                <TrendingUp className="h-6 w-6 animate-bounce" />
+              </div>
+              
+              <div className="relative z-10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center mb-4">
+                    <div className="bg-white/20 backdrop-blur-sm rounded-full p-3 mr-4">
+                      <BarChart3 className="h-8 w-8 text-blue-200" />
+                    </div>
+                    <div>
+                      <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2">
+                        Learning Analytics
+                      </h1>
+                      <p className="text-lg sm:text-xl text-blue-100">
+                        {currentData.quizzesTaken === 0 
+                          ? "Start taking quizzes to unlock powerful insights about your learning!"
+                          : `Track your progress with AI-powered analytics and smart insights!`
+                        }
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <Button
+                      onClick={() => mutate()}
+                      variant="outline"
+                      className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border border-white/30 rounded-2xl px-6 py-3 shadow-lg transition-all duration-300 hover:scale-105"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? 'Refreshing...' : 'Refresh Data'}
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Enhanced Key Metrics */}
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-6 lg:grid-cols-4">
-            <div className="bg-white/80 backdrop-blur-sm p-3 sm:p-4 lg:p-6 rounded-xl sm:rounded-2xl border border-blue-100 shadow-lg shadow-blue-100/50 hover:shadow-xl transition-all duration-300">
-              <div className="flex items-center justify-between mb-2 sm:mb-4">
-                <div className="p-2 sm:p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg sm:rounded-xl">
-                  <Clock className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-blue-600" />
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+            {/* Total Study Time Card */}
+            <div className="group relative bg-gradient-to-br from-white to-blue-50/50 backdrop-blur-sm p-6 rounded-2xl border border-blue-200/60 shadow-lg hover:shadow-2xl hover:shadow-blue-200/40 transition-all duration-500 hover:-translate-y-2 overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-transparent rounded-full -translate-y-16 translate-x-16"></div>
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-3 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <Clock className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-3xl font-bold text-gray-800 mb-1">
+                      {formatStudyTime(currentData.totalStudyTime)}
+                    </div>
+                    <div className="flex items-center text-blue-600">
+                      <TrendingUp className="h-4 w-4 mr-1" />
+                      <span className="text-sm font-medium">+12%</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                </div>
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Total Study Time</p>
-                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">
-                  {formatStudyTime(currentData.totalStudyTime)}
-                </p>
-                <p className="text-xs text-blue-600 mt-1 font-medium">+12% this week</p>
-              </div>
-            </div>
-
-            <div className="bg-white/80 backdrop-blur-sm p-3 sm:p-4 lg:p-6 rounded-xl sm:rounded-2xl border border-green-100 shadow-lg shadow-green-100/50 hover:shadow-xl transition-all duration-300">
-              <div className="flex items-center justify-between mb-2 sm:mb-4">
-                <div className="p-2 sm:p-3 bg-gradient-to-br from-green-100 to-green-200 rounded-lg sm:rounded-xl">
-                  <Target className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-green-600" />
-                </div>
-                <div className="text-right">
-                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full animate-pulse"></div>
-                </div>
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Average Score</p>
-                <p className={`text-lg sm:text-xl lg:text-2xl font-bold ${getScoreColor(currentData.averageScore)}`}>
-                  {currentData.averageScore}%
-                </p>
-                <p className="text-xs text-green-600 mt-1 font-medium">+5% from last month</p>
+                <h3 className="text-sm font-semibold text-gray-700 mb-1">Total Study Time</h3>
+                <p className="text-xs text-gray-500">Time invested in learning</p>
               </div>
             </div>
 
-            <div className="bg-white/80 backdrop-blur-sm p-3 sm:p-4 lg:p-6 rounded-xl sm:rounded-2xl border border-purple-100 shadow-lg shadow-purple-100/50 hover:shadow-xl transition-all duration-300">
-              <div className="flex items-center justify-between mb-2 sm:mb-4">
-                <div className="p-2 sm:p-3 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg sm:rounded-xl">
-                  <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-purple-600" />
+            {/* Average Score Card */}
+            <div className="group relative bg-gradient-to-br from-white to-blue-50/50 backdrop-blur-sm p-6 rounded-2xl border border-blue-200/60 shadow-lg hover:shadow-2xl hover:shadow-blue-200/40 transition-all duration-500 hover:-translate-y-2 overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-600/10 to-transparent rounded-full -translate-y-16 translate-x-16"></div>
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-3 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <Target className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-right">
+                    <div className={`text-3xl font-bold mb-1 ${getScoreColor(currentData.averageScore)}`}>
+                      {currentData.averageScore}%
+                    </div>
+                    <div className="flex items-center text-blue-600">
+                      <CheckCircle className="h-4 w-4 mr-1" />
+                      <span className="text-sm font-medium">+5%</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-purple-500 rounded-full animate-pulse"></div>
-                </div>
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Quizzes Taken</p>
-                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">{currentData.quizzesTaken}</p>
-                <p className="text-xs text-purple-600 mt-1 font-medium">3 this week</p>
+                <h3 className="text-sm font-semibold text-gray-700 mb-1">Average Score</h3>
+                <p className="text-xs text-gray-500">Your quiz performance rate</p>
               </div>
             </div>
 
-            <div className="bg-white/80 backdrop-blur-sm p-3 sm:p-4 lg:p-6 rounded-xl sm:rounded-2xl border border-orange-100 shadow-lg shadow-orange-100/50 hover:shadow-xl transition-all duration-300 col-span-2 lg:col-span-1">
-              <div className="flex items-center justify-between mb-2 sm:mb-4">
-                <div className="p-2 sm:p-3 bg-gradient-to-br from-orange-100 to-orange-200 rounded-lg sm:rounded-xl">
-                  <Activity className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-orange-600" />
+            {/* Quizzes Taken Card */}
+            <div className="group relative bg-gradient-to-br from-white to-blue-50/50 backdrop-blur-sm p-6 rounded-2xl border border-blue-200/60 shadow-lg hover:shadow-2xl hover:shadow-blue-200/40 transition-all duration-500 hover:-translate-y-2 overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-700/10 to-transparent rounded-full -translate-y-16 translate-x-16"></div>
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="bg-gradient-to-br from-blue-700 to-blue-800 p-3 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <BookOpen className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-3xl font-bold text-gray-800 mb-1">{currentData.quizzesTaken}</div>
+                    <div className="flex items-center text-blue-700">
+                      <Brain className="h-4 w-4 mr-1" />
+                      <span className="text-sm font-medium">3 week</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-orange-500 rounded-full animate-pulse"></div>
-                </div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-1">Quizzes Taken</h3>
+                <p className="text-xs text-gray-500">Total quiz attempts completed</p>
               </div>
-              <div>
-                <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Study Streak</p>
-                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">{currentData.studyStreak} days</p>
-                <p className="text-xs text-orange-600 mt-1 font-medium">Keep it up! 🔥</p>
+            </div>
+
+            {/* Study Streak Card */}
+            <div className="group relative bg-gradient-to-br from-white to-blue-50/50 backdrop-blur-sm p-6 rounded-2xl border border-blue-200/60 shadow-lg hover:shadow-2xl hover:shadow-blue-200/40 transition-all duration-500 hover:-translate-y-2 overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-transparent rounded-full -translate-y-16 translate-x-16"></div>
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="bg-gradient-to-br from-blue-400 to-blue-500 p-3 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <Activity className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-3xl font-bold text-gray-800 mb-1">{currentData.studyStreak}</div>
+                    <div className="flex items-center text-blue-600">
+                      <Award className="h-4 w-4 mr-1" />
+                      <span className="text-sm font-medium">Days</span>
+                    </div>
+                  </div>
+                </div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-1">Study Streak</h3>
+                <p className="text-xs text-gray-500">Consecutive learning days 🔥</p>
               </div>
             </div>
           </div>

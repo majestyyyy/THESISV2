@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Search, Plus, Filter, Play, Edit, Trash2, MoreVertical, Clock, Target, FileText, Eye, RotateCcw } from "lucide-react"
+import { Search, Plus, Filter, Play, Edit, Trash2, MoreVertical, Clock, Target, FileText, Eye, RotateCcw, Brain, CheckCircle, TrendingUp } from "lucide-react"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { getDifficultyColor, getUserQuizzesList, deleteQuiz, type QuizListItem } from "@/lib/quiz-utils"
@@ -245,20 +245,55 @@ export default function QuizzesPage() {
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <div className="space-y-4 sm:space-y-6 lg:space-y-8 p-3 sm:p-0">
-          {/* Header */}
-          <div className="flex flex-col space-y-3 sm:space-y-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-xl sm:text-2xl font-semibold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">My Quizzes</h1>
-              <p className="text-gray-600 text-sm sm:text-base">Manage and take your AI-generated quizzes</p>
-            </div>
-            <div className="flex gap-2">
-              <Link href="/quizzes/generate">
-                <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg sm:rounded-xl px-4 sm:px-6 py-2 shadow-lg shadow-blue-200 text-sm sm:text-base">
-                  <Plus className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  Create
-                </Button>
-              </Link>
+        <div className="space-y-4 sm:space-y-6 lg:space-y-8 p-3 sm:p-4 lg:p-6 max-w-7xl mx-auto">
+          {/* Enhanced Header Section */}
+          <div className="mb-8 lg:mb-12">
+            <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-3xl p-8 lg:p-12 text-white shadow-2xl">
+              {/* Background Pattern */}
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-10 left-10 w-2 h-2 bg-white rounded-full"></div>
+                <div className="absolute top-20 left-32 w-1 h-1 bg-white rounded-full"></div>
+                <div className="absolute top-32 left-20 w-1.5 h-1.5 bg-white rounded-full"></div>
+                <div className="absolute top-16 right-24 w-2 h-2 bg-white rounded-full"></div>
+                <div className="absolute top-40 right-16 w-1 h-1 bg-white rounded-full"></div>
+              </div>
+              
+              {/* Floating Elements */}
+              <div className="absolute top-4 right-4 opacity-20">
+                <Brain className="h-8 w-8 animate-pulse" />
+              </div>
+              <div className="absolute bottom-4 left-4 opacity-20">
+                <Target className="h-6 w-6 animate-bounce" />
+              </div>
+              
+              <div className="relative z-10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center mb-4">
+                    <div className="bg-white/20 backdrop-blur-sm rounded-full p-3 mr-4">
+                      <FileText className="h-8 w-8 text-blue-200" />
+                    </div>
+                    <div>
+                      <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2">
+                        My AI Quizzes
+                      </h1>
+                      <p className="text-lg sm:text-xl text-blue-100">
+                        {quizzes.length === 0 
+                          ? "Create your first AI-powered quiz to start learning smarter!"
+                          : `${quizzes.length} intelligent quizzes ready to challenge your knowledge!`
+                        }
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <Link href="/quizzes/generate">
+                      <Button className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border border-white/30 rounded-2xl px-6 py-3 shadow-lg transition-all duration-300 hover:scale-105">
+                        <Plus className="mr-2 h-5 w-5" />
+                        Create Quiz
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -289,28 +324,91 @@ export default function QuizzesPage() {
             </DropdownMenu>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2">
-            <div className="bg-white/80 backdrop-blur-sm p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-blue-100 shadow-lg shadow-blue-100/50">
-              <div className="flex items-center">
-                <div className="p-2.5 sm:p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg sm:rounded-xl">
-                  <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+          {/* Enhanced Stats Grid */}
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+            {/* Total Quizzes Card */}
+            <div className="group relative bg-gradient-to-br from-white to-blue-50/50 backdrop-blur-sm p-6 rounded-2xl border border-blue-200/60 shadow-lg hover:shadow-2xl hover:shadow-blue-200/40 transition-all duration-500 hover:-translate-y-2 overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-transparent rounded-full -translate-y-16 translate-x-16"></div>
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-3 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <FileText className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-3xl font-bold text-gray-800 mb-1">{quizzes.length}</div>
+                    <div className="flex items-center text-blue-600">
+                      <Brain className="h-4 w-4 mr-1" />
+                      <span className="text-sm font-medium">Total</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="ml-3 sm:ml-4">
-                  <p className="text-xs sm:text-sm font-medium text-gray-600">Total Quizzes</p>
-                  <p className="text-2xl font-semibold text-gray-900">{quizzes.length}</p>
-                </div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-1">Total Quizzes</h3>
+                <p className="text-xs text-gray-500">AI-generated quiz collection</p>
               </div>
             </div>
-            <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-blue-100 shadow-lg shadow-blue-100/50">
-              <div className="flex items-center">
-                <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl">
-                  <Target className="h-6 w-6 text-blue-600" />
+
+            {/* Completed Quizzes Card */}
+            <div className="group relative bg-gradient-to-br from-white to-blue-50/50 backdrop-blur-sm p-6 rounded-2xl border border-blue-200/60 shadow-lg hover:shadow-2xl hover:shadow-blue-200/40 transition-all duration-500 hover:-translate-y-2 overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-600/10 to-transparent rounded-full -translate-y-16 translate-x-16"></div>
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-3 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <Target className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-3xl font-bold text-gray-800 mb-1">{completedQuizzes.size}</div>
+                    <div className="flex items-center text-blue-600">
+                      <CheckCircle className="h-4 w-4 mr-1" />
+                      <span className="text-sm font-medium">Done</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Completed</p>
-                  <p className="text-2xl font-semibold text-gray-900">{completedQuizzes.size}</p>
+                <h3 className="text-sm font-semibold text-gray-700 mb-1">Completed</h3>
+                <p className="text-xs text-gray-500">Successfully finished quizzes</p>
+              </div>
+            </div>
+
+            {/* Pending Quizzes Card */}
+            <div className="group relative bg-gradient-to-br from-white to-blue-50/50 backdrop-blur-sm p-6 rounded-2xl border border-blue-200/60 shadow-lg hover:shadow-2xl hover:shadow-blue-200/40 transition-all duration-500 hover:-translate-y-2 overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-700/10 to-transparent rounded-full -translate-y-16 translate-x-16"></div>
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="bg-gradient-to-br from-blue-700 to-blue-800 p-3 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <Clock className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-3xl font-bold text-gray-800 mb-1">{quizzes.length - completedQuizzes.size}</div>
+                    <div className="flex items-center text-blue-700">
+                      <Play className="h-4 w-4 mr-1" />
+                      <span className="text-sm font-medium">Pending</span>
+                    </div>
+                  </div>
                 </div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-1">Pending</h3>
+                <p className="text-xs text-gray-500">Ready to take quizzes</p>
+              </div>
+            </div>
+
+            {/* Success Rate Card */}
+            <div className="group relative bg-gradient-to-br from-white to-blue-50/50 backdrop-blur-sm p-6 rounded-2xl border border-blue-200/60 shadow-lg hover:shadow-2xl hover:shadow-blue-200/40 transition-all duration-500 hover:-translate-y-2 overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-transparent rounded-full -translate-y-16 translate-x-16"></div>
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="bg-gradient-to-br from-blue-400 to-blue-500 p-3 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <TrendingUp className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-3xl font-bold text-gray-800 mb-1">
+                      {quizzes.length > 0 ? Math.round((completedQuizzes.size / quizzes.length) * 100) : 0}%
+                    </div>
+                    <div className="flex items-center text-blue-600">
+                      <TrendingUp className="h-4 w-4 mr-1" />
+                      <span className="text-sm font-medium">Rate</span>
+                    </div>
+                  </div>
+                </div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-1">Completion Rate</h3>
+                <p className="text-xs text-gray-500">Your quiz completion progress</p>
               </div>
             </div>
           </div>

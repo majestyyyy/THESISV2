@@ -240,26 +240,53 @@ export default function LibraryPage() {
     <ProtectedRoute>
       <DashboardLayout>
         <div className="space-y-4 sm:space-y-6 lg:space-y-8 p-3 sm:p-4 lg:p-6 max-w-7xl mx-auto">
-          {/* Enhanced Header */}
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl sm:rounded-2xl border border-blue-200 shadow-lg shadow-blue-100/50 p-4 sm:p-6">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-3 sm:space-y-4 lg:space-y-0">
-              <div className="flex items-center space-x-3 sm:space-x-4">
-                <div className="p-2.5 sm:p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl sm:rounded-2xl shadow-lg">
-                  <BookOpen className="h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">My Library</h1>
-                  <p className="text-blue-700 font-medium text-sm sm:text-base">Organize and access your AI-generated study materials</p>
-                </div>
+          {/* Enhanced Header Section */}
+          <div className="mb-8 lg:mb-12">
+            <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-3xl p-8 lg:p-12 text-white shadow-2xl">
+              {/* Background Pattern */}
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-10 left-10 w-2 h-2 bg-white rounded-full"></div>
+                <div className="absolute top-20 left-32 w-1 h-1 bg-white rounded-full"></div>
+                <div className="absolute top-32 left-20 w-1.5 h-1.5 bg-white rounded-full"></div>
+                <div className="absolute top-16 right-24 w-2 h-2 bg-white rounded-full"></div>
+                <div className="absolute top-40 right-16 w-1 h-1 bg-white rounded-full"></div>
               </div>
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
-               
-                <Link href="/reviewers/generate">
-                  <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg shadow-blue-200 hover:shadow-blue-300 transition-all duration-200 px-4 sm:px-6 py-2 sm:py-2.5 font-semibold text-sm sm:text-base">
-                    <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    Create New
-                  </Button>
-                </Link>
+              
+              {/* Floating Elements */}
+              <div className="absolute top-4 right-4 opacity-20">
+                <Brain className="h-8 w-8 animate-pulse" />
+              </div>
+              <div className="absolute bottom-4 left-4 opacity-20">
+                <BookOpen className="h-6 w-6 animate-bounce" />
+              </div>
+              
+              <div className="relative z-10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center mb-4">
+                    <div className="bg-white/20 backdrop-blur-sm rounded-full p-3 mr-4">
+                      <BookOpen className="h-8 w-8 text-blue-200" />
+                    </div>
+                    <div>
+                      <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2">
+                        My Study Library
+                      </h1>
+                      <p className="text-lg sm:text-xl text-blue-100">
+                        {studyMaterials && studyMaterials.length === 0 
+                          ? "Create your first AI-powered study material to enhance learning!"
+                          : `${studyMaterials?.length || 0} study materials ready to boost your knowledge!`
+                        }
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <Link href="/reviewers/generate">
+                      <Button className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border border-white/30 rounded-2xl px-6 py-3 shadow-lg transition-all duration-300 hover:scale-105">
+                        <Plus className="mr-2 h-5 w-5" />
+                        Create Material
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

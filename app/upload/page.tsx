@@ -104,67 +104,77 @@ export default function UploadPage() {
           <title>Upload Documents - AI-GIR</title>
         </Head>
 
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-3 sm:p-4 lg:p-6">
-          <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6 lg:space-y-8">
-            {/* Enhanced Header */}
-            <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-600 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 text-white shadow-xl">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/80 to-indigo-600/80"></div>
-              <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-xl"></div>
-              <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-xl"></div>
+        <div className="space-y-4 sm:space-y-6 lg:space-y-8 p-3 sm:p-4 lg:p-6 max-w-7xl mx-auto">
+          {/* Enhanced Header Section */}
+          <div className="mb-8 lg:mb-12">
+            <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-3xl p-8 lg:p-12 text-white shadow-2xl">
+              {/* Background Pattern */}
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-10 left-10 w-2 h-2 bg-white rounded-full"></div>
+                <div className="absolute top-20 left-32 w-1 h-1 bg-white rounded-full"></div>
+                <div className="absolute top-32 left-20 w-1.5 h-1.5 bg-white rounded-full"></div>
+                <div className="absolute top-16 right-24 w-2 h-2 bg-white rounded-full"></div>
+                <div className="absolute top-40 right-16 w-1 h-1 bg-white rounded-full"></div>
+              </div>
               
-              <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between">
-                <div className="flex-1 mb-4 lg:mb-0">
-                  <div className="flex items-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-lg sm:rounded-xl flex items-center justify-center backdrop-blur-sm">
-                      <CloudUpload className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              {/* Floating Elements */}
+              <div className="absolute top-4 right-4 opacity-20">
+                <Sparkles className="h-8 w-8 animate-pulse" />
+              </div>
+              <div className="absolute bottom-4 left-4 opacity-20">
+                <CloudUpload className="h-6 w-6 animate-bounce" />
+              </div>
+              
+              <div className="relative z-10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center mb-4">
+                    <div className="bg-white/20 backdrop-blur-sm rounded-full p-3 mr-4">
+                      <CloudUpload className="h-8 w-8 text-blue-200" />
                     </div>
                     <div>
-                      <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Upload Center</h1>
-                      <div className="flex items-center space-x-1.5 sm:space-x-2 mt-1">
-                        <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-blue-200" />
-                        <span className="text-blue-100 text-xs sm:text-sm">AI-Powered Study Material Generation</span>
+                      <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2">
+                        AI Upload Center
+                      </h1>
+                      <p className="text-lg sm:text-xl text-blue-100">
+                        {uploadedFiles && uploadedFiles.length === 0 
+                          ? "Upload your first document to begin AI-powered learning!"
+                          : `${uploadedFiles?.length || 0} documents ready for AI processing!`
+                        }
+                      </p>
+                    </div>
+                  </div>
+                  <div className="hidden lg:flex items-center gap-6 text-center">
+                    <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                      <div className="text-2xl font-bold">{uploadedFiles?.length || 0}</div>
+                      <div className="text-xs text-blue-200">Documents</div>
+                    </div>
+                    <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                      <div className="text-2xl font-bold">
+                        {uploadedFiles ? (uploadedFiles.reduce((sum, file) => sum + file.file_size, 0) / 1024 / 1024).toFixed(1) : '0.0'}MB
                       </div>
+                      <div className="text-xs text-blue-200">Used</div>
                     </div>
-                  </div>
-                  <p className="text-blue-100 text-sm sm:text-base lg:text-lg max-w-2xl">
-                    Transform your PDF documents into interactive quizzes and comprehensive study materials with advanced AI
-                  </p>
-                </div>
-                
-                <div className="hidden sm:grid sm:grid-cols-2 lg:flex lg:items-center gap-3 lg:gap-6 text-center lg:space-x-0">
-                  <div className="bg-white/10 rounded-lg sm:rounded-xl p-3 sm:p-4 backdrop-blur-sm">
-                    <div className="text-lg sm:text-xl lg:text-2xl font-bold">{uploadedFiles?.length || 0}</div>
-                    <div className="text-xs text-blue-200">Documents</div>
-                  </div>
-                  <div className="bg-white/10 rounded-lg sm:rounded-xl p-3 sm:p-4 backdrop-blur-sm">
-                    <div className="text-lg sm:text-xl lg:text-2xl font-bold">
-                      {uploadedFiles ? (uploadedFiles.reduce((sum, file) => sum + file.file_size, 0) / 1024 / 1024).toFixed(1) : '0.0'}MB
-                    </div>
-                    <div className="text-xs text-blue-200">Used</div>
-                  </div>
-                  <div className="bg-white/10 rounded-lg sm:rounded-xl p-3 sm:p-4 backdrop-blur-sm">
-                    <div className="text-lg sm:text-xl lg:text-2xl font-bold">5.0MB</div>
-                    <div className="text-xs text-blue-200">Limit</div>
-                  </div>
-                  <div className="bg-white/10 rounded-lg sm:rounded-xl p-2 sm:p-3 backdrop-blur-sm min-w-[70px] sm:min-w-[80px]">
-                    <div className="text-xs text-blue-200 mb-1">Storage</div>
-                    <div className="w-full bg-white/20 rounded-full h-2">
-                      <div
-                        className="bg-gradient-to-r from-green-400 to-blue-400 h-2 rounded-full transition-all duration-300"
-                        style={{ 
-                          width: `${uploadedFiles ? Math.min((uploadedFiles.reduce((sum, file) => sum + file.file_size, 0) / (5 * 1024 * 1024)) * 100, 100) : 0}%` 
-                        }}
-                      />
-                    </div>
-                    <div className="text-xs text-blue-200 mt-1">
-                      {uploadedFiles ? Math.round((uploadedFiles.reduce((sum, file) => sum + file.file_size, 0) / (5 * 1024 * 1024)) * 100) : 0}%
+                    <div className="bg-white/10 rounded-xl p-3 backdrop-blur-sm min-w-[80px]">
+                      <div className="text-xs text-blue-200 mb-1">Storage</div>
+                      <div className="w-full bg-white/20 rounded-full h-2">
+                        <div
+                          className="bg-gradient-to-r from-green-400 to-blue-400 h-2 rounded-full transition-all duration-300"
+                          style={{ 
+                            width: `${uploadedFiles ? Math.min((uploadedFiles.reduce((sum, file) => sum + file.file_size, 0) / (5 * 1024 * 1024)) * 100, 100) : 0}%` 
+                          }}
+                        />
+                      </div>
+                      <div className="text-xs text-blue-200 mt-1">
+                        {uploadedFiles ? Math.round((uploadedFiles.reduce((sum, file) => sum + file.file_size, 0) / (5 * 1024 * 1024)) * 100) : 0}%
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Enhanced Upload Section */}
+          {/* Enhanced Upload Section */}
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200 p-8 shadow-lg hover:shadow-xl transition-all duration-200">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center space-x-4">
@@ -571,7 +581,6 @@ export default function UploadPage() {
                 ) : null}
               </div>
             )}
-          </div>
         </div>
       </DashboardLayout>
     </ProtectedRoute>

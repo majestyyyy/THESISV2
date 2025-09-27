@@ -11,14 +11,18 @@ export function SurveyBanner() {
   useEffect(() => {
     // Check if user has dismissed the banner recently
     const lastDismissed = localStorage.getItem("survey-banner-dismissed")
+    const surveyCompleted = localStorage.getItem("survey-completed")
     const now = Date.now()
-    const oneDayAgo = now - 24 * 60 * 60 * 1000 // 24 hours
+    const threeDaysAgo = now - 3 * 24 * 60 * 60 * 1000 // 3 days
 
-    if (!lastDismissed || parseInt(lastDismissed) < oneDayAgo) {
-      // Show banner after a short delay to let user explore first
+    // Don't show if survey is already completed
+    if (surveyCompleted) return
+
+    if (!lastDismissed || parseInt(lastDismissed) < threeDaysAgo) {
+      // Show banner after user has had time to use the app
       const timer = setTimeout(() => {
         setShowBanner(true)
-      }, 30000) // Show after 30 seconds
+      }, 60000) // Show after 1 minute of using the app
 
       return () => clearTimeout(timer)
     }
