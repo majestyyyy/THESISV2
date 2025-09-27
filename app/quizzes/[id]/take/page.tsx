@@ -223,7 +223,8 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
         score: results.score,
         total_questions: results.totalQuestions,
         time_taken: results.timeSpent,
-        answers: results.answers
+        answers: results.answers,
+        question_type_analysis: results.questionTypeAnalysis
       }
 
       console.log('💾 Saving quiz attempt to database...')
@@ -454,7 +455,7 @@ export default function TakeQuizPage({ params }: { params: Promise<{ id: string 
                   <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-2 rounded-xl mr-3 flex-shrink-0">
                     <FileText className="h-6 w-6 text-white" />
                   </div>
-                  <span className="flex-1 min-w-0">{quiz.title}</span>
+                  <span className="flex-1 min-w-0 truncate" title={quiz.title}>{quiz.title}</span>
                 </h1>
                 <p className="text-gray-600 text-lg">{quiz.description}</p>
               </div>

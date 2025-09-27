@@ -43,7 +43,7 @@ export async function generateQuizWithGemini(options: GenerateQuizOptions) {
   const typeInstructions = options.questionTypes.map(type => {
     switch(type) {
       case 'multiple_choice': return '- For multiple_choice: 4 options with one correct answer'
-      case 'true_false': return '- For true_false: "True" or "False" as the correct answer'
+      case 'true_false': return '- For true_false: must include options ["True", "False"] and correctAnswer must be either "True" or "False"'
       case 'identification': return '- For identification: a specific term, concept, or name to identify. The question should ask "What is..." or "Identify..." or "Name the..." and the correct answer should be a single term or short phrase (1-3 words maximum)'
       case 'fill_in_blanks': return '- For fill_in_blanks: provide a sentence with one blank to fill'
       default: return ''
@@ -92,6 +92,7 @@ ${options.questionTypes.includes('true_false') ? `True/False Example:
 {
   "questionText": "The statement XYZ is correct.",
   "questionType": "true_false",
+  "options": ["True", "False"],
   "correctAnswer": "True",
   "explanation": "Detailed explanation here"
 }` : ''}

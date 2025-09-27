@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { saveQuizQuestionTypePerformance } from './question-type-analytics'
 
 export interface QuizAttemptData {
   user_id: string
@@ -6,7 +7,8 @@ export interface QuizAttemptData {
   score: number
   total_questions: number
   time_taken: number // in seconds
-  answers: Record<string, any> // User's answers
+  answers: Record<string, any> // User's answers with question type tracking
+  question_type_analysis?: Record<string, { correct: number; total: number; percentage: number }>
 }
 
 export async function saveQuizAttempt(attemptData: QuizAttemptData) {
@@ -39,6 +41,21 @@ export async function saveQuizAttempt(attemptData: QuizAttemptData) {
         throw new Error('Authentication required. Please sign in to save your quiz results.')
       } else {
         throw new Error(`Failed to save quiz attempt: ${error.message}`)
+      }
+    }
+
+    // Save question type analytics if available
+    if (attemptData.question_type_analysis) {
+      try {
+        await saveQuizQuestionTypePerformance(
+          attemptData.user_id,
+          attemptData.quiz_id,
+          attemptData.question_type_analysis
+        )
+        console.log('✅ Question type analytics saved successfully')
+      } catch (analyticsError) {
+        console.error('⚠️ Failed to save question type analytics (non-critical):', analyticsError)
+        // Don't throw here as the main quiz attempt was saved successfully
       }
     }
 

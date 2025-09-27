@@ -117,6 +117,13 @@ export default function QuizResultsPage({ params }: { params: Promise<{ id: stri
         const urlParams = new URLSearchParams(window.location.search)
         const showBest = urlParams.get('showBest') === 'true'
         
+        // Helper function to create empty question type analysis if missing
+        const createEmptyQuestionTypeAnalysis = () => ({
+          multiple_choice: { correct: 0, total: 0, percentage: 0 },
+          true_false: { correct: 0, total: 0, percentage: 0 },
+          identification: { correct: 0, total: 0, percentage: 0 }
+        })
+        
         // Get attempts from database
         const attempts = await getQuizAttempts(user.id, resolvedParams.id)
         setTotalAttempts(attempts.length)
@@ -134,7 +141,8 @@ export default function QuizResultsPage({ params }: { params: Promise<{ id: stri
               correctAnswers: Math.round((bestAttempt.score / 100) * bestAttempt.total_questions),
               timeSpent: bestAttempt.time_taken,
               answers: bestAttempt.answers,
-              completedAt: new Date(bestAttempt.completed_at)
+              completedAt: new Date(bestAttempt.completed_at),
+              questionTypeAnalysis: bestAttempt.question_type_analysis || createEmptyQuestionTypeAnalysis()
             }
             setIsShowingBestScore(true)
           }
@@ -149,7 +157,8 @@ export default function QuizResultsPage({ params }: { params: Promise<{ id: stri
             correctAnswers: Math.round((latestAttempt.score / 100) * latestAttempt.total_questions),
             timeSpent: latestAttempt.time_taken,
             answers: latestAttempt.answers,
-            completedAt: new Date(latestAttempt.completed_at)
+            completedAt: new Date(latestAttempt.completed_at),
+            questionTypeAnalysis: latestAttempt.question_type_analysis || createEmptyQuestionTypeAnalysis()
           }
         }
         

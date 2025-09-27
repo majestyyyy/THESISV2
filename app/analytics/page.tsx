@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Clock, Target, TrendingUp, BookOpen, Award, Activity, Brain, Zap, Eye, AlertTriangle, CheckCircle, Lightbulb, BarChart3, TrendingDown, Calendar } from "lucide-react"
+import { Clock, Target, TrendingUp, BookOpen, Award, Activity, Brain, CheckCircle, Lightbulb, BarChart3, TrendingDown, Calendar, AlertTriangle, Eye } from "lucide-react"
 import Image from "next/image"
 import {
   PerformanceChart,
@@ -11,6 +11,7 @@ import {
   DifficultyBreakdownChart,
 } from "@/components/analytics/performance-chart"
 import { StudyInsights } from "@/components/analytics/study-insights"
+import QuestionTypeAnalytics from "@/components/analytics/question-type-analytics"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { generateStudyInsights, formatStudyTime, getScoreColor } from "@/lib/analytics-utils"
@@ -39,6 +40,23 @@ const fetchQuizProgress = async () => {
   }
 }
 
+const fetchQuestionTypeAnalytics = async () => {
+  try {
+    const { supabase } = await import('@/lib/supabase')
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      throw new Error('User not authenticated')
+    }
+
+    const { getQuestionTypeAnalytics } = await import('@/lib/question-type-analytics')
+    return await getQuestionTypeAnalytics(user.id)
+  } catch (error) {
+    console.error('Error fetching question type analytics:', error)
+    return null
+  }
+}
+
 export default function AnalyticsPage() {
   const { data: analytics, error, isLoading, mutate } = useSWR("userAnalytics", fetchAnalytics, {
     shouldRetryOnError: false,
@@ -53,6 +71,14 @@ export default function AnalyticsPage() {
     revalidateOnFocus: true,
     onError: (err) => {
       console.error("Quiz progress fetch error:", err)
+    },
+  })
+
+  const { data: questionTypeAnalytics, error: questionTypeError, isLoading: questionTypeLoading } = useSWR("questionTypeAnalytics", fetchQuestionTypeAnalytics, {
+    shouldRetryOnError: false,
+    revalidateOnFocus: true,
+    onError: (err) => {
+      console.error("Question type analytics fetch error:", err)
     },
   })
 
@@ -319,7 +345,7 @@ export default function AnalyticsPage() {
           {/* Enhanced Detailed Analytics */}
           <Tabs defaultValue="overview" className="w-full">
             <div className="flex items-center justify-center mb-4 sm:mb-6 lg:mb-8 px-2">
-              <TabsList className="grid w-full max-w-full sm:max-w-4xl grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 bg-white/80 backdrop-blur-sm border border-blue-100 shadow-lg shadow-blue-100/50 rounded-xl sm:rounded-2xl p-1 gap-1 sm:gap-0">
+              <TabsList className="grid w-full max-w-full sm:max-w-4xl grid-cols-2 sm:grid-cols-3 bg-white/80 backdrop-blur-sm border border-blue-100 shadow-lg shadow-blue-100/50 rounded-xl sm:rounded-2xl p-1 gap-1 sm:gap-0">
                 <TabsTrigger 
                   value="overview" 
                   className="rounded-lg sm:rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg text-xs sm:text-sm p-2 sm:p-3"
@@ -337,28 +363,12 @@ export default function AnalyticsPage() {
                   <span className="sm:hidden">Stats</span>
                 </TabsTrigger>
                 <TabsTrigger 
-                  value="ai-insights"
-                  className="rounded-lg sm:rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg text-xs sm:text-sm p-2 sm:p-3 col-span-2 sm:col-span-1"
-                >
-                  <Brain className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                  <span className="hidden lg:inline">AI Insights</span>
-                  <span className="lg:hidden">AI</span>
-                </TabsTrigger>
-                <TabsTrigger 
                   value="quiz-progress"
                   className="rounded-lg sm:rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg text-xs sm:text-sm p-2 sm:p-3"
                 >
                   <Target className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                   <span className="hidden sm:inline">Quiz Progress</span>
                   <span className="sm:hidden">Quiz</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="recommendations"
-                  className="rounded-lg sm:rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white data-[state=active]:shadow-lg text-xs sm:text-sm p-2 sm:p-3"
-                >
-                  <Lightbulb className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                  <span className="hidden lg:inline">Study Tips</span>
-                  <span className="lg:hidden">Tips</span>
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -372,161 +382,300 @@ export default function AnalyticsPage() {
                   <DifficultyBreakdownChart data={currentData.difficultyBreakdown} />
                 </div>
               </div>
-
-              <div className="bg-white/80 backdrop-blur-sm p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl border border-blue-100 shadow-lg shadow-blue-100/50">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6">
-                  <div className="mb-3 sm:mb-0">
-                    <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Recent Activity Summary</h3>
-                    <p className="text-sm sm:text-base text-gray-600 mt-1">Your learning activity over the past week</p>
-                  </div>
-                  <div className="p-2 sm:p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg sm:rounded-xl self-start sm:self-center">
-                    <Activity className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                  <div className="text-center p-4 sm:p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl sm:rounded-2xl border border-indigo-200 hover:shadow-lg transition-all duration-300">
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg">
-                      <Image src="/LOGO.png" alt="AI-GiR Logo" width={24} height={24} className="filter brightness-0 invert w-4 h-4 sm:w-6 sm:h-6" />
-                    </div>
-                    <p className="text-2xl sm:text-3xl font-bold text-indigo-900 mb-2">{currentData.filesUploaded}</p>
-                    <p className="text-xs sm:text-sm font-medium text-indigo-700">Files Uploaded</p>
-                    <div className="mt-2 sm:mt-3 w-full bg-indigo-200 rounded-full h-1.5 sm:h-2">
-                      <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 h-1.5 sm:h-2 rounded-full" style={{ width: '75%' }}></div>
-                    </div>
-                  </div>
-                  <div className="text-center p-4 sm:p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl sm:rounded-2xl border border-green-200 hover:shadow-lg transition-all duration-300">
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg">
-                      <BookOpen className="h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8 text-white" />
-                    </div>
-                    <p className="text-2xl sm:text-3xl font-bold text-green-900 mb-2">{currentData.reviewersGenerated}</p>
-                    <p className="text-xs sm:text-sm font-medium text-green-700">Study Guides Created</p>
-                    <div className="mt-2 sm:mt-3 w-full bg-green-200 rounded-full h-1.5 sm:h-2">
-                      <div className="bg-gradient-to-r from-green-500 to-green-600 h-1.5 sm:h-2 rounded-full" style={{ width: '60%' }}></div>
-                    </div>
-                  </div>
-                  <div className="text-center p-4 sm:p-6 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl sm:rounded-2xl border border-yellow-200 hover:shadow-lg transition-all duration-300 sm:col-span-2 lg:col-span-1">
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg">
-                      <Award className="h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8 text-white" />
-                    </div>
-                    <p className="text-2xl sm:text-3xl font-bold text-yellow-900 mb-2">
-                      {currentData.difficultyBreakdown.reduce((acc, item) => acc + item.count, 0)}
-                    </p>
-                    <p className="text-xs sm:text-sm font-medium text-yellow-700">Completed Quiz</p>
-                    <div className="mt-2 sm:mt-3 w-full bg-yellow-200 rounded-full h-1.5 sm:h-2">
-                      <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 h-1.5 sm:h-2 rounded-full" style={{ width: '90%' }}></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </TabsContent>
 
             <TabsContent value="performance" className="space-y-4 sm:space-y-6 lg:space-y-8">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 w-full overflow-hidden">
-                <div className="min-w-0">
-                  <PerformanceChart data={convertedMetrics.weeklyProgress} type="bar" />
-                </div>
-                <div className="bg-white/80 backdrop-blur-sm p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-green-100 shadow-lg shadow-green-100/50">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6">
-                    <div className="mb-3 sm:mb-0">
-                      <h3 className="text-lg sm:text-xl font-bold text-gray-900">Performance Trends</h3>
-                      <p className="text-gray-600 text-xs sm:text-sm mt-1">Analysis of your learning progress</p>
-                    </div>
-                    <div className="p-2 sm:p-3 bg-gradient-to-br from-green-100 to-green-200 rounded-lg sm:rounded-xl self-start sm:self-center">
-                      <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-                    </div>
-                  </div>
-                  <div className="space-y-3 sm:space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg sm:rounded-xl hover:shadow-md transition-all duration-300">
-                      <div className="mb-2 sm:mb-0">
-                        <p className="font-semibold text-gray-900 text-sm sm:text-base">Score Improvement</p>
-                        <p className="text-xs sm:text-sm text-gray-600">Last 4 weeks</p>
-                      </div>
-                      <div className="flex items-center bg-white/80 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg shadow-sm self-start sm:self-center">
-                        <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-600 mr-1 sm:mr-2" />
-                        <span className="text-green-600 font-bold text-base sm:text-lg">+13%</span>
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg sm:rounded-xl hover:shadow-md transition-all duration-300">
-                      <div>
-                        <p className="font-semibold text-gray-900">Study Time Increase</p>
-                        <p className="text-sm text-gray-600">Compared to last month</p>
-                      </div>
-                      <div className="flex items-center bg-white/80 px-3 py-2 rounded-lg shadow-sm">
-                        <TrendingUp className="h-4 w-4 text-blue-600 mr-2" />
-                        <span className="text-blue-600 font-bold text-lg">+67%</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-violet-50 border border-purple-200 rounded-xl hover:shadow-md transition-all duration-300">
-                      <div>
-                        <p className="font-semibold text-gray-900">Consistency Score</p>
-                        <p className="text-sm text-gray-600">Daily study habit</p>
-                      </div>
-                      <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg shadow-sm font-semibold">
-                        Excellent
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-blue-100 shadow-lg shadow-blue-100/50">
+              {/* Detailed Question Type Performance Analysis */}
+              <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border border-blue-200 shadow-xl rounded-2xl p-8">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">Difficulty Progression</h3>
-                    <p className="text-gray-600 text-sm mt-1">Your performance across different difficulty levels</p>
+                    <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-indigo-600 bg-clip-text text-transparent">
+                      Question Type Performance Analysis
+                    </h3>
+                    <p className="text-gray-600 text-sm mt-1">AI-powered insights and detailed breakdown of your performance by question type</p>
                   </div>
-                  <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl">
-                    <Target className="h-5 w-5 text-blue-600" />
+                  <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg">
+                    <Brain className="h-6 w-6 text-white" />
                   </div>
                 </div>
-                <div className="space-y-4">
-                  {currentData.difficultyBreakdown.map((item) => (
-                    <div 
-                      key={item.difficulty} 
-                      className={`flex items-center justify-between p-5 rounded-2xl border-2 transition-all duration-300 hover:shadow-md ${
-                        item.difficulty === "Easy"
-                          ? "bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 hover:border-green-300"
-                          : item.difficulty === "Medium"
-                            ? "bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-200 hover:border-yellow-300"
-                            : "bg-gradient-to-r from-red-50 to-rose-50 border-red-200 hover:border-red-300"
-                      }`}
-                    >
-                      <div className="flex items-center space-x-4">
-                        <Badge
-                          className={`px-4 py-2 rounded-xl font-semibold shadow-sm ${
-                            item.difficulty === "Easy"
-                              ? "bg-gradient-to-r from-green-500 to-green-600 text-white"
-                              : item.difficulty === "Medium"
-                                ? "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white"
-                                : "bg-gradient-to-r from-red-500 to-red-600 text-white"
-                          }`}
-                        >
-                          {item.difficulty}
-                        </Badge>
-                        <div>
-                          <p className="font-semibold text-gray-900">{item.count} quizzes completed</p>
-                          <p className="text-sm text-gray-600">Average score: {item.averageScore}%</p>
-                        </div>
-                      </div>
-                      <div className="text-right bg-white/80 px-4 py-2 rounded-xl shadow-sm">
-                        <p className={`text-2xl font-bold ${getScoreColor(item.averageScore)}`}>
-                          {item.averageScore}%
-                        </p>
-                        <div className="w-16 bg-gray-200 rounded-full h-2 mt-2">
-                          <div 
-                            className={`h-2 rounded-full ${
-                              item.difficulty === "Easy" ? "bg-gradient-to-r from-green-500 to-green-600" :
-                              item.difficulty === "Medium" ? "bg-gradient-to-r from-yellow-500 to-yellow-600" :
-                              "bg-gradient-to-r from-red-500 to-red-600"
-                            }`}
-                            style={{ width: `${item.averageScore}%` }}
-                          ></div>
-                        </div>
+                
+                {questionTypeLoading ? (
+                  <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <p className="text-gray-600">Analyzing question type performance...</p>
+                  </div>
+                ) : questionTypeAnalytics && questionTypeAnalytics.cumulative_performance.length > 0 ? (
+                  <div className="space-y-6">
+                    {/* AI-Powered Performance Interpretation */}
+                    <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl border border-white/50 shadow-lg">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <Target className="h-5 w-5 text-blue-600 mr-2" />
+                        Smart Performance Interpretation
+                      </h4>
+                      <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed">
+                        {(() => {
+                          const performances = questionTypeAnalytics.cumulative_performance
+                          const trueFalse = performances.find(p => p.question_type === 'true_false')
+                          const multipleChoice = performances.find(p => p.question_type === 'multiple_choice')
+                          const identification = performances.find(p => p.question_type === 'identification')
+                          
+                          const getPerformanceLevel = (percentage: number) => {
+                            if (percentage >= 90) return 'excellent mastery'
+                            if (percentage >= 80) return 'strong proficiency'  
+                            if (percentage >= 70) return 'solid understanding'
+                            if (percentage >= 60) return 'developing competency'
+                            return 'needs significant improvement'
+                          }
+                          
+                          const getBestPerformingType = () => {
+                            let best = { type: '', percentage: 0, display: '' }
+                            if (trueFalse && trueFalse.total_percentage > best.percentage) {
+                              best = { type: 'true_false', percentage: trueFalse.total_percentage, display: 'True/False' }
+                            }
+                            if (multipleChoice && multipleChoice.total_percentage > best.percentage) {
+                              best = { type: 'multiple_choice', percentage: multipleChoice.total_percentage, display: 'Multiple Choice' }
+                            }
+                            if (identification && identification.total_percentage > best.percentage) {
+                              best = { type: 'identification', percentage: identification.total_percentage, display: 'Identification' }
+                            }
+                            return best
+                          }
+                          
+                          const getWeakestType = () => {
+                            let weakest = { type: '', percentage: 100, display: '' }
+                            if (trueFalse && trueFalse.total_percentage < weakest.percentage) {
+                              weakest = { type: 'true_false', percentage: trueFalse.total_percentage, display: 'True/False' }
+                            }
+                            if (multipleChoice && multipleChoice.total_percentage < weakest.percentage) {
+                              weakest = { type: 'multiple_choice', percentage: multipleChoice.total_percentage, display: 'Multiple Choice' }
+                            }
+                            if (identification && identification.total_percentage < weakest.percentage) {
+                              weakest = { type: 'identification', percentage: identification.total_percentage, display: 'Identification' }
+                            }
+                            return weakest
+                          }
+                          
+                          const bestType = getBestPerformingType()
+                          const weakestType = getWeakestType()
+                          
+                          return (
+                            <>
+                              <p className="mb-4">
+                                Your question type performance analysis reveals distinct patterns in your learning approach. 
+                                You show <strong className={getScoreColor(bestType.percentage)}>{getPerformanceLevel(bestType.percentage)}</strong> in{' '}
+                                <strong>{bestType.display}</strong> questions with {bestType.percentage.toFixed(1)}% accuracy, 
+                                indicating {bestType.type === 'true_false' 
+                                  ? 'strong analytical and decision-making skills for binary concepts'
+                                  : bestType.type === 'multiple_choice'
+                                    ? 'excellent ability to analyze options and eliminate incorrect choices'
+                                    : 'superior recall and application of specific knowledge and terminology'}.
+                              </p>
+                              
+                              <p className="mb-4">
+                                Conversely, your <strong>{weakestType.display}</strong> performance at {weakestType.percentage.toFixed(1)}% suggests{' '}
+                                {weakestType.type === 'true_false' 
+                                  ? 'opportunities to strengthen conceptual clarity and reduce overthinking in binary decisions'
+                                  : weakestType.type === 'multiple_choice'
+                                    ? 'room for improvement in option analysis and strategic elimination techniques'
+                                    : 'areas for growth in precise terminology, spelling accuracy, and detailed knowledge recall'}.
+                                {' '}This {Math.abs(bestType.percentage - weakestType.percentage).toFixed(1)}-point gap between your strongest and weakest question types indicates{' '}
+                                {Math.abs(bestType.percentage - weakestType.percentage) > 20 
+                                  ? 'significant variation in your skill application across different assessment formats'
+                                  : Math.abs(bestType.percentage - weakestType.percentage) > 10
+                                    ? 'moderate differences in your approach to various question structures'  
+                                    : 'consistent performance across all question types with minor variations'}.
+                              </p>
+                            </>
+                          )
+                        })()}
                       </div>
                     </div>
-                  ))}
-                </div>
+
+                    {/* Detailed Question Type Insights */}
+                    <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl border border-white/50 shadow-lg">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <TrendingUp className="h-5 w-5 text-green-600 mr-2" />
+                        Detailed Question Type Insights
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {questionTypeAnalytics.cumulative_performance.map((perf) => {
+                          const questionTypeNames = {
+                            'true_false': 'True/False',
+                            'multiple_choice': 'Multiple Choice', 
+                            'identification': 'Identification'
+                          }
+                          
+                          const questionTypeColors = {
+                            'true_false': 'from-green-50 to-emerald-50 border-green-200',
+                            'multiple_choice': 'from-blue-50 to-cyan-50 border-blue-200',
+                            'identification': 'from-purple-50 to-violet-50 border-purple-200'
+                          }
+                          
+                          const questionTypeAdvice = {
+                            'true_false': perf.total_percentage >= 80 
+                              ? 'Excellent binary reasoning skills. Your ability to quickly identify correct/incorrect statements is a valuable asset.'
+                              : perf.total_percentage >= 70
+                                ? 'Good conceptual understanding. Focus on eliminating overthinking and trusting your initial analysis.'
+                                : 'Strengthen fundamental concepts. Take time to fully understand core principles before making true/false judgments.',
+                            'multiple_choice': perf.total_percentage >= 80
+                              ? 'Strong analytical skills in option evaluation. Your systematic approach to elimination is highly effective.'
+                              : perf.total_percentage >= 70  
+                                ? 'Solid option analysis ability. Practice more strategic elimination techniques to improve accuracy.'
+                                : 'Develop better option analysis strategies. Focus on identifying key words and eliminating obviously incorrect choices.',
+                            'identification': perf.total_percentage >= 80
+                              ? 'Excellent recall and precision. Your mastery of specific terminology and detailed knowledge is impressive.'
+                              : perf.total_percentage >= 70
+                                ? 'Good knowledge retention. Work on spelling accuracy and being more specific in your responses.'
+                                : 'Focus on building stronger foundational knowledge. Create study aids for key terms and concepts.'
+                          }
+                          
+                          return (
+                            <div key={perf.question_type} className={`p-4 bg-gradient-to-r ${questionTypeColors[perf.question_type as keyof typeof questionTypeColors]} rounded-xl border`}>
+                              <h5 className="font-medium text-gray-900 mb-3 flex items-center justify-between">
+                                <span>{questionTypeNames[perf.question_type as keyof typeof questionTypeNames]}</span>
+                                <span className={`text-lg font-bold ${getScoreColor(perf.total_percentage)}`}>
+                                  {perf.total_percentage.toFixed(1)}%
+                                </span>
+                              </h5>
+                              <div className="space-y-2 text-sm">
+                                <div className="flex justify-between text-gray-600">
+                                  <span>Questions Answered:</span>
+                                  <span className="font-medium">{perf.total_questions}</span>
+                                </div>
+                                <div className="flex justify-between text-gray-600">
+                                  <span>Correct Answers:</span>
+                                  <span className="font-medium">{perf.total_correct}</span>
+                                </div>
+                                <div className="flex justify-between text-gray-600">
+                                  <span>Quizzes Taken:</span>
+                                  <span className="font-medium">{perf.quiz_count}</span>
+                                </div>
+                                <p className="text-gray-700 mt-3 leading-relaxed">
+                                  {questionTypeAdvice[perf.question_type as keyof typeof questionTypeAdvice]}
+                                </p>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Strategic Learning Recommendations */}
+                    <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl border border-white/50 shadow-lg">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <Lightbulb className="h-5 w-5 text-yellow-600 mr-2" />
+                        Strategic Learning Recommendations
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {(() => {
+                          const performances = questionTypeAnalytics.cumulative_performance
+                          const recommendations = []
+                          
+                          // Find weakest performing question type for targeted improvement
+                          const weakest = performances.reduce((prev, current) => 
+                            prev.total_percentage < current.total_percentage ? prev : current
+                          )
+                          
+                          // Find strongest performing question type for leverage
+                          const strongest = performances.reduce((prev, current) => 
+                            prev.total_percentage > current.total_percentage ? prev : current
+                          )
+                          
+                          const questionTypeNames = {
+                            'true_false': 'True/False',
+                            'multiple_choice': 'Multiple Choice', 
+                            'identification': 'Identification'
+                          }
+                          
+                          if (weakest.total_percentage < 70) {
+                            recommendations.push({
+                              icon: '🎯',
+                              color: 'red',
+                              title: `Improve ${questionTypeNames[weakest.question_type as keyof typeof questionTypeNames]} Skills`,
+                              description: weakest.question_type === 'true_false' 
+                                ? 'Practice conceptual clarity and avoid overthinking binary choices'
+                                : weakest.question_type === 'multiple_choice'
+                                  ? 'Develop systematic elimination strategies and careful option analysis'
+                                  : 'Focus on terminology mastery and precise, detailed responses'
+                            })
+                          }
+                          
+                          if (strongest.total_percentage >= 85) {
+                            recommendations.push({
+                              icon: '✅',
+                              color: 'green', 
+                              title: `Leverage ${questionTypeNames[strongest.question_type as keyof typeof questionTypeNames]} Strength`,
+                              description: strongest.question_type === 'true_false'
+                                ? 'Use your binary reasoning skills to tackle complex conceptual problems'
+                                : strongest.question_type === 'multiple_choice'
+                                  ? 'Apply your option analysis expertise to real-world decision making'
+                                  : 'Utilize your detailed knowledge to mentor others and deepen understanding'
+                            })
+                          }
+                          
+                          // General improvement recommendations
+                          const avgPerformance = performances.reduce((sum, p) => sum + p.total_percentage, 0) / performances.length
+                          
+                          if (avgPerformance >= 80) {
+                            recommendations.push({
+                              icon: '👁️',
+                              color: 'blue',
+                              title: 'Advanced Challenge Integration',
+                              description: 'Mix question types in study sessions to simulate real exam conditions'
+                            }, {
+                              icon: '🎯',
+                              color: 'purple',
+                              title: 'Consistent Excellence',
+                              description: 'Maintain your strong performance across all question formats'
+                            })
+                          } else {
+                            recommendations.push({
+                              icon: '📊',
+                              color: 'orange',
+                              title: 'Targeted Practice Sessions',
+                              description: 'Dedicate extra time to your weakest question type each study session'
+                            }, {
+                              icon: '🕐',
+                              color: 'indigo',
+                              title: 'Regular Review Schedule',
+                              description: 'Establish consistent practice routines for each question type'
+                            })
+                          }
+                          
+                          return recommendations.slice(0, 4).map((rec, index) => (
+                            <div key={index} className={`flex items-start space-x-3 p-3 bg-${rec.color}-50 rounded-lg border border-${rec.color}-200`}>
+                              <span className="text-lg mt-0.5">{rec.icon}</span>
+                              <div>
+                                <p className={`text-sm font-medium text-${rec.color}-900`}>{rec.title}</p>
+                                <p className={`text-xs text-${rec.color}-700`}>{rec.description}</p>
+                              </div>
+                            </div>
+                          ))
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-white/70 backdrop-blur-sm p-8 rounded-2xl border border-white/50 shadow-lg text-center">
+                    <div className="mb-4">
+                      <Target className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    </div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-2">No Question Type Data Available</h4>
+                    <p className="text-gray-600 mb-4">
+                      Complete some quizzes to see detailed analysis of your performance by question type.
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Your performance on True/False, Multiple Choice, and Identification questions will be analyzed here.
+                    </p>
+                  </div>
+                )}
               </div>
+
+              {/* Question Type Analytics Component */}
+              <QuestionTypeAnalytics 
+                analytics={questionTypeAnalytics || null} 
+                loading={questionTypeLoading} 
+              />
             </TabsContent>
 
             <TabsContent value="subjects" className="space-y-4 sm:space-y-6 lg:space-y-8">
@@ -967,284 +1116,6 @@ export default function AnalyticsPage() {
               </div>
             </TabsContent>
 
-            {/* AI Insights Tab - Consolidated ML Features */}
-            <TabsContent value="ai-insights" className="space-y-8">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Performance Prediction */}
-                <Card className="bg-gradient-to-br from-pink-50 to-rose-50 border-pink-200 shadow-lg">
-                  <CardHeader className="pb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-gradient-to-br from-pink-500 to-pink-600 rounded-lg">
-                        <TrendingUp className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-pink-900">Score Estimate</CardTitle>
-                        <CardDescription className="text-pink-700">Based on your recent performance</CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-pink-900 mb-2">
-                        {Math.round(currentData.machineLearning?.performancePrediction?.nextQuizScorePrediction || 85)}%
-                      </div>
-                      <p className="text-sm text-pink-700">Estimated next quiz score</p>
-                      <div className="mt-3 flex items-center justify-center space-x-4 text-sm">
-                        <span className="text-pink-600">
-                          Range: {Math.round(currentData.machineLearning?.performancePrediction?.confidenceInterval?.min || 70)}% - {Math.round(currentData.machineLearning?.performancePrediction?.confidenceInterval?.max || 90)}%
-                        </span>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-pink-700">Based on Recent Scores</span>
-                        <span className="font-medium text-pink-900">Last 3 quizzes</span>
-                      </div>
-                      <Progress value={75} className="h-2" />
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge variant={currentData.machineLearning?.performancePrediction?.improvementTrajectory === 'ascending' ? 'default' : 
-                                     currentData.machineLearning?.performancePrediction?.improvementTrajectory === 'stable' ? 'secondary' : 'destructive'}>
-                        {currentData.machineLearning?.performancePrediction?.improvementTrajectory === 'ascending' && <TrendingUp className="h-3 w-3 mr-1" />}
-                        {currentData.machineLearning?.performancePrediction?.improvementTrajectory === 'declining' && <TrendingDown className="h-3 w-3 mr-1" />}
-                        {currentData.machineLearning?.performancePrediction?.improvementTrajectory || 'Stable'} Trajectory
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Comparative Analytics */}
-                <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 shadow-lg">
-                  <CardHeader className="pb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
-                        <BarChart3 className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-blue-900">Comparative Analytics</CardTitle>
-                        <CardDescription className="text-blue-700">How you compare to similar learners</CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-blue-900 mb-2">
-                        {Math.round(currentData.machineLearning?.comparativeAnalytics?.percentileRanking || 75)}th
-                      </div>
-                      <p className="text-sm text-blue-700">Percentile ranking</p>
-                    </div>
-                    <div className="space-y-3">
-                      {(currentData.machineLearning?.comparativeAnalytics?.benchmarkMetrics || [
-                        { metric: 'Average Score', yourValue: 85, benchmarkValue: 75, percentileDifference: 13 },
-                        { metric: 'Study Time', yourValue: 120, benchmarkValue: 180, percentileDifference: -33 },
-                        { metric: 'Quizzes Completed', yourValue: 5, benchmarkValue: 8, percentileDifference: -38 }
-                      ]).map((metric, index) => (
-                        <div key={index} className="flex items-center justify-between text-sm">
-                          <span className="text-blue-700">{metric.metric}</span>
-                          <div className="flex items-center space-x-2">
-                            <span className="font-medium text-blue-900">{metric.yourValue}</span>
-                            <Badge variant={metric.percentileDifference > 0 ? 'default' : 'secondary'}>
-                              {metric.percentileDifference > 0 ? '+' : ''}{Math.round(metric.percentileDifference)}%
-                            </Badge>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Anomaly Detection */}
-              <Card className="bg-gradient-to-br from-yellow-50 to-amber-50 border-yellow-200 shadow-lg">
-                <CardHeader>
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg">
-                      <AlertTriangle className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-yellow-900">Intelligent Anomaly Detection</CardTitle>
-                      <CardDescription className="text-yellow-700">AI-detected patterns and unusual behaviors</CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {(currentData.machineLearning?.intelligentInsights?.anomalyDetection || []).length > 0 ? (
-                      currentData.machineLearning.intelligentInsights.anomalyDetection.map((anomaly, index) => (
-                        <Alert key={index} className={`${
-                          anomaly.severity === 'high' ? 'border-red-200 bg-red-50' :
-                          anomaly.severity === 'medium' ? 'border-yellow-200 bg-yellow-50' :
-                          'border-blue-200 bg-blue-50'
-                        }`}>
-                          <AlertTriangle className={`h-4 w-4 ${
-                            anomaly.severity === 'high' ? 'text-red-600' :
-                            anomaly.severity === 'medium' ? 'text-yellow-600' :
-                            'text-blue-600'
-                          }`} />
-                          <AlertDescription>
-                            <div className="space-y-2">
-                              <div className="font-medium">{anomaly.description}</div>
-                              <div className="text-sm opacity-80">{anomaly.recommendation}</div>
-                              <Badge variant={
-                                anomaly.severity === 'high' ? 'destructive' :
-                                anomaly.severity === 'medium' ? 'default' : 'secondary'
-                              }>
-                                {anomaly.severity} priority
-                              </Badge>
-                            </div>
-                          </AlertDescription>
-                        </Alert>
-                      ))
-                    ) : (
-                      <Alert className="border-green-200 bg-green-50">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                        <AlertDescription>
-                          <div className="text-green-800">
-                            <div className="font-medium">All systems normal</div>
-                            <div className="text-sm">No unusual patterns detected in your learning behavior</div>
-                          </div>
-                        </AlertDescription>
-                      </Alert>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Study Tips Tab - Consolidated Recommendations */}
-            <TabsContent value="recommendations" className="space-y-8">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Learning Path Optimization */}
-                <Card className="bg-gradient-to-br from-violet-50 to-purple-50 border-violet-200 shadow-lg">
-                  <CardHeader>
-                    <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-gradient-to-br from-violet-500 to-violet-600 rounded-lg">
-                        <Target className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-violet-900">Optimized Learning Path</CardTitle>
-                        <CardDescription className="text-violet-700">AI-recommended study sequence</CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {(currentData.machineLearning?.adaptiveLearning?.learningPathOptimization || [
-                        { step: 1, topic: 'Mathematics', estimatedDuration: 45, priority: 85 },
-                        { step: 2, topic: 'Science', estimatedDuration: 50, priority: 75 },
-                        { step: 3, topic: 'Literature', estimatedDuration: 35, priority: 65 }
-                      ]).map((item, index) => (
-                        <div key={index} className="flex items-center justify-between p-4 bg-white/80 rounded-xl border border-violet-100">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-violet-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                              {item.step}
-                            </div>
-                            <div>
-                              <div className="font-medium text-violet-900">{item.topic}</div>
-                              <div className="text-sm text-violet-600">{item.estimatedDuration} min estimated</div>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <Badge variant="secondary">Priority: {item.priority}/100</Badge>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Personalized Question Types */}
-                <Card className="bg-gradient-to-br from-teal-50 to-cyan-50 border-teal-200 shadow-lg">
-                  <CardHeader>
-                    <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-gradient-to-br from-teal-500 to-teal-600 rounded-lg">
-                        <Lightbulb className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-teal-900">Optimal Question Types</CardTitle>
-                        <CardDescription className="text-teal-700">Best formats for your learning style</CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {(currentData.machineLearning?.adaptiveLearning?.personalizedQuestionTypes || [
-                        { type: 'Short Answer', effectiveness: 90, recommendationScore: 95 },
-                        { type: 'Multiple Choice', effectiveness: 85, recommendationScore: 90 },
-                        { type: 'True/False', effectiveness: 75, recommendationScore: 80 },
-                        { type: 'Essay', effectiveness: 50, recommendationScore: 40 }
-                      ]).map((questionType, index) => (
-                        <div key={index} className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <span className="font-medium text-teal-900">{questionType.type}</span>
-                            <div className="flex items-center space-x-2">
-                              <span className="text-sm text-teal-700">{questionType.effectiveness}% effective</span>
-                              <Badge variant={questionType.recommendationScore > 80 ? 'default' : 'secondary'}>
-                                {questionType.recommendationScore > 80 ? 'Recommended' : 'Optional'}
-                              </Badge>
-                            </div>
-                          </div>
-                          <Progress value={questionType.effectiveness} className="h-2" />
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Adaptive Recommendations */}
-              <Card className="bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-200 shadow-lg">
-                <CardHeader>
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg">
-                      <Brain className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-emerald-900">AI Adaptive Recommendations</CardTitle>
-                      <CardDescription className="text-emerald-700">Personalized suggestions based on your learning patterns</CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 bg-white/80 rounded-xl border border-emerald-100">
-                      <div className="flex items-center space-x-2 mb-3">
-                        <Target className="h-4 w-4 text-emerald-600" />
-                        <span className="font-medium text-emerald-900">Recommended Difficulty</span>
-                      </div>
-                      <div className="text-2xl font-bold text-emerald-900 mb-1">
-                        {currentData.machineLearning?.adaptiveLearning?.recommendedDifficulty || 'Medium'}
-                      </div>
-                      <p className="text-sm text-emerald-700">
-                        {currentData.machineLearning?.adaptiveLearning?.difficultyAdjustmentReason || 
-                         'Moderate performance suggests maintaining current difficulty with gradual increases'}
-                      </p>
-                    </div>
-                    
-                    <div className="p-4 bg-white/80 rounded-xl border border-emerald-100">
-                      <div className="flex items-center space-x-2 mb-3">
-                        <Activity className="h-4 w-4 text-emerald-600" />
-                        <span className="font-medium text-emerald-900">Learning Pattern</span>
-                      </div>
-                      <div className="text-2xl font-bold text-emerald-900 mb-1">
-                        {currentData.machineLearning?.intelligentInsights?.learningPatternAnalysis?.dominantPattern || 'Consistent Learner'}
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <span className="text-sm text-emerald-700">Pattern Strength:</span>
-                        <Progress 
-                          value={currentData.machineLearning?.intelligentInsights?.learningPatternAnalysis?.patternStrength || 75} 
-                          className="flex-1 h-2" 
-                        />
-                        <span className="text-sm font-medium text-emerald-900">
-                          {Math.round(currentData.machineLearning?.intelligentInsights?.learningPatternAnalysis?.patternStrength || 75)}%
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
             {/* Quiz Progress Tab - Individual Quiz Tracking */}
             <TabsContent value="quiz-progress" className="space-y-8">
               <div className="grid grid-cols-1 gap-8">
@@ -1275,8 +1146,8 @@ export default function AnalyticsPage() {
                         quizProgress.map((quiz) => (
                         <div key={quiz.id} className="p-6 bg-white/80 rounded-xl border border-indigo-100 hover:shadow-md transition-all">
                           <div className="flex items-center justify-between mb-4">
-                            <div>
-                              <h4 className="font-semibold text-indigo-900 text-lg">{quiz.title}</h4>
+                            <div className="flex-1 min-w-0 pr-4">
+                              <h4 className="font-semibold text-indigo-900 text-lg truncate" title={quiz.title}>{quiz.title}</h4>
                               <p className="text-sm text-indigo-600">{quiz.totalQuestions} questions • {quiz.difficulty}</p>
                             </div>
                             <div className="flex items-center space-x-2">
@@ -1486,7 +1357,7 @@ export default function AnalyticsPage() {
                             <div className="text-3xl font-bold text-amber-600 mb-2">
                               {Math.min(...quizProgress.map(q => q.averageScore))}%
                             </div>
-                            <p className="text-sm text-amber-700">
+                            <p className="text-sm text-amber-700 truncate px-2" title={quizProgress.find(q => q.averageScore === Math.min(...quizProgress.map(quiz => quiz.averageScore)))?.title}>
                               {quizProgress.find(q => q.averageScore === Math.min(...quizProgress.map(quiz => quiz.averageScore)))?.title}
                             </p>
                             <p className="text-xs text-amber-600 mt-1">Focus area</p>
@@ -1502,61 +1373,6 @@ export default function AnalyticsPage() {
                   </Card>
                 </div>
 
-                {/* Quiz Performance Insights */}
-                <Card className="bg-gradient-to-br from-slate-50 to-gray-50 border-slate-200 shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="text-slate-900 flex items-center space-x-2">
-                      <Brain className="h-5 w-5" />
-                      <span>Performance Insights</span>
-                    </CardTitle>
-                    <CardDescription className="text-slate-700">
-                      Analysis based on your quiz attempts
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="p-4 bg-green-50/80 rounded-xl border border-green-200">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <CheckCircle className="h-5 w-5 text-green-600" />
-                          <h4 className="font-medium text-green-900">Strong Performance</h4>
-                        </div>
-                        <p className="text-sm text-green-800">
-                          History shows excellent mastery (94% average). Your knowledge in this area is solid and consistent.
-                        </p>
-                      </div>
-
-                      <div className="p-4 bg-blue-50/80 rounded-xl border border-blue-200">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <TrendingUp className="h-5 w-5 text-blue-600" />
-                          <h4 className="font-medium text-blue-900">Improving Skills</h4>
-                        </div>
-                        <p className="text-sm text-blue-800">
-                          Mathematics shows clear improvement (70% → 80% → 90%). Keep practicing to maintain this upward trend.
-                        </p>
-                      </div>
-
-                      <div className="p-4 bg-yellow-50/80 rounded-xl border border-yellow-200">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <AlertTriangle className="h-5 w-5 text-yellow-600" />
-                          <h4 className="font-medium text-yellow-900">Needs Attention</h4>
-                        </div>
-                        <p className="text-sm text-yellow-800">
-                          Science (67% average) and Literature (67% single attempt) need more practice. Focus on understanding core concepts.
-                        </p>
-                      </div>
-
-                      <div className="p-4 bg-purple-50/80 rounded-xl border border-purple-200">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <Lightbulb className="h-5 w-5 text-purple-600" />
-                          <h4 className="font-medium text-purple-900">Recommendation</h4>
-                        </div>
-                        <p className="text-sm text-purple-800">
-                          Retake Literature quiz and practice Science topics. Your improvement pattern in Math shows you can master difficult subjects with practice.
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
               </div>
             </TabsContent>
 
